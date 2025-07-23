@@ -14,6 +14,7 @@ class HomeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('admin');
     }
 
     /**
@@ -23,6 +24,8 @@ class HomeController extends Controller
      */
     public function index()
     {
+        $this->setSimplePage('Dashboard Principal', 'Panel de control y estadísticas generales');
+        
         return view('home');
     }
 }

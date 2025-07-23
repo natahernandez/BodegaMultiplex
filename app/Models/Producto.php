@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Producto extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'codigo_barras',
+        'codigo_interno',
+        'nombre',
+        'descripcion',
+        'marca',
+        'categoria',
+        'precio_compra',
+        'precio_venta',
+        'precio_mayoreo',
+        'stock_actual',
+        'stock_minimo',
+        'stock_maximo',
+        'unidad_medida',
+        'ubicacion',
+        'proveedor',
+        'fecha_vencimiento',
+        'imagen',
+        'activo',
+        'requiere_receta',
+        'iva'
+    ];
+
+    protected $casts = [
+        'precio_compra' => 'decimal:2',
+        'precio_venta' => 'decimal:2',
+        'precio_mayoreo' => 'decimal:2',
+        'iva' => 'decimal:2',
+        'fecha_vencimiento' => 'date',
+        'activo' => 'boolean',
+        'requiere_receta' => 'boolean',
+    ];
+
+    // Scopes
+    public function scopeActivos($query)
+    {
+        return $query->where('activo', true);
+    }
+
+    public function scopeStockBajo($query)
+    {
+        return $query->whereColumn('stock_actual', '<=', 'stock_minimo');
+    }
+
+    public function scopePorCategoria($query, $categoria)
+    {
+        return $query->where('categoria', $categoria);
+    }
+
+    // Accessors
+    public function getPrecioVentaFormateadoAttribute()
+    {
+        return '$' . number_format($this->precio_venta, 2);
+    }
+
+    public function getPrecioCompraFormateadoAttribute()
+    {
+        return '$' . number_format($this->precio_compra, 2);
+    }
+
+    public function getMargenGananciaAttribute()
+    {
+        if ($this->precio_compra > 0) {
+            return (($this->precio_venta - $this->precio_compra) / $this->precio_compra) * 100;
+        }
+        return 0;
+    }
+
+    public function getEstadoStockAttribute()
+    {
+        if ($this->stock_actual <= 0) {
+            return 'sin_stock';
+        } elseif ($this->stock_actual <= $this->stock_minimo) {
+            return 'stock_bajo';
+        } elseif ($this->stock_maximo && $this->stock_actual >= $this->stock_maximo) {
+            return 'stock_alto';
+        }
+        return 'stock_normal';
+    }
+
+    public function getEstadoStockColorAttribute()
+    {
+        return match($this->estado_stock) {
+            'sin_stock' => 'danger',
+            'stock_bajo' => 'warning',
+            'stock_alto' => 'info',
+            default => 'success'
+        };
+    }
+
+    public function getEstadoStockTextoAttribute()
+    {
+        return match($this->estado_stock) {
+            'sin_stock' => 'Sin Stock',
+            'stock_bajo' => 'Stock Bajo',
+            'stock_alto' => 'Stock Alto',
+            default => 'Stock Normal'
+        };
+    }
+}

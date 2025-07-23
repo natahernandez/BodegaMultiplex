@@ -15,9 +15,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Crear usuario administrador
+        $this->call([
+            AdminUserSeeder::class,
+        ]);
+
+        // Crear usuario de prueba (opcional)
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'role' => 2, // Cliente
         ]);
     }
 }

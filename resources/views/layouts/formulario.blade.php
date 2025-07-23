@@ -1,60 +1,39 @@
 <!DOCTYPE html>
-<html lang="es">
-
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+  
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>
-    Bodega Multiplex - @yield('title')
-  </title>
 
-  <link href="{{ asset('img/favicon.png') }}" rel="icon" type="image/png">
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
-  <!-- Icons -->
-  <link href="{{ asset('js/plugins/nucleo/css/nucleo.css') }}" rel="stylesheet" />
-  <link href="{{ asset('js/plugins/@fortawesome/fontawesome-free/css/all.min.css') }}" rel="stylesheet" />
-  <!-- CSS Files -->
-  <link href="{{ asset('css/argon-dashboard.css?v=1.1.2') }}" rel="stylesheet" />
+  <title>Bodega Multiplex - @yield('title')</title>
+
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
+  <link rel="preload" href="{{ asset('css/theme.css') }}" data-hs-appearance="default" as="style">
+  <link rel="preload" href="{{ asset('css/theme-dark.css') }}" data-hs-appearance="dark" as="style">
+
 </head>
 
-<body class="bg-default">
-  <div class="main-content">
+<body>
 
-    <!-- Header -->
-    <div class="header bg-gradient-primary py-7 py-lg-8">
-      <div class="container">
-        <div class="header-body text-center mb-7">
-          <div class="row justify-content-center">
-            <div class="col-lg-5 col-md-6">
-              <h1 class="text-white">Bienvenido al sistema Bodega Multiplex!</h1>
-              <p class="text-lead text-light">Use these awesome forms to login or create new account in your project for free.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="separator separator-bottom separator-skew zindex-100">
-        <svg x="0" y="0" viewBox="0 0 2560 100" preserveAspectRatio="none" version="1.1" xmlns="http://www.w3.org/2000/svg">
-          <polygon class="fill-default" points="2560 0 2560 100 0 100"></polygon>
-        </svg>
-      </div>
-    </div>
+  <main id="content" role="main" class="main">
+    <div class="position-fixed top-0 end-0 start-0 bg-img-start" style="height: 32rem; background-image: url(@@autopath/assets/svg/components/card-6.svg);">
 
     @yield('content')
 
     @include('includes.formulario.footer')
 
-  </div>
+    
+  </main>
 
+  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
+  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery-migrate/dist/jquery-migrate.min.js') }}"></script>
+  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-toggle-password/dist/js/hs-toggle-password.js') }}"></script>
+  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/hs.core.js') }}"></script>
+  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/hs.bs-validation.js') }}"></script>
 
-
-  <!--   Core   -->
-  <script src="../assets/js/plugins/jquery/dist/jquery.min.js"></script>
-  <script src="../assets/js/plugins/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <!--   Optional JS   -->
-  <!--   Argon JS   -->
-  <script src="../assets/js/argon-dashboard.min.js?v=1.1.2"></script>
-  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
 </body>
-
 </html>
