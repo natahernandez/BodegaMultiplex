@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
 
 class Producto extends Model
 {
@@ -58,6 +59,17 @@ class Producto extends Model
         return $query->where('categoria', $categoria);
     }
 
+    // Relaciones
+    public function imagenes()
+    {
+        return $this->hasMany(ProductoImagen::class)->orderBy('orden');
+    }
+
+    public function imagenPrincipal()
+    {
+        return $this->hasOne(ProductoImagen::class)->where('es_principal', true);
+    }
+
     // Accessors
     public function getPrecioVentaFormateadoAttribute()
     {
@@ -107,5 +119,34 @@ class Producto extends Model
             'stock_alto' => 'Stock Alto',
             default => 'Stock Normal'
         };
+    }
+
+    // Accessor para obtener la imagen principal
+    public function getImagenPrincipalUrlAttribute()
+    {
+        try {
+            // Intentar obtener la imagen principal de la relación cargada
+            if ($this->relationLoaded('imagenPrincipal') && $this->imagenPrincipal) {
+                return \App\Helpers\ImageHelper::getProductImageUrl($this->imagenPrincipal->ruta_imagen);
+            }
+            
+            // Si no está cargada, buscar en las imágenes cargadas
+            if ($this->relationLoaded('imagenes') && $this->imagenes->count() > 0) {
+                $imagenPrincipal = $this->imagenes->where('es_principal', true)->first() ?? $this->imagenes->first();
+                if ($imagenPrincipal) {
+                    return \App\Helpers\ImageHelper::getProductImageUrl($imagenPrincipal->ruta_imagen);
+                }
+            }
+            
+            // Fallback a la imagen antigua si existe
+            if ($this->imagen && \App\Helpers\ImageHelper::imageExists($this->imagen)) {
+                return \App\Helpers\ImageHelper::getProductImageUrl($this->imagen);
+            }
+            
+            return null;
+        } catch (\Exception $e) {
+            \Log::error('Error en getImagenPrincipalUrlAttribute: ' . $e->getMessage());
+            return null;
+        }
     }
 }

@@ -1,0 +1,68 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->string('numero_orden')->unique();
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+            
+            // Información del cliente
+            $table->string('nombre_cliente');
+            $table->string('email_cliente');
+            $table->string('telefono_cliente');
+            $table->text('direccion_entrega');
+            $table->string('ciudad')->default('Guatemala');
+            $table->string('departamento')->default('Guatemala');
+            $table->string('codigo_postal')->nullable();
+            
+            // Información del pedido
+            $table->enum('estado', ['pendiente', 'confirmado', 'en_preparacion', 'enviado', 'entregado', 'cancelado'])->default('pendiente');
+            $table->enum('estado_pago', ['pendiente', 'pagado', 'contra_entrega', 'cancelado'])->default('pendiente');
+            $table->enum('metodo_pago', ['efectivo', 'tarjeta', 'transferencia', 'contra_entrega'])->default('contra_entrega');
+            
+            // Montos
+            $table->decimal('subtotal', 10, 2);
+            $table->decimal('impuestos', 10, 2)->default(0);
+            $table->decimal('envio', 10, 2)->default(0);
+            $table->decimal('descuento', 10, 2)->default(0);
+            $table->decimal('total', 10, 2);
+            
+            // Fechas
+            $table->timestamp('fecha_pedido')->useCurrent();
+            $table->timestamp('fecha_entrega_estimada')->nullable();
+            $table->timestamp('fecha_entrega_real')->nullable();
+            
+            // Notas y observaciones
+            $table->text('notas_cliente')->nullable();
+            $table->text('notas_admin')->nullable();
+            
+            // Tracking
+            $table->string('codigo_seguimiento')->nullable();
+            
+            $table->timestamps();
+            
+            // Índices
+            $table->index(['estado', 'fecha_pedido']);
+            $table->index(['user_id', 'fecha_pedido']);
+            $table->index('numero_orden');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('orders');
+    }
+};

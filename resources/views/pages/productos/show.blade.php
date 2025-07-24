@@ -43,19 +43,63 @@
       <!-- Body -->
       <div class="card-body">
         <div class="row">
-          <div class="col-sm-3">
-            <div class="text-center">
-              @if($producto->imagen)
-                <img class="img-fluid rounded" src="{{ Storage::url($producto->imagen) }}" alt="{{ $producto->nombre }}" style="max-height: 200px;">
-              @else
-                <div class="avatar avatar-xxl avatar-soft-primary">
-                  <span class="avatar-initials">{{ strtoupper(substr($producto->nombre, 0, 2)) }}</span>
+          <div class="col-sm-4">
+            <!-- Galería de Imágenes -->
+            @if($producto->imagenes->count() > 0)
+              <div class="text-center">
+                <!-- Imagen principal -->
+                <div class="mb-3">
+                  @if($producto->imagen_principal_url)
+                    <img id="imagenPrincipal" class="img-fluid rounded border" 
+                         src="{{ $producto->imagen_principal_url }}" 
+                         alt="{{ $producto->nombre }}" 
+                         style="max-height: 300px; width: 100%; object-fit: contain; cursor: pointer; background: #f8f9fa;"
+                         data-bs-toggle="modal" data-bs-target="#imageModal">
+                  @else
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                         style="height: 300px; width: 100%;">
+                      <div class="text-center">
+                        <i class="bi-image text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">Sin imagen</p>
+                      </div>
+                    </div>
+                  @endif
                 </div>
-              @endif
-            </div>
+                
+                <!-- Miniaturas -->
+                @if($producto->imagenes->count() > 1)
+                <div class="row g-2">
+                  @foreach($producto->imagenes as $index => $imagen)
+                    <div class="col-3">
+                      <img class="img-fluid rounded miniatura border" 
+                           src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}" 
+                           alt="{{ $producto->nombre }} - Imagen {{ $index + 1 }}"
+                           style="height: 70px; width: 100%; object-fit: contain; cursor: pointer; background: #f8f9fa; {{ $imagen->es_principal ? 'border-color: #007bff !important; border-width: 2px !important;' : '' }}"
+                           onclick="cambiarImagenPrincipal('{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}', this)">
+                    </div>
+                  @endforeach
+                </div>
+                @endif
+              </div>
+            @elseif($producto->imagen_principal_url)
+              <div class="text-center">
+                <img class="img-fluid rounded border" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}" 
+                     style="max-height: 300px; width: 100%; object-fit: cover;">
+              </div>
+            @else
+              <div class="text-center">
+                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                     style="height: 300px; width: 100%;">
+                  <div class="text-center">
+                    <i class="bi-image text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">Sin imagen</p>
+                  </div>
+                </div>
+              </div>
+            @endif
           </div>
 
-          <div class="col-sm-9">
+          <div class="col-sm-8">
             <div class="row">
               <div class="col-sm-6">
                 <dl class="row">
@@ -86,15 +130,15 @@
                 <dl class="row">
                   <dt class="col-sm-5">Precio de Venta:</dt>
                   <dd class="col-sm-7">
-                    <span class="text-success fw-semibold fs-4">${{ number_format($producto->precio_venta, 2) }}</span>
+                    <span class="text-success fw-semibold fs-4">Q{{ number_format($producto->precio_venta, 2) }}</span>
                   </dd>
 
                   <dt class="col-sm-5">Precio de Compra:</dt>
-                  <dd class="col-sm-7">${{ number_format($producto->precio_compra, 2) }}</dd>
+                                      <dd class="col-sm-7">Q{{ number_format($producto->precio_compra, 2) }}</dd>
 
                   @if($producto->precio_mayoreo)
                   <dt class="col-sm-5">Precio Mayoreo:</dt>
-                  <dd class="col-sm-7">${{ number_format($producto->precio_mayoreo, 2) }}</dd>
+                                      <dd class="col-sm-7">Q{{ number_format($producto->precio_mayoreo, 2) }}</dd>
                   @endif
 
                   <dt class="col-sm-5">Margen:</dt>
@@ -339,6 +383,39 @@
   </div>
 </div>
 
+<!-- Modal para ampliar imágenes -->
+@if($producto->imagenes->count() > 0)
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">{{ $producto->nombre }} - Galería</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="imagenModalAmpliada" class="img-fluid" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}">
+        
+        @if($producto->imagenes->count() > 1)
+        <div class="mt-3">
+          <div class="row g-2 justify-content-center">
+            @foreach($producto->imagenes as $index => $imagen)
+              <div class="col-auto">
+                <img class="img-fluid rounded miniatura-modal" 
+                     src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}" 
+                     alt="{{ $producto->nombre }} - Imagen {{ $index + 1 }}"
+                     style="height: 80px; width: 80px; object-fit: contain; cursor: pointer; background: #f8f9fa;"
+                     onclick="cambiarImagenModal('{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}')">
+              </div>
+            @endforeach
+          </div>
+        </div>
+        @endif
+      </div>
+    </div>
+  </div>
+</div>
+@endif
+
 @endsection
 
 @section('scripts')
@@ -397,5 +474,52 @@ function toggleStatus(newStatus) {
         });
     }
 }
+
+// Funciones para galería de imágenes
+function cambiarImagenPrincipal(nuevaImagenUrl, elemento) {
+    document.getElementById('imagenPrincipal').src = nuevaImagenUrl;
+    const modalImage = document.getElementById('imagenModalAmpliada');
+    if (modalImage) {
+        modalImage.src = nuevaImagenUrl;
+    }
+    
+    // Remover bordes de otras miniaturas y agregar al elemento actual
+    document.querySelectorAll('.miniatura').forEach(img => {
+        img.style.borderColor = '';
+        img.style.borderWidth = '';
+    });
+    
+    if (elemento) {
+        elemento.style.borderColor = '#007bff';
+        elemento.style.borderWidth = '2px';
+    }
+}
+
+function cambiarImagenModal(nuevaImagenUrl) {
+    document.getElementById('imagenModalAmpliada').src = nuevaImagenUrl;
+}
+
+// Agregar efecto hover a las miniaturas
+document.addEventListener('DOMContentLoaded', function() {
+    const miniaturas = document.querySelectorAll('.miniatura');
+    miniaturas.forEach(miniatura => {
+        miniatura.addEventListener('mouseenter', function() {
+            this.style.opacity = '0.7';
+        });
+        miniatura.addEventListener('mouseleave', function() {
+            this.style.opacity = '1';
+        });
+    });
+
+    const miniaturasModal = document.querySelectorAll('.miniatura-modal');
+    miniaturasModal.forEach(miniatura => {
+        miniatura.addEventListener('mouseenter', function() {
+            this.style.opacity = '0.7';
+        });
+        miniatura.addEventListener('mouseleave', function() {
+            this.style.opacity = '1';
+        });
+    });
+});
 </script>
 @endsection 

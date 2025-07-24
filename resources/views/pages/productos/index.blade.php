@@ -1,1372 +1,358 @@
+@extends('layouts.app')
+
+@section('styles')
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css') }}">
+@endsection
+
+@section('content')
+<!-- Page Header -->
+<div class="page-header">
+  <div class="row align-items-center">
+    <div class="col-sm mb-2 mb-sm-0">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-no-gutter">
+          <li class="breadcrumb-item"><a class="breadcrumb-link" href="{{ route('home') }}">Dashboard</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Productos</li>
+        </ol>
+      </nav>
+
+      <h1 class="page-header-title">Gestión de Productos</h1>
+      <p class="page-header-text">Administra tu inventario de productos de manera eficiente</p>
+                    </div>
+    
+    <div class="col-sm-auto">
+                  <div class="btn-group" role="group">
+        <a class="btn btn-primary" href="{{ route('productos.create') }}">
+          <i class="bi-plus me-1"></i> Nuevo Producto
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+<!-- End Page Header -->
+
+<!-- Stats Cards -->
+<div class="row">
+  <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2">Total Productos</h6>
+        <div class="row align-items-center gx-2">
+          <div class="col">
+            <span class="js-counter display-4 text-primary">{{ $productos->count() }}</span>
+                      </div>
+          <div class="col-auto">
+            <i class="bi-box-seam text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                  </div>
+                  </div>
+                    </div>
+                    </div>
+
+  <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2">Stock Bajo</h6>
+        <div class="row align-items-center gx-2">
+          <div class="col">
+            <span class="js-counter display-4 text-warning">{{ $productos->where('estado_stock', 'stock_bajo')->count() }}</span>
+                      </div>
+          <div class="col-auto">
+            <i class="bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                  </div>
+                  </div>
+                    </div>
+                    </div>
+
+  <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2">Sin Stock</h6>
+        <div class="row align-items-center gx-2">
+          <div class="col">
+            <span class="js-counter display-4 text-danger">{{ $productos->where('estado_stock', 'sin_stock')->count() }}</span>
+                      </div>
+          <div class="col-auto">
+            <i class="bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                    </div>
+                  </div>
+                  </div>
+                    </div>
+                    </div>
+
+  <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2">Categorías</h6>
+        <div class="row align-items-center gx-2">
+          <div class="col">
+            <span class="js-counter display-4 text-info">{{ $categorias->count() }}</span>
+                      </div>
+          <div class="col-auto">
+            <i class="bi-tags text-info" style="font-size: 2rem;"></i>
+                    </div>
+                  </div>
+                  </div>
+                    </div>
+                    </div>
+                  </div>
+<!-- End Stats Cards -->
+
+<!-- Alerts -->
+@if(session('success'))
+<div class="alert alert-success alert-dismissible" role="alert">
+  <div class="d-flex">
+                    <div class="flex-shrink-0">
+      <i class="bi-check-circle-fill"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+      {{ session('success') }}
+                    </div>
+                  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+@endif
+
 <!-- Card -->
 <div class="card">
-        <!-- Header -->
-        <div class="card-header card-header-content-md-between">
-          <div class="mb-2 mb-md-0">
-            <form>
-              <!-- Search -->
-              <div class="input-group input-group-merge input-group-flush">
-                <div class="input-group-prepend input-group-text">
-                  <i class="bi-search"></i>
-                </div>
-                <input id="datatableSearch" type="search" class="form-control" placeholder="Search users" aria-label="Search users">
-              </div>
-              <!-- End Search -->
-            </form>
-          </div>
+  <!-- Header -->
+  <div class="card-header card-header-content-md-between">
+    <div class="mb-2 mb-md-0">
+      <div class="input-group input-group-merge navbar-input-group">
+        <div class="input-group-prepend input-group-text">
+          <i class="bi-search"></i>
+                  </div>
+        <input type="search" class="form-control" placeholder="Buscar productos..." aria-label="Buscar productos" id="datatableSearch">
+                    </div>
+                    </div>
 
-          <div class="d-grid d-sm-flex gap-2">
-            <button class="btn btn-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEcommerceProductFilter" aria-controls="offcanvasEcommerceProductFilter">
-              <i class="bi-filter me-1"></i> Filters
-            </button>
+    <div class="d-grid d-sm-flex gap-2">
+      <!-- Botón Crear Producto -->
+      <a class="btn btn-primary" href="{{ route('productos.create') }}">
+        <i class="bi-plus me-1"></i> Nuevo Producto
+                    </a>
 
-            <!-- Dropdown -->
-            <div class="dropdown">
-              <button type="button" class="btn btn-white w-100" id="showHideDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                <i class="bi-table me-1"></i> Columns <span class="badge bg-soft-dark text-dark rounded-circle ms-1">6</span>
+      <!-- Filter -->
+      <div class="dropdown">
+        <button type="button" class="btn btn-white btn-sm dropdown-toggle" id="usersFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi-filter me-1"></i> Filtrar
+        </button>
+
+        <div class="dropdown-menu dropdown-menu-sm-end dropdown-card card-dropdown-filter-centered" aria-labelledby="usersFilterDropdown" style="min-width: 22rem;">
+          <div class="card">
+            <div class="card-header card-header-content-between">
+              <h5 class="card-header-title">Filtros</h5>
+              <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm ms-2" id="clearFilters">
+                <i class="bi-x-lg"></i>
               </button>
+                      </div>
 
-              <div class="dropdown-menu dropdown-menu-end dropdown-card" aria-labelledby="showHideDropdown" style="width: 15rem;">
-                <div class="card card-sm">
-                  <div class="card-body">
-                    <div class="d-grid gap-3">
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_product">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">Product</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_product" checked>
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
+            <div class="card-body">
+              <form id="filterForm">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="mb-4">
+                      <span class="text-cap text-body">Categoría</span>
+                      <select class="form-select" name="categoria" id="filterCategoria">
+                        <option value="">Todas las categorías</option>
+                        @foreach($categorias as $categoria)
+                          <option value="{{ $categoria }}">{{ $categoria }}</option>
+                        @endforeach
+                      </select>
+                  </div>
+                    </div>
 
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_type">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">Type</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_type" checked>
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
-
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_vendor">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">Vendor</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_vendor">
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
-
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_stocks">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">Stocks</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_stocks" checked>
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
-
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_sku">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">SKU</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_sku" checked>
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
-
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_price">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">Price</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_price" checked>
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
-
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_quantity">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">Quantity</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_quantity">
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
-
-                      <!-- Form Switch -->
-                      <label class="row form-check form-switch" for="toggleColumn_variants">
-                        <span class="col-8 col-sm-9 ms-0">
-                          <span class="me-2">Variants</span>
-                        </span>
-                        <span class="col-4 col-sm-3 text-end">
-                          <input type="checkbox" class="form-check-input" id="toggleColumn_variants" checked>
-                        </span>
-                      </label>
-                      <!-- End Form Switch -->
+                  <div class="col-sm-12">
+                    <div class="mb-4">
+                      <span class="text-cap text-body">Estado de Stock</span>
+                      <select class="form-select" name="estado_stock" id="filterStock">
+                        <option value="">Todos los estados</option>
+                        <option value="sin_stock">Sin Stock</option>
+                        <option value="stock_bajo">Stock Bajo</option>
+                        <option value="stock_normal">Stock Normal</option>
+                      </select>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-            <!-- End Dropdown -->
-          </div>
-        </div>
-        <!-- End Header -->
 
-        <!-- Table -->
-        <div class="table-responsive datatable-custom">
-          <table id="datatable" class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
-                 data-hs-datatables-options='{
-                   "columnDefs": [{
-                      "targets": [0, 4, 9],
-                      "width": "5%",
-                      "orderable": false
-                    }],
-                   "order": [],
-                   "info": {
-                     "totalQty": "#datatableWithPaginationInfoTotalQty"
-                   },
-                   "search": "#datatableSearch",
-                   "entries": "#datatableEntries",
-                   "pageLength": 12,
-                   "isResponsive": false,
-                   "isShowPaging": false,
-                   "pagination": "datatablePagination"
-                 }'>
-            <thead class="thead-light">
-              <tr>
-                <th scope="col" class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="datatableCheckAll">
-                    <label class="form-check-label">
-                    </label>
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn btn-white me-2" id="clearFilters">Limpiar</button>
+                  <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
                   </div>
-                </th>
-                <th class="table-column-ps-0">Product</th>
-                <th>Type</th>
-                <th>Vendor</th>
-                <th>Stocks</th>
-                <th>SKU</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Variants</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+              </form>
+                    </div>
+                    </div>
+                  </div>
+                      </div>
+      <!-- End Filter -->
+                    </div>
+                  </div>
+  <!-- End Header -->
 
-            <tbody>
+  <!-- Table -->
+  <div class="table-responsive datatable-custom">
+    <table id="datatable" class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table" data-hs-datatables-options='{
+                    "columnDefs": [{
+                       "targets": [0, 7, 8],
+                       "orderable": false
+                     }],
+                    "order": [],
+                    "info": {
+                      "totalQty": "#datatableWithPaginationInfoTotalQty"
+                    },
+                    "search": "#datatableSearch",
+                    "entries": "#datatableEntries",
+                    "pageLength": 15,
+                    "isResponsive": false,
+                    "isShowPaging": false,
+                    "pagination": "datatablePagination"
+                  }'>
+      <thead class="thead-light">
+              <tr>
+          <th class="table-column-pe-0">
+                  <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="datatableCheckAll">
+              <label class="form-check-label" for="datatableCheckAll"></label>
+                  </div>
+          </th>
+          <th class="table-column-ps-0">Producto</th>
+          <th>Código</th>
+          <th>Marca</th>
+          <th>Categoría</th>
+          <th>Precio Venta</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+              </tr>
+      </thead>
+
+      <tbody>
+        @forelse($productos as $producto)
               <tr>
                 <td class="table-column-pe-0">
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="datatableCheckAll1">
-                    <label class="form-check-label" for="datatableCheckAll1"></label>
+              <input class="form-check-input" type="checkbox" value="{{ $producto->id }}" id="productosCheck{{ $producto->id }}">
+              <label class="form-check-label" for="productosCheck{{ $producto->id }}"></label>
                   </div>
                 </td>
                 <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
+            <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img4.jpg" alt="Image Description">
+                @if($producto->imagen_principal_url)
+                  <div class="avatar avatar-sm">
+                    <img class="avatar-img" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}" style="object-fit: contain; background: #f8f9fa;">
+                    </div>
+                @else
+                  <div class="avatar avatar-sm avatar-soft-primary">
+                    <span class="avatar-initials">{{ strtoupper(substr($producto->nombre, 0, 2)) }}</span>
+                    </div>
+                @endif
                     </div>
                     <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Photive wireless speakers</h5>
+                <h5 class="text-inherit mb-0">{{ $producto->nombre }}</h5>
+                @if($producto->descripcion)
+                  <p class="fs-6 text-body mb-0">{{ Str::limit($producto->descripcion, 50) }}</p>
+                @endif
                     </div>
-                  </a>
-                </td>
-                <td>Electronics</td>
-                <td>Google</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox1" checked>
-                    <label class="form-check-label" for="stocksCheckbox1"></label>
                   </div>
                 </td>
-                <td>2384741241</td>
-                <td>$65</td>
-                <td>60</td>
-                <td>2</td>
+                <td>
+            <div>
+              <span class="d-block fw-semibold">{{ $producto->codigo_interno }}</span>
+              @if($producto->codigo_barras)
+                <small class="text-muted">{{ $producto->codigo_barras }}</small>
+              @endif
+                  </div>
+                </td>
+          <td>
+            @if($producto->marca)
+              <span class="badge bg-soft-secondary text-secondary">{{ $producto->marca }}</span>
+            @else
+              <span class="text-muted">—</span>
+            @endif
+                </td>
+          <td>
+            <span class="badge bg-soft-primary text-primary">{{ $producto->categoria }}</span>
+                </td>
+          <td>
+            <div>
+              <span class="text-dark fw-semibold">Q{{ number_format($producto->precio_venta, 2) }}</span>
+              @if($producto->precio_mayoreo && $producto->precio_mayoreo < $producto->precio_venta)
+                <span class="d-block fs-6 text-body">Mayor: Q{{ number_format($producto->precio_mayoreo, 2) }}</span>
+              @endif
+                  </div>
+                </td>
+                <td>
+            <div class="d-flex align-items-center">
+              <span class="badge bg-soft-{{ $producto->estado_stock_color }} text-{{ $producto->estado_stock_color }} me-2">
+                {{ $producto->stock_actual }} {{ $producto->unidad_medida }}
+              </span>
+              @if($producto->estado_stock !== 'stock_normal')
+                <i class="bi-exclamation-triangle-fill text-{{ $producto->estado_stock_color }}"></i>
+              @endif
+                      </div>
+            <small class="text-body">Mín: {{ $producto->stock_minimo }}</small>
+                </td>
+          <td>
+            <span class="badge {{ $producto->activo ? 'bg-success' : 'bg-danger' }}">
+              {{ $producto->activo ? 'Activo' : 'Inactivo' }}
+            </span>
+                </td>
                 <td>
                   <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
+              <a class="btn btn-white btn-sm" href="{{ route('productos.show', $producto) }}" data-bs-toggle="tooltip" title="Ver detalles">
+                <i class="bi-eye"></i>
+                        </a>
+              <a class="btn btn-white btn-sm" href="{{ route('productos.edit', $producto) }}" data-bs-toggle="tooltip" title="Editar">
+                <i class="bi-pencil"></i>
                     </a>
 
-                    <!-- Button Group -->
+              <!-- Dropdown -->
                     <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown1" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown{{ $producto->id }}" data-bs-toggle="dropdown" aria-expanded="false"></button>
 
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown1">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
+                <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown{{ $producto->id }}">
+                  <a class="dropdown-item" href="#" onclick="updateStock({{ $producto->id }})">
+                    <i class="bi-arrow-up-circle dropdown-item-icon"></i> Actualizar Stock
                         </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
+                  @if($producto->activo)
+                    <a class="dropdown-item" href="#" onclick="toggleStatus({{ $producto->id }}, false)">
+                      <i class="bi-eye-slash dropdown-item-icon"></i> Desactivar
                         </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
+                  @else
+                    <a class="dropdown-item" href="#" onclick="toggleStatus({{ $producto->id }}, true)">
+                      <i class="bi-eye dropdown-item-icon"></i> Activar
                         </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
+                  @endif
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item text-danger" href="#" onclick="deleteProduct({{ $producto->id }}, '{{ $producto->nombre }}')">
+                    <i class="bi-trash dropdown-item-icon"></i> Eliminar
                         </a>
                       </div>
                     </div>
-                    <!-- End Button Group -->
                   </div>
                 </td>
               </tr>
-
+        @empty
               <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck2">
-                    <label class="form-check-label" for="productsCheck2">
-                    </label>
+          <td colspan="9" class="text-center">
+            <div class="py-4">
+              <div class="mb-3">
+                <i class="bi-box-seam text-body" style="font-size: 3rem;"></i>
                   </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img26.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Topman shoe</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Shoes</td>
-                <td>Topman</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox2" checked>
-                    <label class="form-check-label" for="stocksCheckbox2"></label>
-                  </div>
-                </td>
-                <td>4124123847</td>
-                <td>$21</td>
-                <td>125</td>
-                <td>4</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown2" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown2">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
+              <h4 class="text-body">No hay productos registrados</h4>
+              <p class="text-body">Comienza agregando tu primer producto al inventario.</p>
+              <a href="{{ route('productos.create') }}" class="btn btn-primary">
+                <i class="bi-plus me-1"></i> Agregar Primer Producto
+              </a>
                   </div>
                 </td>
               </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck3">
-                    <label class="form-check-label" for="productsCheck3">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img25.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">RayBan black sunglasses</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Accessories</td>
-                <td>RayBan</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox3">
-                    <label class="form-check-label" for="stocksCheckbox3"></label>
-                  </div>
-                </td>
-                <td>8472341241</td>
-                <td>$37</td>
-                <td>42</td>
-                <td>1</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown3" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown3">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck4">
-                    <label class="form-check-label" for="productsCheck4">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img6.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Mango Women's shoe</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Shoes</td>
-                <td>Mango</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox4" checked>
-                    <label class="form-check-label" for="stocksCheckbox4"></label>
-                  </div>
-                </td>
-                <td>2412384741</td>
-                <td>$65</td>
-                <td>76</td>
-                <td>3</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown4" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown4">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck5">
-                    <label class="form-check-label" for="productsCheck5">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img3.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Calvin Klein t-shirts</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Clothing</td>
-                <td>Calvin Klein</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox5">
-                    <label class="form-check-label" for="stocksCheckbox5"></label>
-                  </div>
-                </td>
-                <td>8234741241</td>
-                <td>$89</td>
-                <td>99</td>
-                <td>7</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown5" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown5">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck6">
-                    <label class="form-check-label" for="productsCheck6">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img5.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Givenchy perfume</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Clothing</td>
-                <td>Givenchy</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox6" checked>
-                    <label class="form-check-label" for="stocksCheckbox6"></label>
-                  </div>
-                </td>
-                <td>9984741241</td>
-                <td>$99</td>
-                <td>50</td>
-                <td>1</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown6" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown6">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck7">
-                    <label class="form-check-label" for="productsCheck7">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img11.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Asos t-shirts</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Clothing</td>
-                <td>Asos</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox7">
-                    <label class="form-check-label" for="stocksCheckbox7"></label>
-                  </div>
-                </td>
-                <td>7184741241</td>
-                <td>$17</td>
-                <td>422</td>
-                <td>4</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown7" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown7">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck8">
-                    <label class="form-check-label" for="productsCheck8">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img12.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Apple AirPods 2</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Electronics</td>
-                <td>Apple</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox8">
-                    <label class="form-check-label" for="stocksCheckbox8"></label>
-                  </div>
-                </td>
-                <td>1084741241</td>
-                <td>$249</td>
-                <td>1000</td>
-                <td>1</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown8" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown8">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck9">
-                    <label class="form-check-label" for="productsCheck9">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img13.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Timex Watch</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Accessories</td>
-                <td>Timex</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox9">
-                    <label class="form-check-label" for="stocksCheckbox9"></label>
-                  </div>
-                </td>
-                <td>4831441241</td>
-                <td>$68</td>
-                <td>15</td>
-                <td>2</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown9" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown9">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck10">
-                    <label class="form-check-label" for="productsCheck10">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img14.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Air Jordan 1</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Shoes</td>
-                <td>Nike Jordan</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox10" checked>
-                    <label class="form-check-label" for="stocksCheckbox10"></label>
-                  </div>
-                </td>
-                <td>1223847441</td>
-                <td>$139</td>
-                <td>456</td>
-                <td>9</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown10" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown10">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck11">
-                    <label class="form-check-label" for="productsCheck11">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img15.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">RayBan sunglasses</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Accessories</td>
-                <td>RayBan</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox11">
-                    <label class="form-check-label" for="stocksCheckbox11"></label>
-                  </div>
-                </td>
-                <td>1242384741</td>
-                <td>$14</td>
-                <td>83</td>
-                <td>1</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown11" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown11">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck12">
-                    <label class="form-check-label" for="productsCheck12">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img17.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Gray and yellow cap</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Accessories</td>
-                <td>VA RVCA</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox12">
-                    <label class="form-check-label" for="stocksCheckbox12"></label>
-                  </div>
-                </td>
-                <td>8311741241</td>
-                <td>$9</td>
-                <td>522</td>
-                <td>1</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown12" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown12">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck13">
-                    <label class="form-check-label" for="productsCheck13">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img16.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Apple iPad Pro 2020</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Electronics</td>
-                <td>Apple</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox13" checked>
-                    <label class="form-check-label" for="stocksCheckbox13"></label>
-                  </div>
-                </td>
-                <td>2459741241</td>
-                <td>$799</td>
-                <td>450</td>
-                <td>8</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown13" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown13">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck14">
-                    <label class="form-check-label" for="productsCheck14">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img18.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Brown Hat</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Accessories</td>
-                <td>Mango</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox14" checked>
-                    <label class="form-check-label" for="stocksCheckbox14"></label>
-                  </div>
-                </td>
-                <td>2384994241</td>
-                <td>$67</td>
-                <td>32</td>
-                <td>7</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown14" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown14">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck15">
-                    <label class="form-check-label" for="productsCheck15">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img19.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Levis women's jeans</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Clothing</td>
-                <td>Levis</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox15">
-                    <label class="form-check-label" for="stocksCheckbox15"></label>
-                  </div>
-                </td>
-                <td>1344761241</td>
-                <td>$74</td>
-                <td>121</td>
-                <td>3</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown15" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown15">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck16">
-                    <label class="form-check-label" for="productsCheck16">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img20.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Levis men's jeans jacket</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Clothing</td>
-                <td>Levis</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox16">
-                    <label class="form-check-label" for="stocksCheckbox16"></label>
-                  </div>
-                </td>
-                <td>9904741241</td>
-                <td>$61</td>
-                <td>357</td>
-                <td>1</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown16" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown16">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck17">
-                    <label class="form-check-label" for="productsCheck17">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img21.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Beats Headphones</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Electronics</td>
-                <td>Beats</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox17">
-                    <label class="form-check-label" for="stocksCheckbox17"></label>
-                  </div>
-                </td>
-                <td>8812384741</td>
-                <td>$499</td>
-                <td>50</td>
-                <td>4</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown17" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown17">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck18">
-                    <label class="form-check-label" for="productsCheck18">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img22.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Office Notebook</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Accessories</td>
-                <td>-</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox18">
-                    <label class="form-check-label" for="stocksCheckbox18"></label>
-                  </div>
-                </td>
-                <td>7134741241</td>
-                <td>$9</td>
-                <td>750</td>
-                <td>1</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown18" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown18">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck19">
-                    <label class="form-check-label" for="productsCheck19">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img23.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Colorful pens</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Accessories</td>
-                <td>-</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox19" checked>
-                    <label class="form-check-label" for="stocksCheckbox19"></label>
-                  </div>
-                </td>
-                <td>2224741241</td>
-                <td>$6</td>
-                <td>750</td>
-                <td>3</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown19" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown19">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="table-column-pe-0">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="productsCheck20">
-                    <label class="form-check-label" for="productsCheck20">
-                    </label>
-                  </div>
-                </td>
-                <td class="table-column-ps-0">
-                  <a class="d-flex align-items-center" href="@@autopath/ecommerce-product-details.html">
-                    <div class="flex-shrink-0">
-                      <img class="avatar avatar-lg" src="@@autopath/assets/img/400x400/img24.jpg" alt="Image Description">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h5 class="text-inherit mb-0">Clarks shoes</h5>
-                    </div>
-                  </a>
-                </td>
-                <td>Shoes</td>
-                <td>Clarks</td>
-                <td>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="stocksCheckbox20" checked>
-                    <label class="form-check-label" for="stocksCheckbox20"></label>
-                  </div>
-                </td>
-                <td>2614741241</td>
-                <td>$66</td>
-                <td>982</td>
-                <td>10</td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a class="btn btn-white btn-sm" href="@@autopath/ecommerce-product-details.html">
-                      <i class="bi-pencil-fill me-1"></i> Edit
-                    </a>
-
-                    <!-- Button Group -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown20" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                      <div class="dropdown-menu dropdown-end-end mt-1" aria-labelledby="productsEditDropdown20">
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-trash dropdown-item-icon"></i> Delete
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-archive dropdown-item-icon"></i> Archive
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-upload dropdown-item-icon"></i> Publish
-                        </a>
-                        <a class="dropdown-item" href="#">
-                          <i class="bi-x-lg dropdown-item-icon"></i> Unpublish
-                        </a>
-                      </div>
-                    </div>
-                    <!-- End Button Group -->
-                  </div>
-                </td>
-              </tr>
+        @endforelse
             </tbody>
           </table>
         </div>
@@ -1377,12 +363,11 @@
           <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
             <div class="col-sm mb-2 mb-sm-0">
               <div class="d-flex justify-content-center justify-content-sm-start align-items-center">
-                <span class="me-2">Showing:</span>
+          <span class="me-2">Mostrando:</span>
 
                 <!-- Select -->
                 <div class="tom-select-custom">
-                  <select id="datatableEntries" class="js-select form-select form-select-borderless w-auto" autocomplete="off"
-                          data-hs-tom-select-options='{
+            <select id="datatableEntries" class="js-select form-select form-select-borderless w-auto" autocomplete="off" data-hs-tom-select-options='{
                             "searchInDropdown": false,
                             "hideSearch": true
                           }'>
@@ -1394,10 +379,10 @@
                 </div>
                 <!-- End Select -->
 
-                <span class="text-secondary me-2">of</span>
+          <span class="text-secondary me-2">de</span>
 
                 <!-- Pagination Quantity -->
-                <span id="datatableWithPaginationInfoTotalQty"></span>
+          <span id="datatableWithPaginationInfoTotalQty">{{ $productos->count() }}</span>
               </div>
             </div>
             <!-- End Col -->
@@ -1408,10 +393,166 @@
                 <nav id="datatablePagination" aria-label="Activity pagination"></nav>
               </div>
             </div>
-            <!-- End Col -->
+      <!-- End Col -->
           </div>
-          <!-- End Row -->
+    <!-- End Row -->
         </div>
-        <!-- End Footer -->
+  <!-- End Footer -->
       </div>
-      <!-- End Card -->
+<!-- End Card -->
+
+<!-- Modal para actualizar stock -->
+<div class="modal fade" id="updateStockModal" tabindex="-1" aria-labelledby="updateStockModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateStockModalLabel">Actualizar Stock</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="updateStockForm">
+          <input type="hidden" id="producto_id">
+          <div class="mb-3">
+            <label for="stock_actual" class="form-label">Nuevo Stock</label>
+            <input type="number" class="form-control" id="stock_actual" min="0" required>
+          </div>
+          <div class="mb-3">
+            <label for="observaciones" class="form-label">Observaciones (Opcional)</label>
+            <textarea class="form-control" id="observaciones" rows="3" placeholder="Motivo del cambio de stock..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-white" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveStock()">Actualizar Stock</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<!-- DataTables JS -->
+<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js') }}"></script>
+
+<script>
+// Initialize DataTable
+$(document).ready(function() {
+    $('#datatable').DataTable({
+        responsive: true,
+        pageLength: 15,
+        language: {
+            search: "",
+            searchPlaceholder: "Buscar productos...",
+            lengthMenu: "Mostrar _MENU_ productos",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ productos",
+            infoEmpty: "Mostrando 0 a 0 de 0 productos",
+            infoFiltered: "(filtrado de _MAX_ productos totales)",
+            paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior"
+            },
+            emptyTable: "No hay productos disponibles"
+        }
+    });
+});
+
+// Update stock function
+function updateStock(productId) {
+    $('#producto_id').val(productId);
+    $('#updateStockModal').modal('show');
+}
+
+function saveStock() {
+    const productId = $('#producto_id').val();
+    const stock = $('#stock_actual').val();
+    const observaciones = $('#observaciones').val();
+    
+    if (!stock) {
+        alert('Por favor ingrese el nuevo stock');
+        return;
+    }
+    
+    // Make AJAX call to update stock
+    $.ajax({
+        url: `/productos/${productId}/stock`,
+        method: 'PUT',
+        data: {
+            stock_actual: stock,
+            observaciones: observaciones,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            $('#updateStockModal').modal('hide');
+            location.reload(); // Reload the page to show updated data
+        },
+        error: function() {
+            alert('Error al actualizar el stock');
+        }
+    });
+}
+
+// Delete product function
+function deleteProduct(productId, productName) {
+    if (confirm(`¿Está seguro de eliminar el producto "${productName}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/productos/${productId}`;
+        
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        
+        const tokenField = document.createElement('input');
+        tokenField.type = 'hidden';
+        tokenField.name = '_token';
+        tokenField.value = '{{ csrf_token() }}';
+        
+        form.appendChild(methodField);
+        form.appendChild(tokenField);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Toggle status function
+function toggleStatus(productId, newStatus) {
+    const action = newStatus ? 'activar' : 'desactivar';
+    if (confirm(`¿Está seguro de ${action} este producto?`)) {
+        $.ajax({
+            url: `/productos/${productId}`,
+            method: 'PUT',
+            data: {
+                activo: newStatus,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                location.reload();
+            },
+            error: function() {
+                alert('Error al cambiar el estado del producto');
+            }
+        });
+    }
+}
+
+// Filter functionality
+$('#filterForm').on('submit', function(e) {
+    e.preventDefault();
+    // Apply filters (you can implement this with DataTables API or server-side filtering)
+    location.reload();
+});
+
+$('#clearFilters').on('click', function() {
+    $('#filterForm')[0].reset();
+    location.reload();
+});
+</script>
+@endsection

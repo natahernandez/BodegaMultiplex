@@ -13,15 +13,13 @@
   @include('includes.app.sidebar')
 
   <main id="content" role="main" class="main">
-    <!-- Content -->
+
     <div class="content container-fluid">
       @yield('content')
     </div>
-    <!-- End Content -->
 
     @include('includes.app.footer')
   </main>
-  <!-- ========== END MAIN CONTENT ========== -->
 
   @include('includes.app.scripts')
 </body>

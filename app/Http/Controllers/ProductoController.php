@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
+use App\Models\ProductoImagen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class ProductoController extends Controller
 {
@@ -16,7 +18,7 @@ class ProductoController extends Controller
     {
         $this->setSimplePage('Gestión de Productos', 'Administra tu inventario de productos de manera eficiente');
         
-        $query = Producto::query();
+        $query = Producto::with(['imagenes', 'imagenPrincipal']);
 
         // Filtros
         if ($request->filled('search')) {
@@ -47,7 +49,7 @@ class ProductoController extends Controller
         $productos = $query->orderBy('nombre')->get();
         $categorias = Producto::distinct()->pluck('categoria');
 
-        return view('productos.index', compact('productos', 'categorias'));
+        return view('pages.productos.index', compact('productos', 'categorias'));
     }
 
     /**
@@ -55,10 +57,12 @@ class ProductoController extends Controller
      */
     public function create()
     {
+        $this->setSimplePage('Nuevo Producto', 'Agregar un nuevo producto al inventario');
+        
         $categorias = Producto::distinct()->pluck('categoria');
         $unidades = ['Unidad', 'Kg', 'Gramos', 'Litro', 'Mililitro', 'Caja', 'Paquete', 'Metro'];
         
-        return view('productos.create', compact('categorias', 'unidades'));
+        return view('pages.productos.create', compact('categorias', 'unidades'));
     }
 
     /**
@@ -83,25 +87,35 @@ class ProductoController extends Controller
             'ubicacion' => 'nullable|string|max:255',
             'proveedor' => 'nullable|string|max:255',
             'fecha_vencimiento' => 'nullable|date',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'imagenes.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'requiere_receta' => 'boolean',
             'iva' => 'nullable|numeric|min:0|max:100'
         ]);
-
-        // Manejar la imagen
-        if ($request->hasFile('imagen')) {
-            $validated['imagen'] = $request->file('imagen')->store('productos', 'public');
-        }
 
         // Generar código interno si no se proporciona
         if (empty($validated['codigo_interno'])) {
             $validated['codigo_interno'] = 'PROD-' . strtoupper(Str::random(8));
         }
 
-        Producto::create($validated);
+        DB::beginTransaction();
+        
+        try {
+            // Crear el producto
+            $producto = Producto::create($validated);
 
-        return redirect()->route('productos.index')
-                        ->with('success', 'Producto creado exitosamente.');
+            // Manejar múltiples imágenes
+            if ($request->hasFile('imagenes')) {
+                $this->guardarImagenes($request->file('imagenes'), $producto);
+            }
+
+            DB::commit();
+
+            return redirect()->route('productos.index')
+                            ->with('success', 'Producto creado exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->withErrors(['error' => 'Error al crear el producto: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -111,7 +125,9 @@ class ProductoController extends Controller
     {
         $this->setSimplePage('Detalles del Producto', "Información completa de {$producto->nombre}");
         
-        return view('productos.show', compact('producto'));
+        $producto->load(['imagenes', 'imagenPrincipal']);
+        
+        return view('pages.productos.show', compact('producto'));
     }
 
     /**
@@ -119,10 +135,13 @@ class ProductoController extends Controller
      */
     public function edit(Producto $producto)
     {
+        $this->setSimplePage('Editar Producto', "Modificar información de {$producto->nombre}");
+        
+        $producto->load(['imagenes', 'imagenPrincipal']);
         $categorias = Producto::distinct()->pluck('categoria');
         $unidades = ['Unidad', 'Kg', 'Gramos', 'Litro', 'Mililitro', 'Caja', 'Paquete', 'Metro'];
         
-        return view('productos.edit', compact('producto', 'categorias', 'unidades'));
+        return view('pages.productos.edit', compact('producto', 'categorias', 'unidades'));
     }
 
     /**
@@ -147,25 +166,38 @@ class ProductoController extends Controller
             'ubicacion' => 'nullable|string|max:255',
             'proveedor' => 'nullable|string|max:255',
             'fecha_vencimiento' => 'nullable|date',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'imagenes.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'activo' => 'boolean',
             'requiere_receta' => 'boolean',
-            'iva' => 'nullable|numeric|min:0|max:100'
+            'iva' => 'nullable|numeric|min:0|max:100',
+            'eliminar_imagenes' => 'nullable|array',
+            'eliminar_imagenes.*' => 'integer|exists:producto_imagens,id'
         ]);
 
-        // Manejar la imagen
-        if ($request->hasFile('imagen')) {
-            // Eliminar imagen anterior
-            if ($producto->imagen) {
-                Storage::disk('public')->delete($producto->imagen);
+        DB::beginTransaction();
+        
+        try {
+            // Actualizar el producto
+            $producto->update($validated);
+
+            // Eliminar imágenes seleccionadas
+            if ($request->has('eliminar_imagenes')) {
+                $this->eliminarImagenes($request->eliminar_imagenes);
             }
-            $validated['imagen'] = $request->file('imagen')->store('productos', 'public');
+
+            // Agregar nuevas imágenes
+            if ($request->hasFile('imagenes')) {
+                $this->guardarImagenes($request->file('imagenes'), $producto);
+            }
+
+            DB::commit();
+
+            return redirect()->route('productos.index')
+                            ->with('success', 'Producto actualizado exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->withErrors(['error' => 'Error al actualizar el producto: ' . $e->getMessage()]);
         }
-
-        $producto->update($validated);
-
-        return redirect()->route('productos.index')
-                        ->with('success', 'Producto actualizado exitosamente.');
     }
 
     /**
@@ -173,15 +205,79 @@ class ProductoController extends Controller
      */
     public function destroy(Producto $producto)
     {
-        // Eliminar imagen si existe
-        if ($producto->imagen) {
-            Storage::disk('public')->delete($producto->imagen);
+        DB::beginTransaction();
+        
+        try {
+            // Eliminar todas las imágenes del producto
+            foreach ($producto->imagenes as $imagen) {
+                if (Storage::disk('public')->exists($imagen->ruta_imagen)) {
+                    Storage::disk('public')->delete($imagen->ruta_imagen);
+                }
+            }
+
+            // Eliminar imagen antigua si existe
+            if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
+                Storage::disk('public')->delete($producto->imagen);
+            }
+
+            $producto->delete();
+
+            DB::commit();
+
+            return redirect()->route('productos.index')
+                            ->with('success', 'Producto eliminado exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al eliminar el producto: ' . $e->getMessage()]);
         }
+    }
 
-        $producto->delete();
+    /**
+     * Guardar múltiples imágenes
+     */
+    private function guardarImagenes($imagenes, $producto)
+    {
+        $orden = $producto->imagenes()->max('orden') ?? 0;
+        $esPrimera = $producto->imagenes()->count() === 0;
+        
+        foreach ($imagenes as $imagen) {
+            if ($imagen && $imagen->isValid()) {
+                $orden++;
+                
+                $nombreArchivo = time() . '_' . $orden . '.' . $imagen->getClientOriginalExtension();
+                $rutaImagen = $imagen->storeAs('productos', $nombreArchivo, 'public');
+                
+                // Copiar también al directorio público para acceso directo
+                $this->syncImageToPublic($rutaImagen);
+                
+                ProductoImagen::create([
+                    'producto_id' => $producto->id,
+                    'ruta_imagen' => $rutaImagen,
+                    'nombre_original' => $imagen->getClientOriginalName(),
+                    'es_principal' => $esPrimera && $orden === 1,
+                    'orden' => $orden
+                ]);
+            }
+        }
+    }
 
-        return redirect()->route('productos.index')
-                        ->with('success', 'Producto eliminado exitosamente.');
+    /**
+     * Eliminar imágenes específicas
+     */
+    private function eliminarImagenes($imagenesIds)
+    {
+        $imagenes = ProductoImagen::whereIn('id', $imagenesIds)->get();
+        
+        foreach ($imagenes as $imagen) {
+            if (Storage::disk('public')->exists($imagen->ruta_imagen)) {
+                Storage::disk('public')->delete($imagen->ruta_imagen);
+            }
+            
+            // Eliminar también del directorio público
+            $this->removeImageFromPublic($imagen->ruta_imagen);
+            
+            $imagen->delete();
+        }
     }
 
     /**
@@ -208,7 +304,7 @@ class ProductoController extends Controller
      */
     public function datatable(Request $request)
     {
-        $query = Producto::query();
+        $query = Producto::with(['imagenes', 'imagenPrincipal']);
 
         // Búsqueda global
         if ($request->has('search') && $request->search['value']) {
@@ -248,5 +344,44 @@ class ProductoController extends Controller
             'recordsFiltered' => $recordsFiltered,
             'data' => $productos
         ]);
+    }
+
+    /**
+     * Sincronizar imagen al directorio público
+     */
+    private function syncImageToPublic($rutaImagen)
+    {
+        try {
+            $sourceFile = storage_path('app/public/' . $rutaImagen);
+            $publicFile = public_path('storage/' . $rutaImagen);
+            
+            // Crear el directorio si no existe
+            $publicDir = dirname($publicFile);
+            if (!is_dir($publicDir)) {
+                mkdir($publicDir, 0755, true);
+            }
+            
+            // Copiar el archivo
+            if (file_exists($sourceFile)) {
+                copy($sourceFile, $publicFile);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error sincronizando imagen al directorio público: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Eliminar imagen del directorio público
+     */
+    private function removeImageFromPublic($rutaImagen)
+    {
+        try {
+            $publicFile = public_path('storage/' . $rutaImagen);
+            if (file_exists($publicFile)) {
+                unlink($publicFile);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error eliminando imagen del directorio público: ' . $e->getMessage());
+        }
     }
 }
