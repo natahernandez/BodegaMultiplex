@@ -1,5 +1,93 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+/* Improved image container for better horizontal/vertical adaptation */
+.main-image-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  cursor: zoom-in;
+  min-height: 300px;
+  max-height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+.main-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.4s ease-in-out;
+  transform-origin: center center;
+}
+
+.main-image-container:hover .main-image {
+  transform: scale(1.15);
+}
+
+/* Improved thumbnails */
+.miniatura {
+  height: 80px !important;
+  width: 100% !important;
+  max-width: 120px !important;
+  object-fit: cover !important;
+  background: #f8f9fa !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  border-radius: 8px !important;
+}
+
+.miniatura:hover {
+  opacity: 0.8 !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.miniatura-modal {
+  height: 80px !important;
+  width: 80px !important;
+  object-fit: cover !important;
+  background: #f8f9fa !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  border-radius: 8px !important;
+}
+
+.miniatura-modal:hover {
+  opacity: 0.8 !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.no-image-placeholder {
+  height: 400px;
+  width: 100%;
+  background: #f8f9fa;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #dee2e6;
+}
+
+/* Modal image improvements */
+#imagenModalAmpliada {
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+</style>
+@endsection
+
 @section('content')
 <!-- Page Header -->
 <div class="page-header">
@@ -50,14 +138,13 @@
                 <!-- Imagen principal -->
                 <div class="mb-3">
                   @if($producto->imagen_principal_url)
-                    <img id="imagenPrincipal" class="img-fluid rounded border" 
-                         src="{{ $producto->imagen_principal_url }}" 
-                         alt="{{ $producto->nombre }}" 
-                         style="max-height: 300px; width: 100%; object-fit: contain; cursor: pointer; background: #f8f9fa;"
-                         data-bs-toggle="modal" data-bs-target="#imageModal">
+                    <div class="main-image-container" data-bs-toggle="modal" data-bs-target="#imageModal">
+                      <img id="imagenPrincipal" class="main-image" 
+                           src="{{ $producto->imagen_principal_url }}" 
+                           alt="{{ $producto->nombre }}">
+                    </div>
                   @else
-                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                         style="height: 300px; width: 100%;">
+                    <div class="no-image-placeholder">
                       <div class="text-center">
                         <i class="bi-image text-muted" style="font-size: 3rem;"></i>
                         <p class="text-muted mt-2">Sin imagen</p>
@@ -71,10 +158,10 @@
                 <div class="row g-2">
                   @foreach($producto->imagenes as $index => $imagen)
                     <div class="col-3">
-                      <img class="img-fluid rounded miniatura border" 
+                      <img class="miniatura border {{ $imagen->es_principal ? 'border-primary' : '' }}" 
                            src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}" 
                            alt="{{ $producto->nombre }} - Imagen {{ $index + 1 }}"
-                           style="height: 70px; width: 100%; object-fit: contain; cursor: pointer; background: #f8f9fa; {{ $imagen->es_principal ? 'border-color: #007bff !important; border-width: 2px !important;' : '' }}"
+                           style="{{ $imagen->es_principal ? 'border-width: 2px !important;' : '' }}"
                            onclick="cambiarImagenPrincipal('{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}', this)">
                     </div>
                   @endforeach
@@ -83,13 +170,13 @@
               </div>
             @elseif($producto->imagen_principal_url)
               <div class="text-center">
-                <img class="img-fluid rounded border" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}" 
-                     style="max-height: 300px; width: 100%; object-fit: cover;">
+                <div class="main-image-container">
+                  <img class="main-image" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}">
+                </div>
               </div>
             @else
               <div class="text-center">
-                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                     style="height: 300px; width: 100%;">
+                <div class="no-image-placeholder">
                   <div class="text-center">
                     <i class="bi-image text-muted" style="font-size: 3rem;"></i>
                     <p class="text-muted mt-2">Sin imagen</p>
@@ -280,74 +367,6 @@
       </div>
     </div>
     <!-- End Stock Card -->
-
-    <!-- Quick Actions Card -->
-    <div class="card mt-3">
-      <div class="card-header">
-        <h4 class="card-header-title">Acciones Rápidas</h4>
-      </div>
-      <div class="card-body">
-        <div class="list-group list-group-flush">
-          <a class="list-group-item list-group-item-action" href="#">
-            <div class="d-flex align-items-center">
-              <div class="flex-shrink-0">
-                <i class="bi-graph-up text-primary"></i>
-              </div>
-              <div class="flex-grow-1 ms-3">
-                <div class="row align-items-center">
-                  <div class="col">
-                    <span class="d-block text-dark">Ver Historial de Ventas</span>
-                    <span class="d-block text-body fs-6">Análisis de ventas del producto</span>
-                  </div>
-                  <div class="col-auto">
-                    <i class="bi-chevron-right text-body"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-
-          <a class="list-group-item list-group-item-action" href="#">
-            <div class="d-flex align-items-center">
-              <div class="flex-shrink-0">
-                <i class="bi-arrow-clockwise text-info"></i>
-              </div>
-              <div class="flex-grow-1 ms-3">
-                <div class="row align-items-center">
-                  <div class="col">
-                    <span class="d-block text-dark">Historial de Stock</span>
-                    <span class="d-block text-body fs-6">Movimientos de inventario</span>
-                  </div>
-                  <div class="col-auto">
-                    <i class="bi-chevron-right text-body"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-
-          <a class="list-group-item list-group-item-action" href="#">
-            <div class="d-flex align-items-center">
-              <div class="flex-shrink-0">
-                <i class="bi-printer text-secondary"></i>
-              </div>
-              <div class="flex-grow-1 ms-3">
-                <div class="row align-items-center">
-                  <div class="col">
-                    <span class="d-block text-dark">Imprimir Etiqueta</span>
-                    <span class="d-block text-body fs-6">Código de barras y precio</span>
-                  </div>
-                  <div class="col-auto">
-                    <i class="bi-chevron-right text-body"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </div>
-    <!-- End Quick Actions Card -->
   </div>
 </div>
 
@@ -393,17 +412,18 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body text-center">
-        <img id="imagenModalAmpliada" class="img-fluid" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}">
+        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+          <img id="imagenModalAmpliada" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}">
+        </div>
         
         @if($producto->imagenes->count() > 1)
         <div class="mt-3">
           <div class="row g-2 justify-content-center">
             @foreach($producto->imagenes as $index => $imagen)
               <div class="col-auto">
-                <img class="img-fluid rounded miniatura-modal" 
+                <img class="miniatura-modal" 
                      src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}" 
                      alt="{{ $producto->nombre }} - Imagen {{ $index + 1 }}"
-                     style="height: 80px; width: 80px; object-fit: contain; cursor: pointer; background: #f8f9fa;"
                      onclick="cambiarImagenModal('{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}')">
               </div>
             @endforeach
@@ -485,12 +505,12 @@ function cambiarImagenPrincipal(nuevaImagenUrl, elemento) {
     
     // Remover bordes de otras miniaturas y agregar al elemento actual
     document.querySelectorAll('.miniatura').forEach(img => {
-        img.style.borderColor = '';
+        img.classList.remove('border-primary');
         img.style.borderWidth = '';
     });
     
     if (elemento) {
-        elemento.style.borderColor = '#007bff';
+        elemento.classList.add('border-primary');
         elemento.style.borderWidth = '2px';
     }
 }
@@ -499,27 +519,9 @@ function cambiarImagenModal(nuevaImagenUrl) {
     document.getElementById('imagenModalAmpliada').src = nuevaImagenUrl;
 }
 
-// Agregar efecto hover a las miniaturas
+// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    const miniaturas = document.querySelectorAll('.miniatura');
-    miniaturas.forEach(miniatura => {
-        miniatura.addEventListener('mouseenter', function() {
-            this.style.opacity = '0.7';
-        });
-        miniatura.addEventListener('mouseleave', function() {
-            this.style.opacity = '1';
-        });
-    });
-
-    const miniaturasModal = document.querySelectorAll('.miniatura-modal');
-    miniaturasModal.forEach(miniatura => {
-        miniatura.addEventListener('mouseenter', function() {
-            this.style.opacity = '0.7';
-        });
-        miniatura.addEventListener('mouseleave', function() {
-            this.style.opacity = '1';
-        });
-    });
+    // Hover effects are now handled by CSS
 });
 </script>
 @endsection 

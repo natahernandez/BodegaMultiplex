@@ -87,7 +87,7 @@ class ProductoController extends Controller
             'ubicacion' => 'nullable|string|max:255',
             'proveedor' => 'nullable|string|max:255',
             'fecha_vencimiento' => 'nullable|date',
-            'imagenes.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'imagenes.*' => 'nullable|image|max:5120', // 5MB = 5120KB, all image formats allowed
             'requiere_receta' => 'boolean',
             'iva' => 'nullable|numeric|min:0|max:100'
         ]);
@@ -149,6 +149,35 @@ class ProductoController extends Controller
      */
     public function update(Request $request, Producto $producto)
     {
+        // Si es una request AJAX para cambiar solo el estado
+        if ($request->ajax() && $request->has('activo')) {
+            $producto->update(['activo' => $request->boolean('activo')]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Estado del producto actualizado correctamente',
+                'activo' => $producto->activo
+            ]);
+        }
+
+        // Si es una request AJAX para eliminar imagen individual
+        if ($request->ajax() && $request->has('eliminar_imagenes')) {
+            try {
+                $imagenesIds = $request->eliminar_imagenes;
+                $this->eliminarImagenes($imagenesIds);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Imagen eliminada correctamente'
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar la imagen: ' . $e->getMessage()
+                ], 500);
+            }
+        }
+
         $validated = $request->validate([
             'codigo_barras' => 'nullable|unique:productos,codigo_barras,' . $producto->id,
             'codigo_interno' => 'required|unique:productos,codigo_interno,' . $producto->id,
@@ -166,7 +195,7 @@ class ProductoController extends Controller
             'ubicacion' => 'nullable|string|max:255',
             'proveedor' => 'nullable|string|max:255',
             'fecha_vencimiento' => 'nullable|date',
-            'imagenes.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'imagenes.*' => 'nullable|image|max:5120', // 5MB = 5120KB, all image formats allowed
             'activo' => 'boolean',
             'requiere_receta' => 'boolean',
             'iva' => 'nullable|numeric|min:0|max:100',

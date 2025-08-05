@@ -56,15 +56,10 @@
           <h2 class="h4 mb-0 text-primary me-3">
             <i class="bi-shop me-2"></i>Bodegas Multiplex
           </h2>
-          <span class="text-muted">|</span>
-          <span class="ms-3 text-muted">Checkout Seguro</span>
         </div>
         <div class="d-flex align-items-center">
           @auth
             <span class="text-muted me-3">{{ Auth::user()->name }}</span>
-            <a href="/" class="btn btn-outline-primary btn-sm">
-              <i class="bi-arrow-left me-1"></i>Seguir Comprando
-            </a>
           @endauth
         </div>
       </div>
@@ -80,7 +75,7 @@
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ route('welcome') }}">Inicio</a></li>
           <li class="breadcrumb-item"><a href="{{ route('shop.cart') }}">Carrito</a></li>
-          <li class="breadcrumb-item active">Checkout</li>
+          <li class="breadcrumb-item active">Pagar</li>
         </ol>
       </nav>
       
@@ -160,9 +155,14 @@
 
               <!-- Teléfono -->
               <div class="col-md-6 mb-3">
+                <!-- LIMITAR A 8 DIGITOS -->
                 <label for="telefono_cliente" class="form-label">Teléfono *</label>
                 <input type="tel" class="form-control @error('telefono_cliente') is-invalid @enderror" 
                        id="telefono_cliente" name="telefono_cliente" 
+                       maxlength="8"
+                       minlength="8"
+                       pattern="[0-9]*"
+                       title="El teléfono debe tener 8 dígitos"
                        value="{{ old('telefono_cliente') }}" required>
                 @error('telefono_cliente')
                   <div class="invalid-feedback">{{ $message }}</div>
@@ -174,6 +174,10 @@
                 <label for="dpi" class="form-label">DPI *</label>
                 <input type="text" class="form-control @error('dpi') is-invalid @enderror" 
                        id="dpi" name="dpi" 
+                       maxlength="13"
+                       minlength="13"
+                       pattern="[0-9]*"
+                       title="El DPI debe tener 13 dígitos"
                        value="{{ old('dpi') }}" required 
                        placeholder="0000 00000 0000">
                 @error('dpi')
@@ -199,17 +203,6 @@
                 <textarea class="form-control @error('direccion_entrega') is-invalid @enderror" 
                           id="direccion_entrega" name="direccion_entrega" rows="3" required>{{ old('direccion_entrega') }}</textarea>
                 @error('direccion_entrega')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-              </div>
-
-              <!-- Ciudad y Departamento -->
-              <div class="col-md-6 mb-3">
-                <label for="ciudad" class="form-label">Ciudad *</label>
-                <input type="text" class="form-control @error('ciudad') is-invalid @enderror" 
-                       id="ciudad" name="ciudad" 
-                       value="{{ old('ciudad') }}" required>
-                @error('ciudad')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
               </div>
@@ -246,6 +239,18 @@
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
               </div>
+
+<!-- Ciudad y Departamento -->
+<div class="col-md-6 mb-3">
+                <label for="ciudad" class="form-label">Ciudad *</label>
+                <input type="text" class="form-control @error('ciudad') is-invalid @enderror" 
+                       id="ciudad" name="ciudad" 
+                       value="{{ old('ciudad') }}" required>
+                @error('ciudad')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+
             </div>
           </div>
         </div>
@@ -366,11 +371,6 @@
               <i class="bi-check-circle me-2"></i>
               <span id="btn-text">Procesar Orden</span>
             </button>
-            
-            <a href="{{ route('shop.cart') }}" class="btn btn-outline-secondary w-100">
-              <i class="bi-arrow-left me-2"></i>
-              Volver al Carrito
-            </a>
           </div>
         </div>
       </div>

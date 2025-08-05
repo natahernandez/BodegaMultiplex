@@ -18,23 +18,71 @@
       top: 20px;
     }
     
-    .main-image {
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
-    }
+    .main-image-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  cursor: zoom-in;
+}
+
+.main-image {
+  width: 100%;
+  height: 400px;
+  object-fit: contain;
+  background: #f8f9fa;
+  transition: transform 0.3s ease-in-out;
+  transform-origin: center center; /* Punto base */
+}
+
+
+.main-image {
+  width: 100%;
+  height: 400px;
+  object-fit: contain;
+  background: #f8f9fa;
+  transition: transform 0.4s ease-in-out;
+}
+
+/* Zoom más notorio */
+.main-image-container:hover .main-image {
+  transform: scale(1.25); /* Aumenta zoom */
+}
+
+/* Flechas */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 24px;
+  z-index: 5;
+  transition: background 0.3s;
+}
+
+.carousel-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.prev { left: 10px; }
+.next { right: 10px; }
+
+
+  .thumbnail {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .thumbnail.active {
+    border-color: #007bff;
+  }
     
-    .thumbnail {
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-    }
-    
-    .thumbnail:hover, .thumbnail.active {
-      border-color: #007bff;
-      transform: scale(1.05);
-    }
     
     .product-info {
       background: white;
@@ -110,12 +158,6 @@
         <a href="/" class="btn btn-outline-primary me-2">
           <i class="bi-arrow-left me-1"></i>Volver a la Tienda
         </a>
-        <a href="{{ route('shop.cart') }}" class="btn btn-outline-success position-relative">
-          <i class="bi-cart3 me-1"></i>Carrito
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">
-            {{ session('carrito') ? array_sum(array_column(session('carrito'), 'cantidad')) : 0 }}
-          </span>
-        </a>
       </div>
     </div>
   </header>
@@ -149,29 +191,35 @@
               <span class="badge bg-success badge-stock">Disponible</span>
             @endif
             
-            @if($producto->imagen_principal_url)
-              <img id="mainImage" src="{{ $producto->imagen_principal_url }}" 
-                   alt="{{ $producto->nombre }}" class="img-fluid main-image w-100" 
-                   style="height: 400px; object-fit: contain; background: #f8f9fa;">
-            @else
-              <div class="main-image bg-light d-flex align-items-center justify-content-center w-100" style="height: 400px;">
-                <i class="bi-image text-muted" style="font-size: 5rem;"></i>
-              </div>
-            @endif
+            <div class="main-image-container">
+    @if($producto->imagen_principal_url)
+        <img id="mainImage" 
+             src="{{ $producto->imagen_principal_url }}" 
+             alt="{{ $producto->nombre }}" 
+             class="img-fluid main-image w-100" 
+             style="height: 400px; object-fit: contain; background: #f8f9fa;">
+    @else
+        <div class="main-image bg-light d-flex align-items-center justify-content-center w-100" 
+             style="height: 400px;">
+            <i class="bi-image text-muted" style="font-size: 5rem;"></i>
+        </div>
+    @endif
+</div>
+
           </div>
           
           <!-- Thumbnails -->
           @if($imagenes->count() > 1)
             <div class="row g-2">
-              @foreach($imagenes as $imagen)
-                <div class="col-3">
-                  <img src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}" 
-                       alt="{{ $producto->nombre }}" 
-                       class="img-fluid thumbnail w-100 {{ $imagen->es_principal ? 'active' : '' }}" 
-                       style="height: 80px; object-fit: contain; background: #f8f9fa;"
-                       onclick="changeMainImage('{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}', this)">
-                </div>
-              @endforeach
+            @foreach($imagenes as $i => $imagen)
+    <div class="col-3">
+        <img src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}" 
+             alt="{{ $producto->nombre }}" 
+             class="img-fluid thumbnail w-100 {{ $imagen->es_principal ? 'active' : '' }}" 
+             data-index="{{ $i }}"
+             style="height: 80px; object-fit: contain; background: #f8f9fa;">
+    </div>
+@endforeach
             </div>
           @endif
         </div>
@@ -197,7 +245,7 @@
           <div class="price-section">
             <div class="row align-items-center">
               <div class="col">
-                <h3 class="mb-0">Q{{ number_format($producto->precio_venta, 2) }}</h3>
+                <h3 class="mb-0 text-white">Q{{ number_format($producto->precio_venta, 2) }}</h3>
                 @if($producto->precio_mayoreo && $producto->precio_mayoreo < $producto->precio_venta)
                   <small class="opacity-75">Precio mayoreo: Q{{ number_format($producto->precio_mayoreo, 2) }}</small>
                 @endif
@@ -362,96 +410,75 @@
   <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
 
   <script>
-    // Configuración CSRF
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+$(document).ready(function () {
+    const images = @json($imagenes->pluck('ruta_imagen')); 
+    let currentIndex = 0;
+    let interval;
+    const mainImage = $('#mainImage');
 
-    // Cambiar imagen principal
-    function changeMainImage(imageSrc, thumbnail) {
-        $('#mainImage').attr('src', imageSrc);
-        $('.thumbnail').removeClass('active');
-        $(thumbnail).addClass('active');
-    }
+    // Cambiar imagen manualmente
+    function changeImage(index) {
+        if (index < 0) index = images.length - 1;
+        if (index >= images.length) index = 0;
 
-    // Cambiar cantidad
-    function changeQuantity(delta) {
-        const quantityInput = $('#quantity');
-        let currentValue = parseInt(quantityInput.val());
-        let newValue = currentValue + delta;
-        
-        const min = parseInt(quantityInput.attr('min'));
-        const max = parseInt(quantityInput.attr('max'));
-        
-        if (newValue >= min && newValue <= max) {
-            quantityInput.val(newValue);
-        }
-    }
-
-    // Agregar al carrito
-    function addToCart() {
-        const quantity = parseInt($('#quantity').val());
-        const button = $('.btn-add-cart');
-        const originalText = button.html();
-        
-        // Cambiar botón a estado de carga
-        button.html('<i class="spinner-border spinner-border-sm me-2"></i>Agregando...').prop('disabled', true);
-
-        $.ajax({
-            url: '{{ route("shop.cart.add") }}',
-            method: 'POST',
-            data: {
-                producto_id: {{ $producto->id }},
-                cantidad: quantity
-            },
-            success: function(response) {
-                // Actualizar contador del carrito
-                $('#cartCount').text(response.totalItems);
-                
-                // Mostrar mensaje de éxito
-                showAlert('success', `{{ $producto->nombre }} agregado al carrito exitosamente`);
-                
-                // Restaurar botón
-                button.html(originalText).prop('disabled', false);
-            },
-            error: function(xhr) {
-                const response = xhr.responseJSON;
-                showAlert('danger', response.error || 'Error al agregar al carrito');
-                
-                // Restaurar botón
-                button.html(originalText).prop('disabled', false);
-            }
+        currentIndex = index;
+        mainImage.fadeOut(300, function () {
+            $(this).attr('src', `/storage/${images[currentIndex]}`).fadeIn(300);
         });
+
+        $('.thumbnail').removeClass('active')
+            .filter(`[data-index="${currentIndex}"]`)
+            .addClass('active');
     }
 
-    // Función para mostrar alertas
-    function showAlert(type, message) {
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
-                 style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
-                <i class="bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        
-        $('body').append(alertHtml);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            $('.alert').fadeOut();
+    // Rotación automática
+    function autoSlide() {
+        clearInterval(interval);
+        interval = setInterval(() => {
+            changeImage((currentIndex + 1) % images.length);
         }, 5000);
     }
 
-    // Actualizar contador del carrito al cargar la página
-    $(document).ready(function() {
-        @if(session('carrito'))
-            const cartCount = {{ array_sum(array_column(session('carrito'), 'cantidad')) }};
-            $('#cartCount').text(cartCount);
-        @endif
+    // Pausar y reanudar al pasar el mouse
+    $('.main-image-container').hover(
+        () => clearInterval(interval),
+        () => autoSlide()
+    );
+
+    // Click manual en miniaturas
+    $('.thumbnail').on('click', function () {
+        const index = $(this).data('index'); // Usamos data-index
+        changeImage(index);
+        autoSlide(); // Reinicia el temporizador
     });
-  </script>
+
+    // Iniciar carrusel si hay más de una imagen
+    if (images.length > 1) autoSlide();
+
+    // Zoom interactivo con desplazamiento
+    const container = $('.main-image-container');
+    let zoomLevel = 2;
+
+    container.on('mousemove', function (e) {
+        const offset = $(this).offset();
+        const x = ((e.pageX - offset.left) / $(this).width()) * 100;
+        const y = ((e.pageY - offset.top) / $(this).height()) * 100;
+
+        mainImage.css({
+            transform: `scale(${zoomLevel})`,
+            'transform-origin': `${x}% ${y}%`
+        });
+    });
+
+    container.on('mouseleave', function () {
+        mainImage.css({
+            transform: 'scale(1)',
+            'transform-origin': 'center center'
+        });
+    });
+});
+</script>
+
+  
 </body>
 </html> 

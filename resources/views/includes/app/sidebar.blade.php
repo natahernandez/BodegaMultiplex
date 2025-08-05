@@ -3,7 +3,6 @@
   <div class="navbar-vertical-container">
     <div class="navbar-vertical-footer-offset">
       @include('includes.app.menu')
-      @include('includes.app.sidebar-footer')
     </div>
   </div>
 </aside> 

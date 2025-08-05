@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
   <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/css/theme.min.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
   <style>
     body {
@@ -27,25 +28,28 @@
 </head>
 
 <body>
-  <!-- Header -->
-  <header class="success-header py-3">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-          <h2 class="h4 mb-0 text-primary me-3">
-            <i class="bi-shop me-2"></i>Bodegas Multiplex
-          </h2>
-          <span class="text-muted">|</span>
-          <span class="ms-3 text-success">Orden Completada</span>
-        </div>
-        <div class="d-flex align-items-center">
-          <a href="/" class="btn btn-outline-primary btn-sm">
-            <i class="bi-house me-1"></i>Ir al Inicio
-          </a>
-        </div>
+<header class="success-header py-3">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center">
+      
+      <!-- Logo a la izquierda -->
+      <div class="d-flex align-items-center">
+        <h2 class="h4 mb-0 text-primary me-3">
+          <i class="bi-shop me-2"></i>Bodegas Multiplex
+        </h2>
       </div>
+      
+      <!-- Botón a la derecha -->
+      <div class="d-flex align-items-center">
+        <a href="/" class="btn btn-outline-primary btn-sm">
+          <i class="bi-house me-1"></i>Ir al Inicio
+        </a>
+      </div>
+      
     </div>
-  </header>
+  </div>
+</header>
+
 
   <!-- Main Content -->
 <div class="container">
@@ -63,8 +67,8 @@
       <!-- Order Details -->
       <div class="card mb-4">
         <div class="card-header bg-success text-white">
-          <h5 class="card-title mb-0">
-            <i class="bi-receipt me-2"></i>
+          <h5 class="card-title mb-0 text-white">
+            <i class="bi-receipt me-2 text-white"></i>
             Detalles de la Orden
           </h5>
         </div>
@@ -169,9 +173,9 @@
 
       <!-- Next Steps -->
       <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-          <h5 class="card-title mb-0">
-            <i class="bi-info-circle me-2"></i>
+        <div class="card-header bg-success text-white">
+          <h5 class="card-title mb-0 text-white">
+            <i class="bi-info-circle me-2 text-white"></i>
             ¿Qué sigue?
           </h5>
         </div>
@@ -190,12 +194,12 @@
           
           <ul class="list-unstyled">
             <li class="mb-2">
-              <i class="bi-1-circle-fill text-primary me-2"></i>
+              <i class="bi bi-1-circle-fill text-primary me-2"></i>
               Procesaremos tu orden en las próximas 24 horas
             </li>
             <li class="mb-2">
               <i class="bi-2-circle-fill text-primary me-2"></i>
-              Te enviaremos un email con la información de envío
+              Te estaremos contactando para coordinar la entrega
             </li>
             <li class="mb-2">
               <i class="bi-3-circle-fill text-primary me-2"></i>
@@ -203,33 +207,6 @@
             </li>
           </ul>
         </div>
-      </div>
-
-      <!-- Notes -->
-      @if($order->notas_cliente)
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5 class="card-title mb-0">
-              <i class="bi-chat-text me-2"></i>
-              Notas del Cliente
-            </h5>
-          </div>
-          <div class="card-body">
-            <p class="mb-0">{{ $order->notas_cliente }}</p>
-          </div>
-        </div>
-      @endif
-
-      <!-- Actions -->
-      <div class="text-center">
-        <a href="{{ route('welcome') }}" class="btn btn-primary btn-lg me-3">
-          <i class="bi-house me-2"></i>
-          Volver al Inicio
-        </a>
-        <a href="{{ route('shop.cart') }}" class="btn btn-outline-primary btn-lg">
-          <i class="bi-cart me-2"></i>
-          Seguir Comprando
-        </a>
       </div>
     </div>
   </div>

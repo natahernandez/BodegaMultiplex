@@ -1,10 +1,161 @@
 @extends('layouts.app')
 
 @section('styles')
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css') }}">
+<!-- DataTables CSS via CDN -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+
+<style>
+/* Ensure table doesn't wrap and stays in one row - IMPROVED */
+#datatable {
+    table-layout: fixed !important;
+    width: 100% !important;
+    font-size: 0.8rem;
+    border-collapse: collapse !important;
+}
+
+#datatable th, #datatable td {
+    white-space: nowrap !important;
+    overflow: visible !important; /* Changed from hidden to visible for dropdowns */
+    text-overflow: ellipsis !important;
+    padding: 0.4rem 0.2rem !important;
+    vertical-align: middle !important;
+    border: none !important;
+    position: relative !important; /* Added for dropdown positioning */
+}
+
+/* Make action buttons more compact */
+#datatable .btn-sm {
+    padding: 0.2rem 0.35rem !important;
+    font-size: 0.7rem !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+}
+
+/* Compact button group */
+#datatable .btn-group {
+    display: inline-flex !important;
+    gap: 0 !important;
+    position: relative !important; /* Added for dropdown positioning */
+}
+
+/* Dropdown menu fixes */
+#datatable .dropdown-menu {
+    position: absolute !important;
+    z-index: 10000 !important;
+    min-width: 140px !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    background: white !important;
+    display: none !important;
+}
+
+/* Ensure dropdown is visible when shown */
+#datatable .dropdown-menu.show {
+    display: block !important;
+}
+
+/* Estado badge more compact */
+#datatable .badge {
+    font-size: 0.65rem !important;
+    padding: 0.2rem 0.4rem !important;
+    white-space: nowrap !important;
+}
+
+/* Avatar smaller */
+#datatable .avatar-xs {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    font-size: 0.6rem !important;
+}
+
+/* Product name and description more compact */
+#datatable h6 {
+    font-size: 0.8rem !important;
+    margin-bottom: 0 !important;
+    line-height: 1.2 !important;
+}
+
+#datatable small {
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+}
+
+/* Fixed column widths that work better */
+#datatable th:nth-child(1), #datatable td:nth-child(1) { width: 40px !important; min-width: 40px !important; } /* Checkbox */
+#datatable th:nth-child(2), #datatable td:nth-child(2) { width: 200px !important; min-width: 180px !important; } /* Producto */
+#datatable th:nth-child(3), #datatable td:nth-child(3) { width: 90px !important; min-width: 80px !important; } /* Código */
+#datatable th:nth-child(4), #datatable td:nth-child(4) { width: 80px !important; min-width: 70px !important; } /* Marca */
+#datatable th:nth-child(5), #datatable td:nth-child(5) { width: 90px !important; min-width: 80px !important; } /* Categoría */
+#datatable th:nth-child(6), #datatable td:nth-child(6) { width: 90px !important; min-width: 80px !important; } /* Precio */
+#datatable th:nth-child(7), #datatable td:nth-child(7) { width: 100px !important; min-width: 90px !important; } /* Stock */
+#datatable th:nth-child(8), #datatable td:nth-child(8) { width: 70px !important; min-width: 65px !important; } /* Estado */
+#datatable th:nth-child(9), #datatable td:nth-child(9) { 
+    width: 110px !important; 
+    min-width: 105px !important; 
+    overflow: visible !important; /* Special case for actions column */
+} /* Acciones */
+
+/* Container adjustments */
+.table-responsive {
+    overflow-x: auto !important;
+    overflow-y: visible !important; /* Allow dropdowns to show */
+}
+
+/* DataTables wrapper adjustments */
+.dataTables_wrapper {
+    overflow: visible !important;
+    padding-bottom: 60px !important; /* Extra space for dropdowns */
+}
+
+/* Card adjustments to prevent clipping */
+.card {
+    overflow: visible !important;
+}
+
+.card-body {
+    overflow: visible !important;
+}
+
+/* Force minimum table width */
+#datatable {
+    min-width: 950px !important;
+}
+
+/* Responsive font scaling */
+@media (max-width: 1400px) {
+    #datatable {
+        font-size: 0.75rem !important;
+        min-width: 900px !important;
+    }
+    
+    #datatable .btn-sm {
+        padding: 0.15rem 0.3rem !important;
+        font-size: 0.65rem !important;
+    }
+    
+    #datatable .badge {
+        font-size: 0.6rem !important;
+        padding: 0.15rem 0.3rem !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    #datatable {
+        font-size: 0.7rem !important;
+        min-width: 850px !important;
+    }
+    
+    #datatable th, #datatable td {
+        padding: 0.3rem 0.15rem !important;
+    }
+    
+    #datatable .btn-sm {
+        padding: 0.1rem 0.25rem !important;
+        font-size: 0.6rem !important;
+    }
+}
+</style>
 @endsection
 
 @section('content')
@@ -21,17 +172,9 @@
 
       <h1 class="page-header-title">Gestión de Productos</h1>
       <p class="page-header-text">Administra tu inventario de productos de manera eficiente</p>
-                    </div>
-    
-    <div class="col-sm-auto">
-                  <div class="btn-group" role="group">
-        <a class="btn btn-primary" href="{{ route('productos.create') }}">
-          <i class="bi-plus me-1"></i> Nuevo Producto
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  </div>
+    </div>
+  </div>
+</div>
 <!-- End Page Header -->
 
 <!-- Stats Cards -->
@@ -195,9 +338,9 @@
 
   <!-- Table -->
   <div class="table-responsive datatable-custom">
-    <table id="datatable" class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table" data-hs-datatables-options='{
+    <table id="datatable" class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table table-sm" data-hs-datatables-options='{
                     "columnDefs": [{
-                       "targets": [0, 7, 8],
+                       "targets": [0, 8],
                        "orderable": false
                      }],
                     "order": [],
@@ -207,7 +350,8 @@
                     "search": "#datatableSearch",
                     "entries": "#datatableEntries",
                     "pageLength": 15,
-                    "isResponsive": false,
+                    "scrollX": true,
+                    "autoWidth": false,
                     "isShowPaging": false,
                     "pagination": "datatablePagination"
                   }'>
@@ -243,19 +387,19 @@
             <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
                 @if($producto->imagen_principal_url)
-                  <div class="avatar avatar-sm">
+                  <div class="avatar avatar-xs">
                     <img class="avatar-img" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}" style="object-fit: contain; background: #f8f9fa;">
                     </div>
                 @else
-                  <div class="avatar avatar-sm avatar-soft-primary">
+                  <div class="avatar avatar-xs avatar-soft-primary">
                     <span class="avatar-initials">{{ strtoupper(substr($producto->nombre, 0, 2)) }}</span>
                     </div>
                 @endif
                     </div>
-                    <div class="flex-grow-1 ms-3">
-                <h5 class="text-inherit mb-0">{{ $producto->nombre }}</h5>
+                    <div class="flex-grow-1 ms-2">
+                <h6 class="text-inherit mb-0 small">{{ Str::limit($producto->nombre, 20) }}</h6>
                 @if($producto->descripcion)
-                  <p class="fs-6 text-body mb-0">{{ Str::limit($producto->descripcion, 50) }}</p>
+                  <small class="text-body">{{ Str::limit($producto->descripcion, 25) }}</small>
                 @endif
                     </div>
                   </div>
@@ -279,12 +423,7 @@
             <span class="badge bg-soft-primary text-primary">{{ $producto->categoria }}</span>
                 </td>
           <td>
-            <div>
               <span class="text-dark fw-semibold">Q{{ number_format($producto->precio_venta, 2) }}</span>
-              @if($producto->precio_mayoreo && $producto->precio_mayoreo < $producto->precio_venta)
-                <span class="d-block fs-6 text-body">Mayor: Q{{ number_format($producto->precio_mayoreo, 2) }}</span>
-              @endif
-                  </div>
                 </td>
                 <td>
             <div class="d-flex align-items-center">
@@ -303,36 +442,32 @@
             </span>
                 </td>
                 <td>
-                  <div class="btn-group" role="group">
-              <a class="btn btn-white btn-sm" href="{{ route('productos.show', $producto) }}" data-bs-toggle="tooltip" title="Ver detalles">
+            <div class="btn-group btn-group-sm" role="group">
+              <a class="btn btn-white btn-sm" href="{{ route('productos.show', $producto) }}" data-bs-toggle="tooltip" title="Ver">
                 <i class="bi-eye"></i>
                         </a>
               <a class="btn btn-white btn-sm" href="{{ route('productos.edit', $producto) }}" data-bs-toggle="tooltip" title="Editar">
                 <i class="bi-pencil"></i>
                     </a>
-
-              <!-- Dropdown -->
-                    <div class="btn-group">
-                <button type="button" class="btn btn-white btn-icon btn-sm dropdown-toggle dropdown-toggle-empty" id="productsEditDropdown{{ $producto->id }}" data-bs-toggle="dropdown" aria-expanded="false"></button>
-
-                <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="productsEditDropdown{{ $producto->id }}">
-                  <a class="dropdown-item" href="#" onclick="updateStock({{ $producto->id }})">
-                    <i class="bi-arrow-up-circle dropdown-item-icon"></i> Actualizar Stock
-                        </a>
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-white btn-sm dropdown-toggle dropdown-toggle-empty" 
+                        id="productsEditDropdown{{ $producto->id }}" 
+                        data-bs-toggle="dropdown" 
+                        data-bs-boundary="viewport"
+                        data-bs-auto-close="true"
+                        aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="productsEditDropdown{{ $producto->id }}">
                   @if($producto->activo)
-                    <a class="dropdown-item" href="#" onclick="toggleStatus({{ $producto->id }}, false)">
+                    <li><a class="dropdown-item" href="#" onclick="toggleStatus({{ $producto->id }}, false)">
                       <i class="bi-eye-slash dropdown-item-icon"></i> Desactivar
-                        </a>
+                    </a></li>
                   @else
-                    <a class="dropdown-item" href="#" onclick="toggleStatus({{ $producto->id }}, true)">
+                    <li><a class="dropdown-item" href="#" onclick="toggleStatus({{ $producto->id }}, true)">
                       <i class="bi-eye dropdown-item-icon"></i> Activar
-                        </a>
+                    </a></li>
                   @endif
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item text-danger" href="#" onclick="deleteProduct({{ $producto->id }}, '{{ $producto->nombre }}')">
-                    <i class="bi-trash dropdown-item-icon"></i> Eliminar
-                        </a>
-                      </div>
+                </ul>
                     </div>
                   </div>
                 </td>
@@ -401,50 +536,21 @@
       </div>
 <!-- End Card -->
 
-<!-- Modal para actualizar stock -->
-<div class="modal fade" id="updateStockModal" tabindex="-1" aria-labelledby="updateStockModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="updateStockModalLabel">Actualizar Stock</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="updateStockForm">
-          <input type="hidden" id="producto_id">
-          <div class="mb-3">
-            <label for="stock_actual" class="form-label">Nuevo Stock</label>
-            <input type="number" class="form-control" id="stock_actual" min="0" required>
-          </div>
-          <div class="mb-3">
-            <label for="observaciones" class="form-label">Observaciones (Opcional)</label>
-            <textarea class="form-control" id="observaciones" rows="3" placeholder="Motivo del cambio de stock..."></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-white" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="saveStock()">Actualizar Stock</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 @endsection
 
 @section('scripts')
-<!-- DataTables JS -->
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js') }}"></script>
+<!-- DataTables JS via CDN -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-// Initialize DataTable
 $(document).ready(function() {
-    $('#datatable').DataTable({
-        responsive: true,
+    // Initialize DataTable
+    const table = $('#datatable').DataTable({
+        responsive: false,
         pageLength: 15,
+        scrollX: true,
+        autoWidth: false,
         language: {
             search: "",
             searchPlaceholder: "Buscar productos...",
@@ -459,68 +565,126 @@ $(document).ready(function() {
                 previous: "Anterior"
             },
             emptyTable: "No hay productos disponibles"
+        },
+        columnDefs: [{
+            targets: [0, 8], // checkbox and actions columns
+            orderable: false
+        }],
+        drawCallback: function() {
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Remove any existing dropdown initialization
+            $('[data-bs-toggle="dropdown"]').removeClass('dropdown-initialized');
+            
+            // Force re-initialization of all dropdowns
+            setTimeout(function() {
+                $('[data-bs-toggle="dropdown"]').each(function() {
+                    try {
+                        // Destroy existing dropdown instance if any
+                        const existingDropdown = bootstrap.Dropdown.getInstance(this);
+                        if (existingDropdown) {
+                            existingDropdown.dispose();
+                        }
+                        // Create new dropdown instance
+                        new bootstrap.Dropdown(this);
+                    } catch (e) {
+                        console.log('Dropdown initialization:', e);
+                    }
+                });
+            }, 100);
         }
+    });
+
+    // Custom search input
+    $('#datatableSearch').on('keyup', function() {
+        table.search(this.value).draw();
+    });
+
+    // Page length change
+    $('#datatableEntries').on('change', function() {
+        table.page.len($(this).val()).draw();
+    });
+
+    // Category filter
+    $('#filterCategoria').on('change', function() {
+        const value = $(this).val();
+        if (value) {
+            table.column(4).search('^' + value + '$', true, false).draw(); // Category column (index 4)
+        } else {
+            table.column(4).search('').draw();
+        }
+    });
+
+    // Stock status filter
+    $('#filterStock').on('change', function() {
+        const value = $(this).val();
+        if (value) {
+            let searchTerm = '';
+            switch(value) {
+                case 'sin_stock':
+                    searchTerm = '0 ';
+                    break;
+                case 'stock_bajo':
+                    searchTerm = 'exclamation-triangle';
+                    break;
+                case 'stock_normal':
+                    searchTerm = '^(?!.*exclamation-triangle)(?!.*0 ).*';
+                    break;
+            }
+            table.column(6).search(searchTerm, true, false).draw(); // Stock column (index 6)
+        } else {
+            table.column(6).search('').draw();
+        }
+    });
+
+    // Filter form submit
+    $('#filterForm').on('submit', function(e) {
+        e.preventDefault();
+        // Filters are already applied via change events above
+    });
+
+    // Clear filters
+    $('#clearFilters').on('click', function() {
+        $('#filterForm')[0].reset();
+        table.columns().search('').draw();
+    });
+
+    // Update pagination info
+    table.on('draw', function() {
+        const info = table.page.info();
+        $('#datatableWithPaginationInfoTotalQty').text(info.recordsDisplay);
+    });
+
+    // Handle dropdown clicks specifically for DataTables
+    $(document).on('click', '[data-bs-toggle="dropdown"]', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close all other dropdowns first
+        $('.dropdown-menu.show').removeClass('show');
+        
+        // Toggle this dropdown
+        const dropdownMenu = $(this).next('.dropdown-menu');
+        dropdownMenu.toggleClass('show');
+        
+        // Close dropdown when clicking outside
+        $(document).on('click.dropdown-close', function(event) {
+            if (!$(event.target).closest('.btn-group').length) {
+                $('.dropdown-menu.show').removeClass('show');
+                $(document).off('click.dropdown-close');
+            }
+        });
+    });
+
+    // Handle clicks on dropdown items
+    $(document).on('click', '.dropdown-item', function(e) {
+        // Allow the click to proceed, then close the dropdown
+        setTimeout(function() {
+            $('.dropdown-menu.show').removeClass('show');
+        }, 100);
     });
 });
-
-// Update stock function
-function updateStock(productId) {
-    $('#producto_id').val(productId);
-    $('#updateStockModal').modal('show');
-}
-
-function saveStock() {
-    const productId = $('#producto_id').val();
-    const stock = $('#stock_actual').val();
-    const observaciones = $('#observaciones').val();
-    
-    if (!stock) {
-        alert('Por favor ingrese el nuevo stock');
-        return;
-    }
-    
-    // Make AJAX call to update stock
-    $.ajax({
-        url: `/productos/${productId}/stock`,
-        method: 'PUT',
-        data: {
-            stock_actual: stock,
-            observaciones: observaciones,
-            _token: '{{ csrf_token() }}'
-        },
-        success: function(response) {
-            $('#updateStockModal').modal('hide');
-            location.reload(); // Reload the page to show updated data
-        },
-        error: function() {
-            alert('Error al actualizar el stock');
-        }
-    });
-}
-
-// Delete product function
-function deleteProduct(productId, productName) {
-    if (confirm(`¿Está seguro de eliminar el producto "${productName}"?`)) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/productos/${productId}`;
-        
-        const methodField = document.createElement('input');
-        methodField.type = 'hidden';
-        methodField.name = '_method';
-        methodField.value = 'DELETE';
-        
-        const tokenField = document.createElement('input');
-        tokenField.type = 'hidden';
-        tokenField.name = '_token';
-        tokenField.value = '{{ csrf_token() }}';
-        
-        form.appendChild(methodField);
-        form.appendChild(tokenField);
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
 
 // Toggle status function
 function toggleStatus(productId, newStatus) {
@@ -542,17 +706,5 @@ function toggleStatus(productId, newStatus) {
         });
     }
 }
-
-// Filter functionality
-$('#filterForm').on('submit', function(e) {
-    e.preventDefault();
-    // Apply filters (you can implement this with DataTables API or server-side filtering)
-    location.reload();
-});
-
-$('#clearFilters').on('click', function() {
-    $('#filterForm')[0].reset();
-    location.reload();
-});
 </script>
 @endsection

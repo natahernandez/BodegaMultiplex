@@ -51,6 +51,7 @@ Route::name('shop.')->group(function () {
     Route::put('/carrito/actualizar', [ShopController::class, 'updateCart'])->name('cart.update');
     Route::delete('/carrito/eliminar', [ShopController::class, 'removeFromCart'])->name('cart.remove');
     Route::get('/api/search', [ShopController::class, 'searchApi'])->name('search.api');
+    Route::post('/carrito/vaciar', [ShopController::class, 'clearCart'])->name('cart.clear');
 });
 
 // Rutas del shop que requieren autenticación

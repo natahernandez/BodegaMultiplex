@@ -13,144 +13,152 @@
   <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/css/theme.min.css') }}">
 
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f8f9fa;
-    }
-    
-    .cart-header {
-      background: white;
-      border-bottom: 1px solid #e9ecef;
-      margin-bottom: 2rem;
-    }
-    
-    .cart-content {
-      background: white;
-      border-radius: 0.5rem;
-      border: 1px solid #e9ecef;
-    }
-    
-    .cart-item-row {
-      border-bottom: 1px solid #e9ecef;
-    }
-    
-    .cart-item-row:last-child {
-      border-bottom: none;
-    }
-    
-    .product-image {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 0.375rem;
-    }
-    
-    .product-placeholder {
-      width: 60px;
-      height: 60px;
-      background-color: #f8f9fa;
-      border-radius: 0.375rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .quantity-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .quantity-btn {
-      width: 32px;
-      height: 32px;
-      border: 1px solid #dee2e6;
-      background: white;
-      border-radius: 0.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    
-    .quantity-btn:hover {
-      background-color: #f8f9fa;
-      border-color: #adb5bd;
-    }
-    
-    .quantity-input {
-      width: 60px;
-      text-align: center;
-      border: 1px solid #dee2e6;
-      border-radius: 0.25rem;
-      padding: 0.375rem 0.5rem;
-    }
-    
-    .cart-summary {
-      background: white;
-      border-radius: 0.5rem;
-      border: 1px solid #e9ecef;
-      position: sticky;
-      top: 2rem;
-    }
-    
-    .btn-checkout {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      border: none;
-      padding: 0.75rem 2rem;
-      font-weight: 600;
-      border-radius: 0.5rem;
-      transition: all 0.15s ease;
-    }
-    
-    .btn-checkout:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    }
-    
-    .empty-cart {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: #6b7280;
-      background: white;
-      border-radius: 0.5rem;
-      border: 1px solid #e9ecef;
-    }
-    
-    .empty-cart-icon {
-      font-size: 4rem;
-      color: #d1d5db;
-      margin-bottom: 1rem;
-    }
-  </style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+  }
+
+  .cart-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 2rem;
+  }
+
+  /* Card general */
+  .cart-content,
+  .cart-summary {
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .cart-content .card-header,
+  .cart-summary .card-header {
+    background: #f9fafb;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+  }
+
+  .cart-content .card-body,
+  .cart-summary .card-body {
+    padding: 1.5rem;
+  }
+
+  .cart-item-row {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .cart-item-row:last-child {
+    border-bottom: none;
+  }
+
+  .product-image {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+  }
+
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .quantity-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .quantity-btn:hover {
+    background-color: #f1f5f9;
+    border-color: #adb5bd;
+  }
+
+  .quantity-input {
+    width: 60px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .btn-checkout {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease;
+  }
+
+  .btn-checkout:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  }
+
+  .empty-cart {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6b7280;
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e9ecef;
+  }
+
+  .empty-cart-icon {
+    font-size: 4rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+
+  .product-image, 
+.product-placeholder {
+    width: 80px;         /* Ancho fijo */
+    height: 80px;        /* Alto fijo */
+    object-fit: contain; /* Evita deformación */
+    background: #f8f9fa; /* Fondo consistente */
+    border-radius: 8px;  /* Bordes redondeados */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.product-placeholder i {
+    font-size: 1.8rem;
+}
+
+</style>
+
 </head>
 
 <body>
-  <!-- Navbar -->
-  <header class="cart-header">
-    <div class="container py-3">
-      <div class="row align-items-center">
-        <div class="col">
-          <a class="navbar-brand" href="/">
-            <h3 class="mb-0 text-primary fw-bold">Bodegas <span class="text-warning">Multiplex</span></h3>
+<header class="cart-header">
+  <div class="container py-3">
+    <div class="row align-items-center">
+      <div class="col">
+        <h3 class="mb-0 text-primary align-items-right">
+          <a class="navbar-brand p-0 m-0" href="/" style="display:inline-block;">
+            Bodegas <span class="text-warning">Multiplex</span>
           </a>
-        </div>
-        <div class="col-auto">
-          <div class="d-flex gap-2">
-            <a href="/" class="btn btn-outline-secondary">
-              <i class="bi-arrow-left me-1"></i>Seguir Comprando
-            </a>
-            @auth
-              <a href="{{ route('home') }}" class="btn btn-primary">
-                <i class="bi-speedometer2 me-1"></i>Dashboard
-              </a>
-            @endauth
-          </div>
-        </div>
+        </h3>
       </div>
     </div>
-  </header>
+  </div>
+</header>
+
 
   <!-- Content -->
   <div class="container py-4">
@@ -286,9 +294,9 @@
             </a>
             
             <div class="d-flex gap-2">
-              <button type="button" class="btn btn-outline-danger" onclick="clearCart()">
-                <i class="bi-trash me-1"></i>Vaciar carrito
-              </button>
+            <button type="button" class="btn btn-outline-danger" onclick="clearCart()">
+              <i class="bi-trash me-1"></i>Vaciar carrito
+            </button>
               @auth
                 <a href="{{ route('shop.checkout') }}" class="btn btn-checkout text-white">
                   <i class="bi-credit-card me-1"></i>Proceder al pago
@@ -349,20 +357,6 @@
                 </div>
               @endif
               
-              <div class="d-grid gap-2">
-                @auth
-                  <a href="{{ route('shop.checkout') }}" class="btn btn-checkout text-white">
-                    <i class="bi-credit-card me-1"></i>Ir al checkout
-                  </a>
-                @else
-                  <a href="{{ route('login') }}" class="btn btn-checkout text-white">
-                    <i class="bi-person-lock me-1"></i>Iniciar sesión para continuar
-                  </a>
-                @endauth
-                <a href="/" class="btn btn-outline-secondary">
-                  <i class="bi-arrow-left me-1"></i>Seguir comprando
-                </a>
-              </div>
               
               <!-- Security Badges -->
               <div class="row text-center mt-4 pt-3 border-top">
@@ -456,15 +450,24 @@
         });
     }
 
-    // Vaciar carrito
     function clearCart() {
-        if (!confirm('¿Estás seguro de que quieres vaciar todo el carrito?')) {
-            return;
-        }
+    if (!confirm("¿Estás seguro de vaciar todo el carrito?")) return;
 
-        // Implementar lógica para vaciar todo el carrito
-        showAlert('info', 'Funcionalidad en desarrollo');
-    }
+    $.ajax({
+        url: "{{ route('shop.cart.clear') }}", // Ruta que crearemos
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}"
+        },
+        success: function(response) {
+            // Recargar la página o actualizar el DOM
+            location.reload();
+        },
+        error: function() {
+            alert("Error al vaciar el carrito. Intenta de nuevo.");
+        }
+    });
+}
 
     // Función para mostrar alertas
     function showAlert(type, message) {

@@ -381,7 +381,7 @@
                    id="imagenes" name="imagenes[]" accept="image/*" multiple>
             <div class="form-text">
               Puede seleccionar múltiples imágenes. La primera será la imagen principal.
-              <br>Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 2MB por imagen.
+              <br>Formatos aceptados: Todos los formatos de imagen (JPG, PNG, GIF, WebP, BMP, SVG, etc.). Tamaño máximo: 5MB por imagen.
             </div>
             @error('imagenes.*')
               <div class="invalid-feedback">{{ $message }}</div>

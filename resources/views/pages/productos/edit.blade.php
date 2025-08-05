@@ -393,7 +393,7 @@
         <div class="card-body">
           <div class="row g-2">
             @foreach($producto->imagenes as $imagen)
-            <div class="col-6">
+            <div class="col-6" id="imagen-{{ $imagen->id }}">
               <div class="card">
                 <img src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}" class="card-img-top" style="height: 120px; object-fit: contain; background: #f8f9fa;" alt="{{ $producto->nombre }}">
                 <div class="card-body p-2">
@@ -405,14 +405,11 @@
                         Imagen {{ $imagen->orden }}
                       @endif
                     </small>
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" 
-                             name="eliminar_imagenes[]" value="{{ $imagen->id }}" 
-                             id="eliminar_{{ $imagen->id }}">
-                      <label class="form-check-label text-danger" for="eliminar_{{ $imagen->id }}" title="Eliminar imagen">
-                        <i class="bi-trash"></i>
-                      </label>
-                    </div>
+                    <button type="button" class="btn btn-sm btn-danger" 
+                            onclick="eliminarImagen({{ $imagen->id }})" 
+                            title="Eliminar imagen">
+                      <i class="bi-trash"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -420,7 +417,7 @@
             @endforeach
           </div>
           <div class="form-text mt-2">
-            <i class="bi-info-circle"></i> Marque las imágenes que desea eliminar
+            <i class="bi-info-circle"></i> Haga clic en el botón rojo para eliminar una imagen
           </div>
         </div>
       </div>
@@ -438,7 +435,7 @@
                    id="imagenes" name="imagenes[]" accept="image/*" multiple>
             <div class="form-text">
               Puede seleccionar múltiples imágenes nuevas.
-              <br>Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 2MB por imagen.
+              <br>Formatos aceptados: Todos los formatos de imagen (JPG, PNG, GIF, WebP, BMP, SVG, etc.). Tamaño máximo: 5MB por imagen.
             </div>
             @error('imagenes.*')
               <div class="invalid-feedback">{{ $message }}</div>
@@ -564,17 +561,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Confirmación para eliminar imágenes
-    const checkboxesEliminar = document.querySelectorAll('input[name="eliminar_imagenes[]"]');
-    checkboxesEliminar.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                const confirmacion = confirm('¿Está seguro de que desea eliminar esta imagen? Esta acción no se puede deshacer.');
-                if (!confirmacion) {
-                    this.checked = false;
-                }
-            }
-        });
-    });
+    // The checkboxesEliminar.forEach(checkbox => { ... }) block is removed as per the new_code.
+    // The direct button click handler is added.
 });
+
+function eliminarImagen(imagenId) {
+    const confirmacion = confirm('¿Está seguro de que desea eliminar esta imagen? Esta acción no se puede deshacer.');
+    if (confirmacion) {
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('eliminar_imagenes[]', imagenId);
+
+        fetch(`{{ route('productos.update', $producto) }}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const imagenElement = document.getElementById(`imagen-${imagenId}`);
+                if (imagenElement) {
+                    imagenElement.remove();
+                }
+                alert('Imagen eliminada con éxito.');
+            } else {
+                alert('Error al eliminar la imagen: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error al eliminar la imagen:', error);
+            alert('Error al eliminar la imagen.');
+        });
+    }
+}
 </script>
 @endsection

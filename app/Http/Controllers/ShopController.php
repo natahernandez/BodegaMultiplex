@@ -197,6 +197,12 @@ class ShopController extends Controller
             'carrito' => $carrito
         ]);
     }
+    public function clearCart()
+{
+    session()->forget('carrito'); // Elimina toda la sesión del carrito
+    return response()->json(['success' => true, 'message' => 'Carrito vaciado correctamente.']);
+}
+
 
     public function removeFromCart(Request $request)
     {
