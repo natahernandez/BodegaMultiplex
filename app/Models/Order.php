@@ -93,8 +93,10 @@ class Order extends Model
             'pendiente' => 'bg-warning',
             'confirmado' => 'bg-info',
             'en_preparacion' => 'bg-primary',
+            'proceso' => 'bg-warning',
             'enviado' => 'bg-secondary',
             'entregado' => 'bg-success',
+            'completado' => 'bg-success',
             'cancelado' => 'bg-danger',
         ];
 
@@ -119,8 +121,10 @@ class Order extends Model
             'pendiente' => 'Pendiente',
             'confirmado' => 'Confirmado',
             'en_preparacion' => 'En Preparación',
+            'proceso' => 'En Proceso',
             'enviado' => 'Enviado',
             'entregado' => 'Entregado',
+            'completado' => 'Completado',
             'cancelado' => 'Cancelado',
         ];
 

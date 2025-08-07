@@ -70,4 +70,12 @@ class User extends Authenticatable
     {
         return $this->role == 1 ? 'Administrador' : 'Cliente';
     }
+
+    /**
+     * Relación con órdenes del usuario
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

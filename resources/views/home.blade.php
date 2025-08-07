@@ -9,36 +9,8 @@
       <p class="page-header-text">Panel de control y estadísticas generales de BodegaMultiplex</p>
     </div>
     
-    <div class="col-sm-auto">
-      <div class="d-grid d-sm-flex gap-2">
-        <!-- Daterangepicker -->
-        <button id="js-daterangepicker-predefined" class="btn btn-primary btn-sm dropdown-toggle">
-          <i class="bi-calendar-week me-1"></i>
-          <span class="js-daterangepicker-predefined-preview"></span>
-        </button>
-        
-        <div class="dropdown">
-          <button type="button" class="btn btn-white dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi-gear me-1"></i> Configuración
-          </button>
-          <div class="dropdown-menu dropdown-menu-end">
-            <a class="dropdown-item" href="#">
-              <i class="bi-graph-up me-2"></i> Configurar reportes
-            </a>
-            <a class="dropdown-item" href="#">
-              <i class="bi-bell me-2"></i> Notificaciones
-            </a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#">
-              <i class="bi-download me-2"></i> Exportar datos
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
-<!-- End Page Header -->
 
 <!-- Stats Cards -->
 <div class="row mb-4">
@@ -48,15 +20,13 @@
         <h6 class="card-subtitle mb-2">Ventas Hoy</h6>
         <div class="row align-items-center gx-2">
           <div class="col">
-            <span class="js-counter display-4 text-primary">$7,431.14</span>
+            <span class="js-counter display-4 text-primary">Q{{ number_format($stats['ventas_hoy'], 0) }}</span>
           </div>
           <div class="col-auto">
             <i class="bi-graph-up text-success" style="font-size: 2rem;"></i>
           </div>
         </div>
-        <span class="badge bg-soft-success text-success">
-          <i class="bi-arrow-up"></i> 25.3%
-        </span>
+        <small class="text-muted">Ingresos del día</small>
       </div>
     </div>
   </div>
@@ -67,15 +37,13 @@
         <h6 class="card-subtitle mb-2">Productos Vendidos</h6>
         <div class="row align-items-center gx-2">
           <div class="col">
-            <span class="js-counter display-4 text-info">342</span>
+            <span class="js-counter display-4 text-info">{{ $stats['productos_vendidos_hoy'] }}</span>
           </div>
           <div class="col-auto">
             <i class="bi-box-seam text-info" style="font-size: 2rem;"></i>
           </div>
         </div>
-        <span class="badge bg-soft-info text-info">
-          <i class="bi-arrow-up"></i> 12.5%
-        </span>
+        <small class="text-muted">Unidades hoy</small>
       </div>
     </div>
   </div>
@@ -86,15 +54,13 @@
         <h6 class="card-subtitle mb-2">Clientes Atendidos</h6>
         <div class="row align-items-center gx-2">
           <div class="col">
-            <span class="js-counter display-4 text-warning">89</span>
+            <span class="js-counter display-4 text-warning">{{ $stats['clientes_atendidos_hoy'] }}</span>
           </div>
           <div class="col-auto">
             <i class="bi-people text-warning" style="font-size: 2rem;"></i>
           </div>
         </div>
-        <span class="badge bg-soft-warning text-warning">
-          <i class="bi-arrow-up"></i> 8.2%
-        </span>
+        <small class="text-muted">Clientes únicos hoy</small>
       </div>
     </div>
   </div>
@@ -102,855 +68,563 @@
   <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
     <div class="card h-100">
       <div class="card-body">
-        <h6 class="card-subtitle mb-2">Ganancia Neta</h6>
+        <h6 class="card-subtitle mb-2">Ganancia Neta Mes</h6>
         <div class="row align-items-center gx-2">
           <div class="col">
-            <span class="js-counter display-4 text-success">$2,150</span>
+            <span class="js-counter display-4 text-success">Q{{ number_format($stats['ganancia_neta_mes'], 0) }}</span>
           </div>
           <div class="col-auto">
             <i class="bi-currency-dollar text-success" style="font-size: 2rem;"></i>
           </div>
         </div>
-        <span class="badge bg-soft-success text-success">
-          <i class="bi-arrow-up"></i> 15.7%
-        </span>
+        <small class="text-muted">Estimado 30% margen</small>
       </div>
     </div>
   </div>
 </div>
 <!-- End Stats Cards -->
 
-<!-- Card -->
-<div class="card mb-3 mb-lg-5">
-  <!-- Header -->
-  <div class="card-header card-header-content-sm-between">
-    <h4 class="card-header-title mb-2 mb-sm-0">Recent projects</h4>
-
-    <!-- Nav -->
-    <ul class="nav nav-segment nav-fill" id="projectsTab" role="tablist">
-      <li class="nav-item" data-bs-toggle="chart" data-datasets="0" data-trigger="click" data-action="toggle">
-        <a class="nav-link active" href="javascript:;" data-bs-toggle="tab">This week</a>
-      </li>
-      <li class="nav-item" data-bs-toggle="chart" data-datasets="1" data-trigger="click" data-action="toggle">
-        <a class="nav-link" href="javascript:;" data-bs-toggle="tab">Last week</a>
-      </li>
-    </ul>
-    <!-- End Nav -->
+<!-- SECCIÓN 1: GRÁFICAS DE ÓRDENES -->
+<div class="row mb-4">
+  <div class="col-12">
+    <h3 class="mb-3">📊 Análisis de Órdenes</h3>
   </div>
-  <!-- End Header -->
+  
+  <!-- Órdenes por Estado -->
+  <div class="col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Órdenes por Estado</h4>
+      </div>
+      <div class="card-body">
+        <canvas id="ordenesPorEstadoChart" style="max-height: 300px;"></canvas>
+      </div>
+    </div>
+  </div>
 
-  <!-- Body -->
+  <!-- Métodos de Pago -->
+  <div class="col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Métodos de Pago</h4>
+              </div>
+      <div class="card-body">
+        <canvas id="metodosPagoChart" style="max-height: 300px;"></canvas>
+              </div>
+            </div>
+  </div>
+
+  <!-- Órdenes por Día -->
+  <div class="col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Órdenes Últimos 7 días</h4>
+          </div>
+      <div class="card-body">
+        <canvas id="ordenesPorDiaChart" style="max-height: 300px;"></canvas>
+      </div>
+        </div>
+          </div>
+        </div>
+
+<!-- SECCIÓN 2: GRÁFICAS DE PRODUCTOS -->
+<div class="row mb-4">
+  <div class="col-12">
+    <h3 class="mb-3">📦 Análisis de Productos e Inventario</h3>
+          </div>
+
+  <!-- Productos Más Vendidos -->
+  <div class="col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Productos Más Vendidos</h4>
+          </div>
+      <div class="card-body">
+        <canvas id="productosMasVendidosChart" style="max-height: 300px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Productos por Categoría -->
+  <div class="col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Productos por Categoría</h4>
+      </div>
+      <div class="card-body">
+        <canvas id="productosPorCategoriaChart" style="max-height: 300px;"></canvas>
+              </div>
+            </div>
+              </div>
+
+  <!-- Estado del Stock -->
+  <div class="col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Estado del Stock</h4>
+                  </div>
+      <div class="card-body">
+        <canvas id="productosEstadoStockChart" style="max-height: 300px;"></canvas>
+              </div>
+            </div>
+              </div>
+
+  <!-- Inventario & Alertas -->
+  <div class="col-lg-3 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Estado del Inventario</h4>
+                  </div>
+      <div class="card-body">
+        <div class="mb-4 text-center">
+          <h3 class="text-primary">Q{{ number_format($dashboardData['valor_inventario'], 0) }}</h3>
+          <small class="text-muted">Valor Total del Inventario</small>
+                  </div>
+
+        <h6 class="mb-3">⚠️ Stock Crítico</h6>
+        @forelse($dashboardData['stock_bajo'] as $producto)
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-truncate">{{ Str::limit($producto->nombre, 15) }}</span>
+          <span class="badge {{ $producto->stock_actual <= 5 ? 'bg-danger' : 'bg-warning' }}">
+            {{ $producto->stock_actual }}
+          </span>
+                  </div>
+        @empty
+        <p class="text-success text-center">✅ Stock en buenos niveles</p>
+        @endforelse
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN 3: ANÁLISIS AVANZADO DE PRODUCTOS -->
+<div class="row mb-4">
+  <!-- Productos Más Valiosos -->
+  <div class="col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Productos Más Valiosos</h4>
+      </div>
+      <div class="card-body">
+        <canvas id="productosMasValiososChart" style="max-height: 300px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Análisis de Precios -->
+  <div class="col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">Análisis de Precios</h4>
+      </div>
   <div class="card-body">
-    <div class="row align-items-sm-center mb-4">
-      <div class="col-sm mb-3 mb-sm-0">
-        <div class="d-flex align-items-center">
-          <span class="h1 mb-0">$7,431.14 USD</span>
-          <span class="text-success ms-2">
-            <i class="bi-graph-up"></i> 25.3%
+        <div class="row text-center">
+          <div class="col-6 mb-3">
+            <small class="text-muted">Precio Promedio</small>
+            <h4 class="text-primary">Q{{ number_format($chartData['analisis_precios']['precio_promedio'], 0) }}</h4>
+          </div>
+          <div class="col-6 mb-3">
+            <small class="text-muted">Precio Máximo</small>
+            <h4 class="text-success">Q{{ number_format($chartData['analisis_precios']['precio_max'], 0) }}</h4>
+          </div>
+          <div class="col-6">
+            <small class="text-muted">Productos Caros</small>
+            <h5 class="text-warning">{{ $chartData['analisis_precios']['productos_caros'] }}</h5>
+            <small class="text-muted">> Q100</small>
+          </div>
+          <div class="col-6">
+            <small class="text-muted">Productos Baratos</small>
+            <h5 class="text-info">{{ $chartData['analisis_precios']['productos_baratos'] }}</h5>
+            <small class="text-muted">≤ Q10</small>
+          </div>
+        </div>
+      </div>
+    </div>
+          </div>
+
+  <!-- Productos Próximos a Vencer -->
+  <div class="col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h4 class="card-title">⏰ Próximos a Vencer</h4>
+            </div>
+      <div class="card-body">
+        @forelse($chartData['productos_proximos_vencer'] as $producto)
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-truncate">{{ Str::limit($producto->nombre, 20) }}</span>
+          <span class="badge {{ $producto->dias_restantes <= 7 ? 'bg-danger' : 'bg-warning' }}">
+            {{ $producto->dias_restantes }}d
           </span>
         </div>
+        @empty
+        <p class="text-success text-center">✅ No hay productos próximos a vencer</p>
+        @endforelse
       </div>
-      <!-- End Col -->
-
-      <div class="col-sm-auto">
-        <!-- Legend Indicators -->
-        <div class="row fs-6">
-          <div class="col-auto">
-            <span class="legend-indicator bg-primary"></span> Income
-          </div>
-          <div class="col-auto">
-            <span class="legend-indicator bg-info"></span> Expenses
+            </div>
           </div>
         </div>
-        <!-- End Legend Indicators -->
+
+<!-- Ventas Mensuales -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title">📈 Ventas Mensuales (Últimos 12 meses)</h4>
       </div>
-      <!-- End Col -->
+      <div class="card-body">
+        <canvas id="ventasMensualesChart" style="max-height: 400px;"></canvas>
+      </div>
     </div>
-    <!-- End Row -->
-
-    <!-- Bar Chart -->
-    <div class="chartjs-custom" style="height: 18rem;">
-      <canvas id="updatingLineChart"
-              data-hs-chartjs-options='{
-                "type": "line",
-                "data": {
-                   "labels": ["Feb","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-                   "datasets": [{
-                    "backgroundColor": ["rgba(55, 125, 255, .5)", "rgba(255, 255, 255, .2)"],
-                    "borderColor": "#377dff",
-                    "borderWidth": 2,
-                    "pointRadius": 0,
-                    "hoverBorderColor": "#377dff",
-                    "pointBackgroundColor": "#377dff",
-                    "pointBorderColor": "#fff",
-                    "pointHoverRadius": 0,
-                    "tension": 0.4
-                  },
-                  {
-                    "backgroundColor": ["rgba(0, 201, 219, .5)", "rgba(255, 255, 255, .2)"],
-                    "borderColor": "#00c9db",
-                    "borderWidth": 2,
-                    "pointRadius": 0,
-                    "hoverBorderColor": "#00c9db",
-                    "pointBackgroundColor": "#00c9db",
-                    "pointBorderColor": "#fff",
-                    "pointHoverRadius": 0,
-                    "tension": 0.4
-                  }]
-                },
-                "options": {
-                  "gradientPosition": {"y1": 200},
-                   "scales": {
-                      "y": {
-                        "grid": {
-                          "color": "#e7eaf3",
-                          "drawBorder": false,
-                          "zeroLineColor": "#e7eaf3"
-                        },
-                        "ticks": {
-                          "min": 0,
-                          "max": 100,
-                          "stepSize": 20,
-                          "fontColor": "#97a4af",
-                          "fontFamily": "Open Sans, sans-serif",
-                          "padding": 10,
-                          "postfix": "k"
-                        }
-                      },
-                      "x": {
-                        "grid": {
-                          "display": false,
-                          "drawBorder": false
-                        },
-                        "ticks": {
-                          "fontSize": 12,
-                          "fontColor": "#97a4af",
-                          "fontFamily": "Open Sans, sans-serif",
-                          "padding": 5
-                        }
-                      }
-                  },
-                  "plugins": {
-                    "tooltip": {
-                      "prefix": "$",
-                      "postfix": "k",
-                      "hasIndicator": true,
-                      "mode": "index",
-                      "intersect": false,
-                      "lineMode": true,
-                      "lineWithLineColor": "rgba(19, 33, 68, 0.075)"
-                    }
-                  },
-                  "hover": {
-                    "mode": "nearest",
-                    "intersect": true
-                  }
-                }
-              }'>
-      </canvas>
-    </div>
-    <!-- End Bar Chart -->
-  </div>
-  <!-- End Body -->
-
-  <!-- Table -->
-  <div class="table-responsive">
-    <table class="table table-borderless table-thead-bordered table-align-middle card-table">
-      <thead class="thead-light">
-        <tr>
-          <th>Project name</th>
-          <th>Members</th>
-          <th>Spent</th>
-          <th>Hours</th>
-          <th>Completion</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr>
-          <td>
-            <a class="d-flex align-items-center" href="#">
-              <div class="flex-shrink-0">
-                <img class="avatar avatar-sm" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/brands/spec-icon.svg') }}" alt="Image Description">
-              </div>
-              <div class="flex-grow-1 ms-3">
-                <span class="d-block h5 text-inherit mb-0">Install Front pay</span>
-              </div>
-            </a>
-          </td>
-          <td>
-            <!-- Avatar Group -->
-            <div class="avatar-group avatar-group-xs avatar-circle">
-              <a class="avatar" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Amanda Harvey">
-                <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img10.jpg') }}" alt="Image Description">
-              </a>
-              <a class="avatar" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="David Harrison">
-                <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img3.jpg') }}" alt="Image Description">
-              </a>
-              <a class="avatar avatar-soft-info" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Lisa Iston">
-                <span class="avatar-initials">L</span>
-              </a>
-              <a class="avatar avatar-light avatar-circle" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Lewis Clarke, Chris Mathew and 3 more">
-                <span class="avatar-initials">+5</span>
-              </a>
-            </div>
-            <!-- End Avatar Group -->
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0">$25,000</span>
-            </div>
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0">34</span>
-              <span class="badge bg-soft-danger text-danger p-1 ms-2">
-                <i class="bi-graph-down"></i> 1.8
-              </span>
-            </div>
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0 me-2">26%</span>
-              <div class="progress table-progress">
-                <div class="progress-bar" role="progressbar" style="width: 26%" aria-valuenow="26" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <a class="d-flex align-items-center" href="#">
-              <div class="flex-shrink-0">
-                <img class="avatar avatar-sm" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/brands/mailchimp-icon.svg') }}" alt="Image Description">
-              </div>
-              <div class="flex-grow-1 ms-3">
-                <span class="d-block h5 text-inherit mb-0">Update subscription method <i class="bi-patch-check-fill text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Earned extra bonus"></i></span>
-              </div>
-            </a>
-          </td>
-          <td>
-            <!-- Avatar Group -->
-            <div class="avatar-group avatar-group-xs avatar-circle">
-              <a class="avatar" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Costa Quinn">
-                <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img6.jpg') }}" alt="Image Description">
-              </a>
-              <a class="avatar" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Clarice Boone">
-                <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img7.jpg') }}" alt="Image Description">
-              </a>
-              <a class="avatar avatar-soft-danger" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Adam Keep">
-                <span class="avatar-initials">A</span>
-              </a>
-            </div>
-            <!-- End Avatar Group -->
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0">$5,783</span>
-              <span class="badge bg-soft-success text-success p-1 ms-2">
-                <i class="bi-graph-up"></i> 7.3%
-              </span>
-            </div>
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0">73.1</span>
-              <span class="badge bg-soft-success text-success p-1 ms-2">
-                <i class="bi-graph-up"></i> 5.0
-              </span>
-            </div>
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0 me-2">100%</span>
-              <div class="progress table-progress">
-                <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <a class="d-flex align-items-center" href="#">
-              <div class="flex-shrink-0">
-                <div class="avatar avatar-sm avatar-soft-primary avatar-circle">
-                  <span class="avatar-initials">I</span>
-                </div>
-              </div>
-              <div class="flex-grow-1 ms-3">
-                <span class="d-block h5 text-inherit mb-0">Increase productivity with reviews</span>
-              </div>
-            </a>
-          </td>
-          <td>
-            <!-- Avatar Group -->
-            <div class="avatar-group avatar-group-xs avatar-circle">
-              <a class="avatar" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Finch Hoot">
-                <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img5.jpg') }}" alt="Image Description">
-              </a>
-              <a class="avatar avatar-soft-dark" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Bob Bardly">
-                <span class="avatar-initials">B</span>
-              </a>
-              <a class="avatar" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Linda Bates">
-                <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img8.jpg') }}" alt="Image Description">
-              </a>
-              <a class="avatar" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Ella Lauda">
-                <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img9.jpg') }}" alt="Image Description">
-              </a>
-            </div>
-            <!-- End Avatar Group -->
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0">$36,678</span>
-            </div>
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0">68.7</span>
-            </div>
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <span class="mb-0 me-2">7%</span>
-              <div class="progress table-progress">
-                <div class="progress-bar" role="progressbar" style="width: 7%" aria-valuenow="7" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <!-- End Table -->
-
-  <!-- Card Footer -->
-  <a class="card-footer text-center" href="#">
-    View all projects <i class="bi-chevron-right"></i>
-  </a>
-  <!-- End Card Footer -->
-</div>
-<!-- End Card -->
-
-<div class="row">
-  <div class="col-lg-4 mb-3 mb-lg-5">
-    <!-- Card -->
-    <div class="card h-100">
-      <!-- Header -->
-      <div class="card-header card-header-content-between">
-        <h4 class="card-header-title">Payments</h4>
-
-        <!-- Dropdown -->
-        <div class="dropdown">
-          <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm rounded-circle" id="reportsOverviewDropdown1" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi-three-dots-vertical"></i>
-          </button>
-
-          <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="reportsOverviewDropdown1">
-            <span class="dropdown-header">Settings</span>
-            <a class="dropdown-item" href="#">
-              <i class="bi-share-fill dropdown-item-icon"></i> Share reports
-            </a>
-            <a class="dropdown-item" href="#">
-              <i class="bi-download dropdown-item-icon"></i> Download
-            </a>
-            <a class="dropdown-item" href="#">
-              <i class="bi-alt dropdown-item-icon"></i> Connect other apps
-            </a>
-            <div class="dropdown-divider"></div>
-            <span class="dropdown-header">Feedback</span>
-            <a class="dropdown-item" href="#">
-              <i class="bi-chat-left-dots dropdown-item-icon"></i> Report
-            </a>
-          </div>
-        </div>
-        <!-- End Dropdown -->
-      </div>
-      <!-- End Header -->
-
-      <!-- Body -->
-      <div class="card-body text-center">
-        <!-- Badge -->
-        <div class="h3">
-          <span class="badge bg-soft-info text-info rounded-pill">
-            <i class="bi-check-circle-fill me-1"></i> On track
-          </span>
-        </div>
-        <!-- End Badge -->
-
-        <!-- Chart Half -->
-        <div class="chartjs-doughnut-custom" style="height: 12rem;">
-          <canvas id="doughnutHalfChart" class="js-chartjs-doughnut-half"
-                  data-hs-chartjs-options='{
-                  "type": "doughnut",
-                  "data": {
-                    "labels": ["Current status", "Goal"],
-                    "datasets": [{
-                      "data": [64, 35],
-                      "backgroundColor": ["#377dff", "rgba(55, 125, 255, .35)"],
-                      "borderWidth": 4,
-                      "borderColor": "#fff",
-                      "hoverBorderColor": "#ffffff"
-                    }]
-                  }
-                }'></canvas>
-
-          <div class="chartjs-doughnut-custom-stat">
-            <small class="text-cap">Project balance</small>
-            <span class="h1">$150,238.00</span>
-          </div>
-        </div>
-        <!-- End Chart Half -->
-
-        <hr>
-
-        <div class="row col-divider">
-          <div class="col text-end">
-            <span class="d-block h4 mb-0">$72.46</span>
-            <span class="d-block">last transaction</span>
-          </div>
-
-          <div class="col text-start">
-            <span class="d-block h4 text-success mb-0">
-              <i class="bi-graph-up"></i> 12%
-            </span>
-            <span class="d-block">since last visit</span>
-          </div>
-        </div>
-        <!-- End Row -->
-      </div>
-      <!-- End Body -->
-    </div>
-    <!-- End Card -->
-  </div>
-
-  <div class="col-lg-8 mb-3 mb-lg-5">
-    <!-- Card -->
-    <div class="card h-100">
-      <!-- Header -->
-      <div class="card-header card-header-content-between">
-        <h4 class="card-header-title">Latest transactions</h4>
-
-        <!-- Dropdown -->
-        <div class="dropdown">
-          <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm rounded-circle" id="reportsOverviewDropdown3" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi-three-dots-vertical"></i>
-          </button>
-
-          <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="reportsOverviewDropdown3">
-            <span class="dropdown-header">Settings</span>
-            <a class="dropdown-item" href="#">
-              <i class="bi-share-fill dropdown-item-icon"></i> Share reports
-            </a>
-            <a class="dropdown-item" href="#">
-              <i class="bi-download dropdown-item-icon"></i> Download
-            </a>
-            <a class="dropdown-item" href="#">
-              <i class="bi-alt dropdown-item-icon"></i> Connect other apps
-            </a>
-            <div class="dropdown-divider"></div>
-            <span class="dropdown-header">Feedback</span>
-            <a class="dropdown-item" href="#">
-              <i class="bi-chat-left-dots dropdown-item-icon"></i> Report
-            </a>
-          </div>
-        </div>
-        <!-- End Dropdown -->
-      </div>
-      <!-- End Header -->
-
-      <!-- Body -->
-      <div class="card-body card-body-height">
-        <ul class="list-group list-group-flush list-group-no-gutters">
-          <!-- List Item -->
-          <li class="list-group-item">
-            <div class="d-flex">
-              <div class="flex-shrink-0">
-                <!-- Avatar -->
-                <div class="avatar avatar-sm avatar-soft-dark avatar-circle">
-                  <span class="avatar-initials">B</span>
-                </div>
-                <!-- End Avatar -->
-              </div>
-
-              <div class="flex-grow-1 ms-3">
-                <div class="row">
-                  <div class="col-7 col-md-5 order-md-1">
-                    <h5 class="mb-0">Bob Dean</h5>
-                    <span class="fs-6 text-body">Transfer to bank account</span>
-                  </div>
-
-                  <div class="col-5 col-md-4 order-md-3 text-end mt-2 mt-md-0">
-                    <h5 class="mb-0">-$290.00 USD</h5>
-                    <span class="fs-6 text-body">15 May, 2020</span>
-                  </div>
-
-                  <div class="col-auto col-md-3 order-md-2">
-                    <span class="badge bg-soft-warning text-warning rounded-pill">Pending</span>
-                  </div>
-                </div>
-                <!-- End Row -->
-              </div>
-            </div>
-          </li>
-          <!-- End List Item -->
-
-          <!-- List Item -->
-          <li class="list-group-item">
-            <div class="d-flex">
-              <div class="flex-shrink-0">
-                <!-- Avatar -->
-                <img class="avatar avatar-sm avatar-circle" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/brands/slack-icon.svg') }}" alt="Image Description">
-                <!-- End Avatar -->
-              </div>
-
-              <div class="flex-grow-1 ms-3">
-                <div class="row">
-                  <div class="col-7 col-md-5 order-md-1">
-                    <h5 class="mb-0">Slack</h5>
-                    <span class="fs-6 text-body">Subscription payment</span>
-                  </div>
-
-                  <div class="col-5 col-md-4 order-md-3 text-end mt-2 mt-md-0">
-                    <h5 class="mb-0">-$11.00 USD</h5>
-                    <span class="fs-6 text-body">12 May, 2020</span>
-                  </div>
-
-                  <div class="col-auto col-md-3 order-md-2">
-                    <span class="badge bg-soft-success text-success rounded-pill">Completed</span>
-                  </div>
-                </div>
-                <!-- End Row -->
-              </div>
-            </div>
-          </li>
-          <!-- End List Item -->
-
-          <!-- List Item -->
-          <li class="list-group-item">
-            <div class="d-flex">
-              <div class="flex-shrink-0">
-                <!-- Avatar -->
-                <img class="avatar avatar-sm avatar-circle" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/brands/bank-of-america-icon.svg') }}" alt="Image Description">
-                <!-- End Avatar -->
-              </div>
-
-              <div class="flex-grow-1 ms-3">
-                <div class="row">
-                  <div class="col-7 col-md-5 order-md-1">
-                    <h5 class="mb-0">Bank of America</h5>
-                    <span class="fs-6 text-body">Withdrawal to bank account</span>
-                  </div>
-
-                  <div class="col-5 col-md-4 order-md-3 text-end mt-2 mt-md-0">
-                    <h5 class="text-success mb-0">$3500.00 USD</h5>
-                    <span class="fs-6 text-body">10 May, 2020</span>
-                  </div>
-
-                  <div class="col-auto col-md-3 order-md-2">
-                    <span class="badge bg-soft-success text-success rounded-pill">Completed</span>
-                  </div>
-                </div>
-                <!-- End Row -->
-              </div>
-            </div>
-          </li>
-          <!-- End List Item -->
-        </ul>
-      </div>
-      <!-- End Body -->
-    </div>
-    <!-- End Card -->
   </div>
 </div>
-<!-- End Row -->
 
-<!-- Card -->
-<div class="card mb-3 mb-lg-5">
-  <!-- Header -->
-  <div class="card-header card-header-content-between">
-    <h4 class="card-header-title">Audience overview <i class="bi-patch-check-fill text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="This report is based on 100% of sessions."></i></h4>
-
-    <!-- Dropdown -->
-    <div class="dropdown">
-      <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm rounded-circle" id="reportsOverviewDropdown2" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi-three-dots-vertical"></i>
-      </button>
-
-      <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="reportsOverviewDropdown2">
-        <span class="dropdown-header">Settings</span>
-        <a class="dropdown-item" href="#">
-          <i class="bi-share-fill dropdown-item-icon"></i> Share reports
-        </a>
-        <a class="dropdown-item" href="#">
-          <i class="bi-download dropdown-item-icon"></i> Download
-        </a>
-        <a class="dropdown-item" href="#">
-          <i class="bi-alt dropdown-item-icon"></i> Connect other apps
-        </a>
-        <div class="dropdown-divider"></div>
-        <span class="dropdown-header">Feedback</span>
-        <a class="dropdown-item" href="#">
-          <i class="bi-chat-left-dots dropdown-item-icon"></i> Report
-        </a>
+<!-- Tendencia de Órdenes -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title">📊 Tendencia de Órdenes (Últimos 30 días)</h4>
+      </div>
+      <div class="card-body">
+        <canvas id="tendenciaOrdenesChart" style="max-height: 300px;"></canvas>
       </div>
     </div>
-    <!-- End Dropdown -->
   </div>
-  <!-- End Header -->
-
-  <!-- Body -->
-  <div class="card-body">
-    <div class="row col-sm-divider">
-      <div class="col-sm-3">
-        <!-- Stats -->
-        <div class="d-lg-flex align-items-md-center">
-          <div class="flex-shrink-0">
-            <i class="bi-person fs-1 text-primary"></i>
-          </div>
-
-          <div class="flex-grow-1 ms-lg-3">
-            <span class="d-block fs-6">Users</span>
-            <div class="d-flex align-items-center">
-              <h3 class="mb-0">34,413</h3>
-              <span class="badge bg-soft-success text-success ms-2">
-                <i class="bi-graph-up"></i> 12.5%
-              </span>
-            </div>
-          </div>
-        </div>
-        <!-- End Stats -->
-      </div>
-
-      <div class="col-sm-3">
-        <!-- Stats -->
-        <div class="d-lg-flex align-items-md-center">
-          <div class="flex-shrink-0">
-            <i class="bi-clock-history fs-1 text-primary"></i>
-          </div>
-
-          <div class="flex-grow-1 ms-lg-3">
-            <span class="d-block fs-6">Avg. session duration</span>
-            <div class="d--flex align-items-center">
-              <h3 class="mb-0">1m 3s</h3>
-            </div>
-          </div>
-        </div>
-        <!-- End Stats -->
-      </div>
-
-      <div class="col-sm-3">
-        <!-- Stats -->
-        <div class="d-lg-flex align-items-md-center">
-          <div class="flex-shrink-0">
-            <i class="bi-files-alt fs-1 text-primary"></i>
-          </div>
-
-          <div class="flex-grow-1 ms-lg-3">
-            <span class="d-block fs-6">Pages/Sessions</span>
-            <div class="d--flex align-items-center">
-              <h3 class="mb-0">1.78</h3>
-            </div>
-          </div>
-        </div>
-        <!-- End Stats -->
-      </div>
-
-      <div class="col-sm-3">
-        <!-- Stats -->
-        <div class="d-lg-flex align-items-md-center">
-          <div class="flex-shrink-0">
-            <i class="bi-pie-chart fs-1 text-primary"></i>
-          </div>
-
-          <div class="flex-grow-1 ms-lg-3">
-            <span class="d-block fs-6">Bounce rate</span>
-            <div class="d--flex align-items-center">
-              <h3 class="mb-0">62.9%</h3>
-            </div>
-          </div>
-        </div>
-        <!-- End Stats -->
-      </div>
-    </div>
-    <!-- End Row -->
-  </div>
-  <!-- End Body -->
-
-  <!-- Vector Map -->
-  <div class="jsvectormap-custom-wrapper">
-    <div class="js-jsvectormap jsvectormap-custom"
-          data-hs-js-vector-map-options='{
-            "focusOn": {
-          "coords": [25, 12],
-          "scale": 1.5,
-          "animate": true
-        },
-            "regionStyle": {
-              "initial": {
-                "fill": "rgba(55, 125, 255, .3)"
-              },
-              "hover": {
-                "fill": "#377dff"
-              }
-            },
-            "markerStyle": {
-              "initial": {
-                "stroke-width": 2,
-                "fill": "rgba(255,255,255,.5)",
-                "stroke": "rgba(255,255,255,.5)",
-                "r": 6
-              },
-              "hover": {
-                "fill": "#fff",
-                "stroke": "#fff"
-              }
-            }
-          }'>
-    </div>
-  </div>
-  <!-- End Vector Map -->
 </div>
-<!-- End Card -->
 @endsection
 
 @section('scripts')
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Verificar si HSCore está disponible
-    if (typeof HSCore !== 'undefined' && HSCore.components) {
-      // INITIALIZATION OF CHARTJS
-      var updatingChartDatasets = [
-        [
-          [18, 51, 60, 38, 88, 50, 40, 52, 88, 80, 60, 70],
-          [27, 38, 60, 77, 40, 50, 49, 29, 42, 27, 42, 50]
-        ],
-        [
-          [77, 40, 50, 49, 27, 38, 60, 42, 50, 29, 42, 27],
-          [60, 38, 18, 51, 88, 50, 40, 52, 60, 70, 88, 80]
-        ]
-      ]
+    // Configuración de colores
+    const chartColors = {
+        primary: '#377dff',
+        success: '#00c9a7',
+        info: '#00d4ff',
+        warning: '#ffab00',
+        danger: '#de4437',
+        secondary: '#77838f',
+        light: '#f8f9fa',
+        dark: '#132144'
+    };
 
-      // INITIALIZATION OF CHARTJS
-      if (HSCore.components.HSChartJS) {
-        HSCore.components.HSChartJS.init(document.querySelector('#updatingLineChart'), {
+    // Datos desde el backend
+    const chartData = @json($chartData);
+
+    // ===== GRÁFICAS DE ÓRDENES =====
+    
+    // Gráfica de Órdenes por Estado
+    const ordenesPorEstadoCtx = document.getElementById('ordenesPorEstadoChart').getContext('2d');
+    new Chart(ordenesPorEstadoCtx, {
+        type: 'doughnut',
           data: {
-            datasets: [
-              {
-                data: updatingChartDatasets[0][0]
-              },
-              {
-                data: updatingChartDatasets[0][1]
-              }
-            ]
-          }
-        })
-
-        const updatingLineChart = HSCore.components.HSChartJS.getItem(0)
-
-        // Call when tab is clicked
-        document.querySelectorAll('[data-bs-toggle="chart"]')
-          .forEach($item => {
-            $item.addEventListener('click', e => {
-              let keyDataset = e.currentTarget.getAttribute('data-datasets')
-
-              // Update datasets for chart
-              if (updatingLineChart) {
-                updatingLineChart.data.datasets.forEach((dataset, key) => {
-                  dataset.data = updatingChartDatasets[keyDataset][key];
-                });
-                updatingLineChart.update();
-              }
-            })
-          })
-
-        // INITIALIZATION OF DOUGHNUT CHART
-        HSCore.components.HSChartJS.init(document.querySelector('.js-chartjs-doughnut-half'), {
-          options: {
+            labels: Object.keys(chartData.ordenes_por_estado).map(estado => {
+                const estados = {
+                    'pendiente': 'Pendiente',
+                    'confirmado': 'Confirmado',
+                    'en_preparacion': 'En Preparación',
+                    'proceso': 'En Proceso',
+                    'enviado': 'Enviado',
+                    'entregado': 'Entregado',
+                    'completado': 'Completado',
+                    'cancelado': 'Cancelado'
+                };
+                return estados[estado] || estado;
+            }),
+            datasets: [{
+                data: Object.values(chartData.ordenes_por_estado),
+                backgroundColor: [
+                    chartColors.warning,
+                    chartColors.info,
+                    chartColors.primary,
+                    chartColors.warning,
+                    chartColors.secondary,
+                    chartColors.success,
+                    chartColors.success,
+                    chartColors.danger
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-              tooltip: {
-                postfix: "%"
-              }
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfica de Métodos de Pago
+    const metodosPagoCtx = document.getElementById('metodosPagoChart').getContext('2d');
+    new Chart(metodosPagoCtx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(chartData.metodos_pago),
+            datasets: [{
+                data: Object.values(chartData.metodos_pago),
+                backgroundColor: [
+                    chartColors.success,
+                    chartColors.primary,
+                    chartColors.info,
+                    chartColors.warning
+                ]
+            }]
+        },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfica de Órdenes por Día
+    const ordenesPorDiaCtx = document.getElementById('ordenesPorDiaChart').getContext('2d');
+    new Chart(ordenesPorDiaCtx, {
+        type: 'bar',
+        data: {
+            labels: chartData.ordenes_por_dia.map(item => item.dia),
+            datasets: [{
+                label: 'Órdenes',
+                data: chartData.ordenes_por_dia.map(item => item.total),
+                backgroundColor: chartColors.info,
+                borderColor: chartColors.info,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
             },
-            cutout: '85%',
-            rotation: '270',
-            circumference: '180'
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // ===== GRÁFICAS DE PRODUCTOS =====
+
+    // Gráfica de Productos Más Vendidos
+    if (chartData.productos_mas_vendidos.length > 0) {
+        const productosMasVendidosCtx = document.getElementById('productosMasVendidosChart').getContext('2d');
+        new Chart(productosMasVendidosCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.productos_mas_vendidos.slice(0, 5).map(item => item.nombre.substring(0, 15) + '...'),
+                datasets: [{
+                    label: 'Cantidad Vendida',
+                    data: chartData.productos_mas_vendidos.slice(0, 5).map(item => item.total_vendido),
+                    backgroundColor: chartColors.info,
+                    borderColor: chartColors.info,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
           }
         });
       }
 
-      // INITIALIZATION OF VECTOR MAP
-      if (HSCore.components.HSJsVectorMap) {
-        const markers = [
-          {
-            "coords": [38, -97],
-            "name": "United States",
-            "active": 200,
-            "new": 40,
-            "flag": "{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/flag-icon-css/flags/1x1/us.svg') }}",
-            "code": "US"
-          },
-          {
-            "coords": [20, 77],
-            "name": "India",
-            "active": 300,
-            "new": 100,
-            "flag": "{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/flag-icon-css/flags/1x1/in.svg') }}",
-            "code": "IN"
-          },
-          {
-            "coords": [60, -105],
-            "name": "Canada",
-            "active": 400,
-            "new": 500,
-            "flag": "{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/flag-icon-css/flags/1x1/ca.svg') }}",
-            "code": "CA"
-          }
-        ];
-
-        const tooltipTemplate = function (marker) {
-          return `
-            <span class="d-flex align-items-center mb-2">
-              <img class="avatar avatar-xss avatar-circle" src="${marker.flag}" alt="Flag">
-              <span class="h5 ms-2 mb-0">${marker.name}</span>
-            </span>
-            <div class="d-flex justify-content-between" style="max-width: 10rem;">
-              <strong>Active:</strong>
-              <span class="ms-2">${marker.active}</span>
-            </div>
-            <div class="d-flex justify-content-between" style="max-width: 10rem;">
-              <strong>New:</strong>
-              <span class="ms-2">${marker.new}</span>
-            </div>
-          `;
-        };
-
-        HSCore.components.HSJsVectorMap.init('.js-jsvectormap', {
-          markers,
-          onRegionTooltipShow(map, tooltip, code) {
-            let marker = markers.find(function (marker) {
-              return marker.code === code;
-            });
-
-            if (marker) {
-              tooltip._tooltip.style.display = null;
-              tooltip._tooltip.innerHTML = tooltipTemplate(marker);
-            } else {
-              tooltip._tooltip.style.display = 'none';
+    // Gráfica de Productos por Categoría
+    if (Object.keys(chartData.productos_por_categoria).length > 0) {
+        const productosPorCategoriaCtx = document.getElementById('productosPorCategoriaChart').getContext('2d');
+        new Chart(productosPorCategoriaCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(chartData.productos_por_categoria),
+                datasets: [{
+                    data: Object.values(chartData.productos_por_categoria),
+                    backgroundColor: [
+                        chartColors.primary,
+                        chartColors.success,
+                        chartColors.warning,
+                        chartColors.info,
+                        chartColors.danger,
+                        chartColors.secondary
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
             }
-          },
-          onMarkerTooltipShow: function (map, tooltip, code) {
-            tooltip._tooltip.style.display = null;
-            tooltip._tooltip.innerHTML = tooltipTemplate(markers[code]);
-          },
-          backgroundColor: '#132144'
-        })
-      }
-    } else {
-      console.log('HSCore no está disponible. Verificar que los scripts se estén cargando correctamente.');
+        });
     }
-  })
+
+    // Gráfica de Estado del Stock
+    const productosEstadoStockCtx = document.getElementById('productosEstadoStockChart').getContext('2d');
+    new Chart(productosEstadoStockCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Crítico (≤5)', 'Bajo (6-10)', 'Normal (11-50)', 'Alto (>50)', 'Agotado (0)'],
+            datasets: [{
+                data: [
+                    chartData.productos_estado_stock.critico,
+                    chartData.productos_estado_stock.bajo,
+                    chartData.productos_estado_stock.normal,
+                    chartData.productos_estado_stock.alto,
+                    chartData.productos_estado_stock.agotado
+                ],
+                backgroundColor: [
+                    chartColors.danger,
+                    chartColors.warning,
+                    chartColors.success,
+                    chartColors.primary,
+                    chartColors.secondary
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfica de Productos Más Valiosos
+    if (chartData.productos_mas_valiosos.length > 0) {
+        const productosMasValiososCtx = document.getElementById('productosMasValiososChart').getContext('2d');
+        new Chart(productosMasValiososCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.productos_mas_valiosos.slice(0, 5).map(item => item.nombre.substring(0, 15) + '...'),
+                datasets: [{
+                    label: 'Valor en Inventario (Q)',
+                    data: chartData.productos_mas_valiosos.slice(0, 5).map(item => item.valor_total),
+                    backgroundColor: chartColors.success,
+                    borderColor: chartColors.success,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Q' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfica de Ventas Mensuales Principal
+    const ventasMensualesCtx = document.getElementById('ventasMensualesChart').getContext('2d');
+    new Chart(ventasMensualesCtx, {
+        type: 'line',
+        data: {
+            labels: chartData.ventas_por_mes.map(item => item.mes),
+            datasets: [{
+                label: 'Ventas (Q)',
+                data: chartData.ventas_por_mes.map(item => item.ventas),
+                borderColor: chartColors.primary,
+                backgroundColor: chartColors.primary + '20',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Q' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Gráfica de Tendencia de Órdenes
+    const tendenciaOrdenesCtx = document.getElementById('tendenciaOrdenesChart').getContext('2d');
+    new Chart(tendenciaOrdenesCtx, {
+        type: 'line',
+        data: {
+            labels: chartData.tendencia_ordenes.map(item => item.fecha),
+            datasets: [{
+                label: 'Órdenes',
+                data: chartData.tendencia_ordenes.map(item => item.total),
+                borderColor: chartColors.success,
+                backgroundColor: chartColors.success + '20',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+});
 </script>
 @endsection

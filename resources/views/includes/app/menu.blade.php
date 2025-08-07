@@ -34,6 +34,14 @@
       </a>
     </div>
 
+    <!-- Administradores -->
+    <div class="nav-item">
+      <a class="nav-link {{ request()->routeIs('admin-users.*') ? 'active' : '' }}" href="{{ route('admin-users.index') }}">
+        <i class="bi-shield-check nav-icon"></i>
+        <span class="nav-link-title">Administradores</span>
+      </a>
+    </div>
+
   </div>
 </div>
 <!-- End Content -->

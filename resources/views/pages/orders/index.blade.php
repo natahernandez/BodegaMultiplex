@@ -19,31 +19,12 @@
         </ol>
       </nav>
 
-      <h1 class="page-header-title">Órdenes <span class="badge bg-soft-dark text-dark ms-2">{{ $orders->total() }}</span></h1>
+      <h1 class="page-header-title">Gestión de Órdenes</h1>
+      <p class="page-header-text">Administra tus órdenes de manera eficiente</p>
 
-      <div class="d-flex mt-2">
-        <a class="text-body me-3" href="javascript:;" onclick="exportOrders()">
-          <i class="bi-download me-1"></i> Exportar
-        </a>
-
-        <!-- Dropdown -->
-        <div class="dropdown">
-          <a class="text-body" href="javascript:;" id="moreOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            Más opciones <i class="bi-chevron-down"></i>
-          </a>
-
-          <div class="dropdown-menu mt-1" aria-labelledby="moreOptionsDropdown">
-            <a class="dropdown-item" href="javascript:;" onclick="exportOrders()">
-              <i class="bi-download dropdown-item-icon"></i> Exportar datos
-            </a>
-          </div>
-        </div>
-        <!-- End Dropdown -->
-      </div>
     </div>
-    <!-- End Col -->
   </div>
-  <!-- End Row -->
+</div>
 
   <!-- Stats Cards -->
   <div class="row">
@@ -111,36 +92,41 @@
       </div>
     </div>
   </div>
-  <!-- End Stats Cards -->
-
-  <!-- Nav Tabs -->
-  <div class="js-nav-scroller hs-nav-scroller-horizontal mt-4">
-    <ul class="nav nav-tabs page-header-tabs">
-      <li class="nav-item">
-        <a class="nav-link active" href="{{ route('orders.index') }}">Todas las órdenes</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ route('orders.index', ['estado' => 'pendiente']) }}">Pendientes</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ route('orders.index', ['estado_pago' => 'pendiente']) }}">Sin pagar</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ route('orders.index', ['estado' => 'entregado']) }}">Entregadas</a>
-      </li>
-    </ul>
-  </div>
-  <!-- End Nav Tabs -->
 </div>
-<!-- End Page Header -->
 
-<!-- Filters -->
-<div class="row justify-content-end mb-3">
-  <div class="col-lg-12">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="card-title">Filtros</h5>
-      </div>
+
+
+<!-- Alerts -->
+@if(session('success'))
+<div class="alert alert-success alert-dismissible" role="alert">
+  <div class="d-flex">
+    <div class="flex-shrink-0">
+      <i class="bi-check-circle-fill"></i>
+    </div>
+    <div class="flex-grow-1 ms-3">
+      {{ session('success') }}
+    </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+<!-- Card -->
+<div class="card">
+  <!-- Header -->
+  <div class="card-header card-header-content-md-between">
+    <div class="mb-2 mb-md-0">
+             <form method="GET" class="d-inline">
+         @foreach(request()->except('search') as $key => $value)
+           <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+         @endforeach
+         <div class="input-group input-group-merge input-group-flush">
+           <div class="input-group-prepend input-group-text">
+             <i class="bi-search"></i>
+           </div>
+           <input name="search" type="search" class="form-control" placeholder="Buscar órdenes..." aria-label="Search orders" value="{{ request('search') }}">
+         </div>
+       </form>
       <div class="card-body">
         <form method="GET" class="row g-3">
           <div class="col-md-3">
@@ -150,8 +136,10 @@
               <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
               <option value="confirmado" {{ request('estado') == 'confirmado' ? 'selected' : '' }}>Confirmado</option>
               <option value="en_preparacion" {{ request('estado') == 'en_preparacion' ? 'selected' : '' }}>En Preparación</option>
+              <option value="proceso" {{ request('estado') == 'proceso' ? 'selected' : '' }}>En Proceso</option>
               <option value="enviado" {{ request('estado') == 'enviado' ? 'selected' : '' }}>Enviado</option>
               <option value="entregado" {{ request('estado') == 'entregado' ? 'selected' : '' }}>Entregado</option>
+              <option value="completado" {{ request('estado') == 'completado' ? 'selected' : '' }}>Completado</option>
               <option value="cancelado" {{ request('estado') == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
             </select>
           </div>
@@ -183,59 +171,6 @@
           </div>
         </form>
       </div>
-    </div>
-  </div>
-</div>
-<!-- End Filters -->
-
-<!-- Alerts -->
-@if(session('success'))
-<div class="alert alert-success alert-dismissible" role="alert">
-  <div class="d-flex">
-    <div class="flex-shrink-0">
-      <i class="bi-check-circle-fill"></i>
-    </div>
-    <div class="flex-grow-1 ms-3">
-      {{ session('success') }}
-    </div>
-  </div>
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-@endif
-
-<!-- Card -->
-<div class="card">
-  <!-- Header -->
-  <div class="card-header card-header-content-md-between">
-    <div class="mb-2 mb-md-0">
-      <div class="input-group input-group-merge input-group-flush">
-        <div class="input-group-prepend input-group-text">
-          <i class="bi-search"></i>
-        </div>
-        <input id="datatableSearch" type="search" class="form-control" placeholder="Buscar órdenes..." aria-label="Search orders" value="{{ request('search') }}">
-      </div>
-    </div>
-
-    <div class="d-grid d-sm-flex gap-2">
-      <!-- Export Dropdown -->
-      <div class="dropdown">
-        <button type="button" class="btn btn-white btn-sm dropdown-toggle w-100" id="ordersExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi-download me-2"></i> Exportar
-        </button>
-
-        <div class="dropdown-menu dropdown-menu-sm-end" aria-labelledby="ordersExportDropdown">
-          <span class="dropdown-header">Opciones</span>
-          <a class="dropdown-item" href="javascript:;" onclick="exportOrders('csv')">
-            <i class="bi-filetype-csv me-2"></i> CSV
-          </a>
-          <a class="dropdown-item" href="javascript:;" onclick="exportOrders('excel')">
-            <i class="bi-file-earmark-excel me-2"></i> Excel
-          </a>
-        </div>
-      </div>
-      <!-- End Export Dropdown -->
-
-
     </div>
   </div>
   <!-- End Header -->
@@ -335,8 +270,7 @@
       </tbody>
     </table>
   </div>
-  <!-- End Table -->
-
+  
   <!-- Footer -->
   <div class="card-footer">
     <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
@@ -347,7 +281,6 @@
           <span id="datatableWithPaginationInfoTotalQty">{{ $orders->total() }}</span>
         </div>
       </div>
-
       <div class="col-sm-auto">
         <div class="d-flex justify-content-center justify-content-sm-end">
           {{ $orders->links() }}
@@ -355,36 +288,13 @@
       </div>
     </div>
   </div>
-  <!-- End Footer -->
 </div>
-<!-- End Card -->
+
 
 @endsection
 
 @section('scripts')
-<!-- DataTables JS -->
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
-
 <script>
-$(document).ready(function() {
-    // Search functionality
-    $('#datatableSearch').on('keyup', function() {
-        const searchValue = $(this).val();
-        if (searchValue.length > 2 || searchValue.length === 0) {
-            const url = new URL(window.location);
-            if (searchValue) {
-                url.searchParams.set('search', searchValue);
-            } else {
-                url.searchParams.delete('search');
-            }
-            window.location.href = url.toString();
-        }
-    });
-});
-
-// No se necesitan funciones adicionales ya que todo se maneja en la vista show
-
 // Export orders
 function exportOrders(format = 'csv') {
     const url = new URL('{{ route("orders.export") }}');

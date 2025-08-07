@@ -51,14 +51,83 @@ class OrderController extends Controller
 
         $orders = $query->orderBy('fecha_pedido', 'desc')->paginate(15)->appends($request->query());
 
-        // Estadísticas
+        // Estadísticas básicas
         $stats = [
             'total_ordenes' => Order::count(),
-            'ordenes_pendientes' => Order::where('estado', 'pendiente')->count(),
-            'ordenes_entregadas' => Order::where('estado', 'entregado')->count(),
+            'ordenes_pendientes' => Order::whereIn('estado', ['pendiente', 'confirmado', 'en_preparacion', 'proceso'])->count(),
+            'ordenes_entregadas' => Order::whereIn('estado', ['entregado', 'completado'])->count(),
             'ventas_mes' => Order::whereMonth('fecha_pedido', now()->month)
                 ->whereYear('fecha_pedido', now()->year)
+                ->where('estado', '!=', 'cancelado')
                 ->sum('total'),
+        ];
+
+        // Estadísticas por estado para gráficas
+        $ordenesPorEstado = Order::selectRaw('estado, count(*) as total')
+            ->groupBy('estado')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->estado => $item->total];
+            });
+
+        // Ventas por mes (últimos 6 meses)
+        $ventasPorMes = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $fecha = now()->subMonths($i);
+            $ventas = Order::whereMonth('fecha_pedido', $fecha->month)
+                ->whereYear('fecha_pedido', $fecha->year)
+                ->where('estado', '!=', 'cancelado')
+                ->sum('total');
+            
+            $ventasPorMes->push([
+                'mes' => $fecha->locale('es')->translatedFormat('M Y'),
+                'ventas' => $ventas
+            ]);
+        }
+
+        // Órdenes por día (últimos 7 días)
+        $ordenesPorDia = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $fecha = now()->subDays($i);
+            $total = Order::whereDate('fecha_pedido', $fecha->toDateString())->count();
+            
+            $ordenesPorDia->push([
+                'dia' => $fecha->locale('es')->translatedFormat('d M'),
+                'total' => $total
+            ]);
+        }
+
+        // Métodos de pago más utilizados
+        $metodosPago = Order::selectRaw('metodo_pago, count(*) as total')
+            ->where('estado', '!=', 'cancelado')
+            ->groupBy('metodo_pago')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                $nombres = [
+                    'efectivo' => 'Efectivo',
+                    'tarjeta' => 'Tarjeta',
+                    'transferencia' => 'Transferencia',
+                    'contra_entrega' => 'Contra Entrega'
+                ];
+                return [$nombres[$item->metodo_pago] ?? $item->metodo_pago => $item->total];
+            });
+
+        // Estadísticas adicionales
+        $statsExtendidas = [
+            'promedio_orden' => Order::where('estado', '!=', 'cancelado')->avg('total') ?? 0,
+            'ordenes_hoy' => Order::whereDate('fecha_pedido', today())->count(),
+            'ordenes_semana' => Order::whereBetween('fecha_pedido', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'total_productos_vendidos' => DB::table('order_items')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.estado', '!=', 'cancelado')
+                ->sum('order_items.cantidad'),
+        ];
+
+        $chartData = [
+            'ordenes_por_estado' => $ordenesPorEstado,
+            'ventas_por_mes' => $ventasPorMes,
+            'ordenes_por_dia' => $ordenesPorDia,
+            'metodos_pago' => $metodosPago,
         ];
 
         return view('pages.orders.index', compact('orders', 'stats'));

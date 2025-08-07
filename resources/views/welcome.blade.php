@@ -196,7 +196,6 @@
               <i class="bi-person-circle"></i> {{ auth()->user()->name }}
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/perfil">Mi Perfil</a></li>
               <li><a class="dropdown-item" href="/mis-pedidos">Mis Pedidos</a></li>
               <li><hr class="dropdown-divider"></li>
               <li>

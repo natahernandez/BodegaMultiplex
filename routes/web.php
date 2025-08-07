@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UserOrderController;
+use App\Http\Controllers\AdminUserController;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
@@ -63,15 +65,25 @@ Route::middleware('auth')->name('shop.')->group(function () {
 
 Auth::routes();
 
+// Rutas para usuarios autenticados (clientes)
 Route::middleware('auth')->group(function () {
+    // Vista de pedidos para usuarios (clientes)
+    Route::prefix('mis-pedidos')->name('user.orders.')->group(function () {
+        Route::get('/', [UserOrderController::class, 'index'])->name('index');
+        Route::get('/{order}', [UserOrderController::class, 'show'])->name('show');
+    });
+});
+
+// Rutas administrativas (solo para administradores)
+Route::middleware(['auth', 'is_admin'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     
-    // Rutas de Productos (Admin) - sin prefijo admin
+    // Rutas de Productos (Admin)
     Route::resource('productos', ProductoController::class);
     Route::put('productos/{producto}/stock', [ProductoController::class, 'updateStock'])->name('productos.updateStock');
     Route::get('productos-datatable', [ProductoController::class, 'datatable'])->name('productos.datatable');
     
-    // Rutas de Órdenes (Admin) - sin prefijo admin
+    // Rutas de Órdenes (Admin)
     Route::resource('orders', OrderController::class);
     Route::put('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::put('orders/{order}/complete', [OrderController::class, 'complete'])->name('orders.complete');
@@ -79,4 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::put('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
     Route::get('orders-export', [OrderController::class, 'export'])->name('orders.export');
     Route::get('orders-dashboard-data', [OrderController::class, 'dashboardData'])->name('orders.dashboardData');
+    
+    // Rutas de Administradores
+    Route::resource('admin-users', AdminUserController::class);
 });

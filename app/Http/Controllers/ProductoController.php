@@ -20,36 +20,85 @@ class ProductoController extends Controller
         
         $query = Producto::with(['imagenes', 'imagenPrincipal']);
 
-        // Filtros
+        // Filtro de búsqueda inteligente (busca en nombre, marca, proveedor, ubicación)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
                   ->orWhere('codigo_barras', 'like', "%{$search}%")
                   ->orWhere('codigo_interno', 'like', "%{$search}%")
-                  ->orWhere('marca', 'like', "%{$search}%");
+                  ->orWhere('marca', 'like', "%{$search}%")
+                  ->orWhere('proveedor', 'like', "%{$search}%")
+                  ->orWhere('ubicacion', 'like', "%{$search}%");
             });
         }
 
+        // Filtro por categoría
         if ($request->filled('categoria')) {
             $query->where('categoria', $request->categoria);
         }
 
+        // Filtro por estado activo/inactivo
+        if ($request->filled('activo')) {
+            $query->where('activo', $request->activo);
+        }
+
+        // Filtro por estado de stock
         if ($request->filled('estado_stock')) {
             switch ($request->estado_stock) {
-                case 'sin_stock':
-                    $query->where('stock_actual', '<=', 0);
+                case 'agotado':
+                    $query->where('stock_actual', '=', 0);
                     break;
-                case 'stock_bajo':
-                    $query->whereColumn('stock_actual', '<=', 'stock_minimo');
+                case 'critico':
+                    $query->where('stock_actual', '>', 0)->where('stock_actual', '<=', 5);
+                    break;
+                case 'bajo':
+                    $query->whereBetween('stock_actual', [6, 10]);
+                    break;
+                case 'normal':
+                    $query->whereBetween('stock_actual', [11, 50]);
+                    break;
+                case 'alto':
+                    $query->where('stock_actual', '>', 50);
                     break;
             }
         }
 
-        $productos = $query->orderBy('nombre')->get();
-        $categorias = Producto::distinct()->pluck('categoria');
+        // Filtro por requiere receta
+        if ($request->filled('requiere_receta')) {
+            $query->where('requiere_receta', $request->requiere_receta);
+        }
 
-        return view('pages.productos.index', compact('productos', 'categorias'));
+        // Filtro por vencimiento
+        if ($request->filled('vencimiento')) {
+            switch ($request->vencimiento) {
+                case 'vencido':
+                    $query->where('fecha_vencimiento', '<', now());
+                    break;
+                case 'proximo':
+                    $query->whereBetween('fecha_vencimiento', [now(), now()->addDays(30)]);
+                    break;
+                case 'vigente':
+                    $query->where(function($q) {
+                        $q->where('fecha_vencimiento', '>', now()->addDays(30))
+                          ->orWhereNull('fecha_vencimiento');
+                    });
+                    break;
+            }
+        }
+
+        $productos = $query->orderBy('nombre')->paginate(15)->appends($request->query());
+        $categorias = Producto::distinct()->pluck('categoria')->filter()->sort();
+
+        // Estadísticas para mostrar
+        $stats = [
+            'total_productos' => Producto::count(),
+            'productos_activos' => Producto::where('activo', true)->count(),
+            'stock_critico' => Producto::where('stock_actual', '>', 0)->where('stock_actual', '<=', 5)->count(),
+            'productos_agotados' => Producto::where('stock_actual', '=', 0)->count(),
+        ];
+
+        return view('pages.productos.index', compact('productos', 'categorias', 'stats'));
     }
 
     /**

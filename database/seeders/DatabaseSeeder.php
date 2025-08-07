@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         // Crear usuario administrador
         $this->call([
             AdminUserSeeder::class,
+            InitialAdminSeeder::class,
         ]);
 
         // Crear usuario de prueba (opcional)
