@@ -6,6 +6,7 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserOrderController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\PagaditoController;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
@@ -61,6 +62,15 @@ Route::middleware('auth')->name('shop.')->group(function () {
     Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
     Route::post('/procesar-orden', [ShopController::class, 'processOrder'])->name('process.order');
     Route::get('/orden/exitosa/{numero_orden}', [ShopController::class, 'orderSuccess'])->name('order.success');
+});
+
+// Rutas de Pagadito (pago en línea)
+Route::prefix('pagos/pagadito')->middleware('auth')->group(function () {
+    // Inicia el pago: redirige al checkout seguro de Pagadito
+    Route::get('/iniciar/{order}', [PagaditoController::class, 'iniciar'])->name('pagadito.iniciar');
+
+    // URL de retorno configurada en Pagadito
+    Route::get('/retorno', [PagaditoController::class, 'retorno'])->name('pagadito.retorno');
 });
 
 Auth::routes();

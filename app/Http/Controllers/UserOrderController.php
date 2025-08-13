@@ -16,8 +16,11 @@ class UserOrderController extends Controller
         $user = Auth::user();
         
         $query = Order::with(['items.producto'])
-            ->where('user_id', $user->id)
-            ->orWhere('email_cliente', $user->email);
+            ->where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('email_cliente', $user->email);
+            })
+            ->whereNotIn('estado', ['expirado']); // No mostrar órdenes expiradas a usuarios
 
         // Filtros
         if ($request->filled('estado')) {
@@ -43,12 +46,18 @@ class UserOrderController extends Controller
 
         $orders = $query->orderBy('fecha_pedido', 'desc')->paginate(10)->appends($request->query());
 
-        // Estadísticas del usuario
+        // Estadísticas del usuario (excluyendo pre-órdenes y expiradas)
+        $baseQuery = function() use ($user) {
+            return Order::where(function($q) use ($user) {
+                $q->where('user_id', $user->id)->orWhere('email_cliente', $user->email);
+            })->whereNotIn('estado', ['pre_orden', 'expirado']);
+        };
+        
         $stats = [
-            'total_ordenes' => Order::where('user_id', $user->id)->orWhere('email_cliente', $user->email)->count(),
-            'ordenes_pendientes' => Order::where('user_id', $user->id)->orWhere('email_cliente', $user->email)->whereIn('estado', ['pendiente', 'confirmado', 'en_preparacion', 'proceso'])->count(),
-            'ordenes_entregadas' => Order::where('user_id', $user->id)->orWhere('email_cliente', $user->email)->whereIn('estado', ['entregado', 'completado'])->count(),
-            'total_gastado' => Order::where('user_id', $user->id)->orWhere('email_cliente', $user->email)->where('estado', '!=', 'cancelado')->sum('total'),
+            'total_ordenes' => $baseQuery()->count(),
+            'ordenes_pendientes' => $baseQuery()->whereIn('estado', ['pendiente', 'confirmado', 'en_preparacion', 'proceso'])->count(),
+            'ordenes_entregadas' => $baseQuery()->whereIn('estado', ['entregado', 'completado'])->count(),
+            'total_gastado' => $baseQuery()->where('estado', '!=', 'cancelado')->sum('total'),
         ];
 
         return view('user.orders.index', compact('orders', 'stats'));

@@ -266,12 +266,8 @@ class ShopController extends Controller
             'notas_cliente' => 'nullable|string',
         ];
 
-        // Si es pago en línea, requerir datos de tarjeta
-        if ($request->tipo_pago === 'linea') {
-            $rules['numero_tarjeta'] = 'required|string|size:19'; // Con espacios: 0000 0000 0000 0000
-            $rules['fecha_vencimiento'] = 'required|string|size:5'; // MM/AA
-            $rules['cvv'] = 'required|string|min:3|max:4';
-        }
+        // Para pago en línea, no necesitamos validar datos de tarjeta aquí
+        // ya que se procesan directamente en Pagadito
 
         $request->validate($rules);
 
@@ -313,17 +309,21 @@ class ShopController extends Controller
                 'departamento' => $request->departamento,
                 'tipo_pago' => $request->tipo_pago,
                 'metodo_pago' => $request->tipo_pago === 'linea' ? 'tarjeta' : 'contra_entrega',
-                'estado' => 'proceso', // Todas las órdenes inician en proceso
-                'estado_pago' => $request->tipo_pago === 'linea' ? 'pagado' : 'contra_entrega',
+                'estado' => $request->tipo_pago === 'linea' ? 'pre_orden' : 'pendiente',
+                'estado_pago' => $request->tipo_pago === 'linea' ? 'pendiente' : 'contra_entrega',
                 'subtotal' => $subtotal,
                 'envio' => $envio,
                 'total' => $total,
                 'notas_cliente' => $request->notas_cliente,
-                // Si es pago en línea, guardamos info de tarjeta (enmascarada por seguridad)
+                'fecha_pedido' => now(),
+                // Pago en línea: expira en 30 minutos si no se completa
+                'fecha_entrega_estimada' => $request->tipo_pago === 'linea' ? now()->addMinutes(30) : null,
+                // Si es pago en línea, se procesará con Pagadito
                 'info_pago' => $request->tipo_pago === 'linea' ? json_encode([
-                    'tipo' => 'tarjeta',
-                    'ultimos_digitos' => substr(str_replace(' ', '', $request->numero_tarjeta), -4),
-                    'fecha_procesamiento' => now(),
+                    'tipo' => 'pagadito',
+                    'estado' => 'iniciando',
+                    'fecha_creacion' => now(),
+                    'expira_en' => now()->addMinutes(30),
                 ]) : null,
             ]);
 
@@ -351,8 +351,14 @@ class ShopController extends Controller
             // Limpiar carrito
             Session::forget('carrito');
 
-            return redirect()->route('shop.order.success', $order->numero_orden)
-                ->with('success', 'Tu pedido ha sido procesado exitosamente');
+            // Si es pago en línea, redirigir a Pagadito
+            if ($request->tipo_pago === 'linea') {
+                return redirect()->route('pagadito.iniciar', $order->id);
+            } else {
+                // Si es contra entrega, ir directo al éxito
+                return redirect()->route('shop.order.success', $order->numero_orden)
+                    ->with('success', 'Tu pedido ha sido procesado exitosamente');
+            }
 
         } catch (\Exception $e) {
             DB::rollBack();

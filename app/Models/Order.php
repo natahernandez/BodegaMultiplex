@@ -90,6 +90,7 @@ class Order extends Model
     public function getEstadoBadgeAttribute()
     {
         $badges = [
+            'pre_orden' => 'bg-secondary',
             'pendiente' => 'bg-warning',
             'confirmado' => 'bg-info',
             'en_preparacion' => 'bg-primary',
@@ -98,6 +99,7 @@ class Order extends Model
             'entregado' => 'bg-success',
             'completado' => 'bg-success',
             'cancelado' => 'bg-danger',
+            'expirado' => 'bg-dark',
         ];
 
         return $badges[$this->estado] ?? 'bg-secondary';
@@ -118,6 +120,7 @@ class Order extends Model
     public function getEstadoTextoAttribute()
     {
         $estados = [
+            'pre_orden' => 'Procesando Pago',
             'pendiente' => 'Pendiente',
             'confirmado' => 'Confirmado',
             'en_preparacion' => 'En Preparación',
@@ -126,6 +129,7 @@ class Order extends Model
             'entregado' => 'Entregado',
             'completado' => 'Completado',
             'cancelado' => 'Cancelado',
+            'expirado' => 'Expirado',
         ];
 
         return $estados[$this->estado] ?? 'Desconocido';
@@ -162,5 +166,52 @@ class Order extends Model
     public function scopeEntregadas($query)
     {
         return $query->where('estado', 'entregado');
+    }
+
+    public function scopePreOrdenes($query)
+    {
+        return $query->where('estado', 'pre_orden');
+    }
+
+    public function scopeExpiradas($query)
+    {
+        return $query->where('estado', 'pre_orden')
+                     ->where('fecha_entrega_estimada', '<', now());
+    }
+
+    // Verificar si la pre-orden ha expirado
+    public function hasExpired()
+    {
+        return $this->estado === 'pre_orden' && 
+               $this->fecha_entrega_estimada && 
+               $this->fecha_entrega_estimada < now();
+    }
+
+    // Expirar una pre-orden
+    public function expire()
+    {
+        if ($this->estado === 'pre_orden') {
+            $this->update([
+                'estado' => 'expirado',
+                'estado_pago' => 'cancelado',
+                'notas_admin' => 'Pre-orden expirada automáticamente por no completar el pago.'
+            ]);
+            return true;
+        }
+        return false;
+    }
+
+    // Confirmar pago de pre-orden
+    public function confirmPayment($paymentData = null)
+    {
+        if ($this->estado === 'pre_orden') {
+            $this->update([
+                'estado' => 'confirmado',
+                'estado_pago' => 'pagado',
+                'info_pago' => $paymentData ? json_encode($paymentData) : $this->info_pago
+            ]);
+            return true;
+        }
+        return false;
     }
 }

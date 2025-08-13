@@ -284,30 +284,23 @@
               </div>
             </div>
 
-            <!-- Datos de Tarjeta (solo para pago en línea) -->
+            <!-- Información de Pago en Línea (Pagadito) -->
             <div id="tarjeta-section" style="display: none;">
               <div class="alert alert-info">
-                <i class="bi-info-circle me-2"></i>
-                <strong>Información de Tarjeta</strong> - Los datos se procesan de forma segura
+                <i class="bi-credit-card me-2"></i>
+                <strong>Pago Seguro con Pagadito</strong>
+                <br><small>Serás redirigido a la plataforma segura de Pagadito para completar tu pago con tarjeta de crédito o débito.</small>
               </div>
               
-              <div class="row">
-                <div class="col-12 mb-3">
-                  <label for="numero_tarjeta" class="form-label">Número de Tarjeta</label>
-                  <input type="text" class="form-control" id="numero_tarjeta" name="numero_tarjeta" 
-                         placeholder="0000 0000 0000 0000" maxlength="19">
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="fecha_vencimiento" class="form-label">Fecha de Vencimiento</label>
-                  <input type="text" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" 
-                         placeholder="MM/AA" maxlength="5">
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="cvv" class="form-label">CVV</label>
-                  <input type="text" class="form-control" id="cvv" name="cvv" 
-                         placeholder="000" maxlength="4">
+              <div class="card border-primary">
+                <div class="card-body text-center">
+                  <i class="bi-shield-check text-primary" style="font-size: 2rem;"></i>
+                  <h6 class="mt-2">Pago 100% Seguro</h6>
+                  <p class="text-muted small mb-0">
+                    • Tarjetas Visa, Mastercard<br>
+                    • Encriptación SSL<br>
+                    • Sin almacenar datos bancarios
+                  </p>
                 </div>
               </div>
             </div>
@@ -392,44 +385,16 @@ function togglePaymentMethod() {
   if (tipoLinea) {
     tarjetaSection.style.display = 'block';
     contraEntregaSection.style.display = 'none';
-    btnText.textContent = 'Pagar Ahora';
-    
-    // Hacer campos de tarjeta requeridos
-    document.getElementById('numero_tarjeta').required = true;
-    document.getElementById('fecha_vencimiento').required = true;
-    document.getElementById('cvv').required = true;
+    btnText.textContent = 'Procesar con Pagadito';
   } else {
     tarjetaSection.style.display = 'none';
     contraEntregaSection.style.display = 'block';
     btnText.textContent = 'Procesar Orden';
-    
-    // Quitar requeridos de tarjeta
-    document.getElementById('numero_tarjeta').required = false;
-    document.getElementById('fecha_vencimiento').required = false;
-    document.getElementById('cvv').required = false;
   }
 }
 
-// Formatear número de tarjeta
-document.getElementById('numero_tarjeta').addEventListener('input', function(e) {
-  let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-  let formattedValue = value.match(/.{1,4}/g)?.join(' ');
-  e.target.value = formattedValue || value;
-});
-
-// Formatear fecha de vencimiento
-document.getElementById('fecha_vencimiento').addEventListener('input', function(e) {
-  let value = e.target.value.replace(/\D/g, '');
-  if (value.length >= 2) {
-    value = value.substring(0, 2) + '/' + value.substring(2, 4);
-  }
-  e.target.value = value;
-});
-
-// Solo números en CVV
-document.getElementById('cvv').addEventListener('input', function(e) {
-  e.target.value = e.target.value.replace(/[^0-9]/g, '');
-});
+// Scripts para Pagadito - no necesitamos validación de tarjeta aquí
+// ya que se procesa directamente en la plataforma de Pagadito
 
 // Inicializar al cargar
 document.addEventListener('DOMContentLoaded', function() {

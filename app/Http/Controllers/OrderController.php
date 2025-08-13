@@ -20,7 +20,13 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        // Por defecto, no mostrar pre-órdenes sin procesar y órdenes expiradas
         $query = Order::with(['user', 'items']);
+        
+        // Mostrar pre-órdenes solo si se solicita específicamente
+        if (!$request->filled('mostrar_pre_ordenes')) {
+            $query->whereNotIn('estado', ['pre_orden', 'expirado']);
+        }
 
         // Filtros
         if ($request->filled('estado')) {
