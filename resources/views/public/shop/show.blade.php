@@ -167,7 +167,7 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/">Inicio</a></li>
-        <li class="breadcrumb-item"><a href="/?categoria={{ $producto->categoria }}">{{ $producto->categoria }}</a></li>
+        <li class="breadcrumb-item"><a href="/?categoria={{ optional($producto->category)->nombre ?? $producto->categoria }}">{{ optional($producto->category)->nombre ?? $producto->categoria }}</a></li>
         <li class="breadcrumb-item active">{{ $producto->nombre }}</li>
       </ol>
     </nav>
@@ -229,15 +229,16 @@
       <div class="col-lg-6">
         <div class="product-info">
           <!-- Category Badge -->
-          <span class="badge bg-primary mb-3">{{ $producto->categoria }}</span>
+          <span class="badge bg-primary mb-3">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
           
           <!-- Product Name -->
           <h1 class="display-5 fw-bold mb-3">{{ $producto->nombre }}</h1>
           
           <!-- Brand -->
-          @if($producto->marca)
+          @php($brandName = optional($producto->brand)->nombre ?? $producto->marca)
+          @if($brandName)
             <p class="text-muted mb-3">
-              <i class="bi-tag me-2"></i>Marca: <strong>{{ $producto->marca }}</strong>
+              <i class="bi-tag me-2"></i>Marca: <strong>{{ $brandName }}</strong>
             </p>
           @endif
           

@@ -7,6 +7,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserOrderController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\PagaditoController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
@@ -92,6 +94,14 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
     Route::resource('productos', ProductoController::class);
     Route::put('productos/{producto}/stock', [ProductoController::class, 'updateStock'])->name('productos.updateStock');
     Route::get('productos-datatable', [ProductoController::class, 'datatable'])->name('productos.datatable');
+    
+    // Rutas de Marcas (Admin)
+    Route::resource('brands', BrandController::class);
+    Route::put('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
+    
+    // Rutas de Categorías (Admin)
+    Route::resource('categories', CategoryController::class);
+    Route::put('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggleStatus');
     
     // Rutas de Órdenes (Admin)
     Route::resource('orders', OrderController::class);

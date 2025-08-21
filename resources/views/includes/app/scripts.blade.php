@@ -1,6 +1,5 @@
 <!-- JS Global Compulsory -->
 <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery-migrate/dist/jquery-migrate.min.js') }}"></script>
 <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
 
 <!-- JS Implementing Plugins -->
@@ -15,7 +14,6 @@
 
 <!-- JS Front -->
 <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/theme.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/hs.theme-appearance-charts.js') }}"></script>
 
 <!-- JS Plugins Init. -->
 <script>

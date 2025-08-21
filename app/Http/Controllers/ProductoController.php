@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use App\Models\ProductoImagen;
+use App\Models\Brand;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -18,7 +20,7 @@ class ProductoController extends Controller
     {
         $this->setSimplePage('Gestión de Productos', 'Administra tu inventario de productos de manera eficiente');
         
-        $query = Producto::with(['imagenes', 'imagenPrincipal']);
+        $query = Producto::with(['imagenes', 'imagenPrincipal', 'brand', 'category']);
 
         // Filtro de búsqueda inteligente (busca en nombre, marca, proveedor, ubicación)
         if ($request->filled('search')) {
@@ -108,10 +110,12 @@ class ProductoController extends Controller
     {
         $this->setSimplePage('Nuevo Producto', 'Agregar un nuevo producto al inventario');
         
-        $categorias = Producto::distinct()->pluck('categoria');
+        $brands = Brand::activos()->orderBy('nombre')->get();
+        $categories = Category::activos()->orderBy('nombre')->get();
+        $categorias = Producto::distinct()->pluck('categoria'); // Mantener categorías antiguas para compatibilidad
         $unidades = ['Unidad', 'Kg', 'Gramos', 'Litro', 'Mililitro', 'Caja', 'Paquete', 'Metro'];
         
-        return view('pages.productos.create', compact('categorias', 'unidades'));
+        return view('pages.productos.create', compact('brands', 'categories', 'categorias', 'unidades'));
     }
 
     /**
@@ -125,7 +129,9 @@ class ProductoController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'marca' => 'nullable|string|max:255',
-            'categoria' => 'required|string|max:255',
+            'categoria' => 'nullable|string|max:255',
+            'brand_id' => 'nullable|exists:brands,id',
+            'category_id' => 'required|exists:categories,id',
             'precio_compra' => 'required|numeric|min:0',
             'precio_venta' => 'required|numeric|min:0',
             'precio_mayoreo' => 'nullable|numeric|min:0',
@@ -144,6 +150,17 @@ class ProductoController extends Controller
         // Generar código interno si no se proporciona
         if (empty($validated['codigo_interno'])) {
             $validated['codigo_interno'] = 'PROD-' . strtoupper(Str::random(8));
+        }
+
+        // Sincronizar campos de marca y categoría
+        if (!empty($validated['brand_id'])) {
+            $brand = Brand::find($validated['brand_id']);
+            $validated['marca'] = $brand ? $brand->nombre : $validated['marca'];
+        }
+        
+        if (!empty($validated['category_id'])) {
+            $category = Category::find($validated['category_id']);
+            $validated['categoria'] = $category ? $category->nombre : $validated['categoria'];
         }
 
         DB::beginTransaction();
@@ -186,11 +203,13 @@ class ProductoController extends Controller
     {
         $this->setSimplePage('Editar Producto', "Modificar información de {$producto->nombre}");
         
-        $producto->load(['imagenes', 'imagenPrincipal']);
-        $categorias = Producto::distinct()->pluck('categoria');
+        $producto->load(['imagenes', 'imagenPrincipal', 'brand', 'category']);
+        $brands = Brand::activos()->orderBy('nombre')->get();
+        $categories = Category::activos()->orderBy('nombre')->get();
+        $categorias = Producto::distinct()->pluck('categoria'); // Mantener categorías antiguas para compatibilidad
         $unidades = ['Unidad', 'Kg', 'Gramos', 'Litro', 'Mililitro', 'Caja', 'Paquete', 'Metro'];
         
-        return view('pages.productos.edit', compact('producto', 'categorias', 'unidades'));
+        return view('pages.productos.edit', compact('producto', 'brands', 'categories', 'categorias', 'unidades'));
     }
 
     /**
@@ -233,7 +252,9 @@ class ProductoController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'marca' => 'nullable|string|max:255',
-            'categoria' => 'required|string|max:255',
+            'categoria' => 'nullable|string|max:255',
+            'brand_id' => 'nullable|exists:brands,id',
+            'category_id' => 'required|exists:categories,id',
             'precio_compra' => 'required|numeric|min:0',
             'precio_venta' => 'required|numeric|min:0',
             'precio_mayoreo' => 'nullable|numeric|min:0',
@@ -251,6 +272,17 @@ class ProductoController extends Controller
             'eliminar_imagenes' => 'nullable|array',
             'eliminar_imagenes.*' => 'integer|exists:producto_imagens,id'
         ]);
+
+        // Sincronizar campos de marca y categoría
+        if (!empty($validated['brand_id'])) {
+            $brand = Brand::find($validated['brand_id']);
+            $validated['marca'] = $brand ? $brand->nombre : $validated['marca'];
+        }
+        
+        if (!empty($validated['category_id'])) {
+            $category = Category::find($validated['category_id']);
+            $validated['categoria'] = $category ? $category->nombre : $validated['categoria'];
+        }
 
         DB::beginTransaction();
         

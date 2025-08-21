@@ -17,6 +17,8 @@ class Producto extends Model
         'descripcion',
         'marca',
         'categoria',
+        'brand_id',
+        'category_id',
         'precio_compra',
         'precio_venta',
         'precio_mayoreo',
@@ -59,6 +61,16 @@ class Producto extends Model
         return $query->where('categoria', $categoria);
     }
 
+    public function scopePorBrand($query, $brandId)
+    {
+        return $query->where('brand_id', $brandId);
+    }
+
+    public function scopePorCategory($query, $categoryId)
+    {
+        return $query->where('category_id', $categoryId);
+    }
+
     // Relaciones
     public function imagenes()
     {
@@ -68,6 +80,16 @@ class Producto extends Model
     public function imagenPrincipal()
     {
         return $this->hasOne(ProductoImagen::class)->where('es_principal', true);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     // Accessors

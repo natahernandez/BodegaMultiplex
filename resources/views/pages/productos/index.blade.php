@@ -276,14 +276,16 @@
                                 </div>
                             </td>
                             <td>
-                                @if ($producto->marca)
-                                    <span class="badge bg-soft-secondary text-secondary">{{ $producto->marca }}</span>
+                                @php($brandName = optional($producto->brand)->nombre ?? $producto->marca)
+                                @if ($brandName)
+                                    <span class="badge bg-soft-secondary text-secondary">{{ $brandName }}</span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
                             </td>
                             <td>
-                                <span class="badge bg-soft-primary text-primary">{{ $producto->categoria }}</span>
+                                @php($categoryName = optional($producto->category)->nombre ?? $producto->categoria)
+                                <span class="badge bg-soft-primary text-primary">{{ $categoryName }}</span>
                             </td>
                             <td>
                                 <span

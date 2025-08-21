@@ -204,11 +204,11 @@
                   @endif
 
                   <dt class="col-sm-4">Marca:</dt>
-                  <dd class="col-sm-8">{{ $producto->marca ?? 'Sin marca' }}</dd>
+                  <dd class="col-sm-8">{{ optional($producto->brand)->nombre ?? ($producto->marca ?? 'Sin marca') }}</dd>
 
                   <dt class="col-sm-4">Categoría:</dt>
                   <dd class="col-sm-8">
-                    <span class="badge bg-soft-info text-info">{{ $producto->categoria }}</span>
+                    <span class="badge bg-soft-info text-info">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
                   </dd>
                 </dl>
               </div>

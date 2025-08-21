@@ -1,0 +1,417 @@
+@extends('layouts.app')
+
+@section('styles')
+    <!-- DataTables CSS via CDN -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+
+    <style>
+        .brand-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+        }
+    </style>
+@endsection
+
+@section('content')
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-sm mb-2 mb-sm-0">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-no-gutter">
+                        <li class="breadcrumb-item"><a class="breadcrumb-link" href="{{ route('home') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Marcas</li>
+                    </ol>
+                </nav>
+
+                <h1 class="page-header-title">Gestión de Marcas</h1>
+                <p class="page-header-text">Administra las marcas de productos de tu inventario</p>
+            </div>
+            
+            <div class="col-sm-auto">
+                <a class="btn btn-primary" href="{{ route('brands.create') }}">
+                    <i class="bi-plus"></i> Nueva Marca
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- End Page Header -->
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Total Marcas</h6>
+                    <div class="row align-items-center gx-2">
+                        <div class="col">
+                            <span class="js-counter display-4 text-dark">{{ $brands->total() }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-soft-success text-success">
+                                <i class="bi-graph-up"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Marcas Activas</h6>
+                    <div class="row align-items-center gx-2">
+                        <div class="col">
+                            <span class="js-counter display-4 text-dark">{{ $brands->where('activo', true)->count() }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-soft-success text-success">
+                                <i class="bi-check-circle"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Marcas Inactivas</h6>
+                    <div class="row align-items-center gx-2">
+                        <div class="col">
+                            <span class="js-counter display-4 text-dark">{{ $brands->where('activo', false)->count() }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-soft-warning text-warning">
+                                <i class="bi-pause-circle"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Stats Cards -->
+
+    <!-- Card -->
+    <div class="card">
+        <!-- Header -->
+        <div class="card-header card-header-content-md-between">
+            <div class="mb-2 mb-md-0">
+                <form>
+                    <!-- Search -->
+                    <div class="input-group input-group-merge input-group-flush">
+                        <div class="input-group-prepend input-group-text">
+                            <i class="bi-search"></i>
+                        </div>
+                        <input id="datatableSearch" type="search" class="form-control" placeholder="Buscar marcas" aria-label="Buscar marcas">
+                    </div>
+                    <!-- End Search -->
+                </form>
+            </div>
+
+            <div class="d-grid d-sm-flex justify-content-md-end align-items-sm-center gap-2">
+                <!-- Dropdown -->
+                <div class="dropdown">
+                    <button type="button" class="btn btn-white btn-sm dropdown-toggle w-100" id="usersExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi-download me-2"></i> Exportar
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-sm-end" aria-labelledby="usersExportDropdown">
+                        <span class="dropdown-header">Opciones</span>
+                        <a id="export-copy" class="dropdown-item" href="#">
+                            <img class="avatar avatar-xss avatar-4x3 me-2" src="{{ asset('svg/illustrations/copy-icon.svg') }}" alt="Image Description">
+                            Copiar
+                        </a>
+                        <a id="export-print" class="dropdown-item" href="#">
+                            <img class="avatar avatar-xss avatar-4x3 me-2" src="{{ asset('svg/illustrations/print-icon.svg') }}" alt="Image Description">
+                            Imprimir
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <span class="dropdown-header">Descargar opciones</span>
+                        <a id="export-excel" class="dropdown-item" href="#">
+                            <img class="avatar avatar-xss avatar-4x3 me-2" src="{{ asset('svg/brands/excel-icon.svg') }}" alt="Image Description">
+                            Excel
+                        </a>
+                        <a id="export-csv" class="dropdown-item" href="#">
+                            <img class="avatar avatar-xss avatar-4x3 me-2" src="{{ asset('svg/components/placeholder-csv-format.svg') }}" alt="Image Description">
+                            .CSV
+                        </a>
+                        <a id="export-pdf" class="dropdown-item" href="#">
+                            <img class="avatar avatar-xss avatar-4x3 me-2" src="{{ asset('svg/brands/pdf-icon.svg') }}" alt="Image Description">
+                            PDF
+                        </a>
+                    </div>
+                </div>
+                <!-- End Dropdown -->
+            </div>
+        </div>
+        <!-- End Header -->
+
+        <!-- Table -->
+        <div class="table-responsive datatable-custom">
+            <table id="datatable" class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table" data-hs-datatables-options='{
+                "columnDefs": [{
+                    "targets": [0],
+                    "orderable": false
+                }],
+                "order": [],
+                "info": {
+                    "totalQty": "#datatableWithPaginationInfoTotalQty"
+                },
+                "search": "#datatableSearch",
+                "entries": "#datatableEntries",
+                "pageLength": 15,
+                "isResponsive": false,
+                "isShowPaging": false,
+                "pagination": "datatablePagination"
+            }'>
+                <thead class="thead-light">
+                    <tr>
+                        <th class="table-column-pe-0">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="datatableCheckAll">
+                                <label class="form-check-label" for="datatableCheckAll"></label>
+                            </div>
+                        </th>
+                        <th class="table-column-ps-0">Marca</th>
+                        <th>Descripción</th>
+                        <th>Productos</th>
+                        <th>Estado</th>
+                        <th>Fecha Creación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach($brands as $brand)
+                    <tr>
+                        <td class="table-column-pe-0">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="{{ $brand->id }}" id="datatableCheckAll{{ $brand->id }}">
+                                <label class="form-check-label" for="datatableCheckAll{{ $brand->id }}"></label>
+                            </div>
+                        </td>
+                        <td class="table-column-ps-0">
+                            <a class="d-flex align-items-center" href="{{ route('brands.show', $brand) }}">
+                                @if($brand->imagen_url)
+                                    <div class="flex-shrink-0">
+                                        <img class="brand-image" src="{{ $brand->imagen_url }}" alt="{{ $brand->nombre }}">
+                                    </div>
+                                @else
+                                    <div class="flex-shrink-0">
+                                        <div class="avatar avatar-soft-primary avatar-circle">
+                                            <span class="avatar-initials">{{ strtoupper(substr($brand->nombre, 0, 2)) }}</span>
+                                        </div>
+                                    </div>
+                                @endif
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="text-inherit mb-0">{{ $brand->nombre }}</h5>
+                                </div>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="d-block h5 text-inherit mb-0">{{ $brand->descripcion ?? 'Sin descripción' }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-soft-secondary text-secondary">{{ $brand->productos_count ?? 0 }} productos</span>
+                        </td>
+                        <td>
+                            @if($brand->activo)
+                                <span class="badge bg-soft-success text-success status-badge">
+                                    <span class="legend-indicator bg-success"></span>Activa
+                                </span>
+                            @else
+                                <span class="badge bg-soft-secondary text-secondary status-badge">
+                                    <span class="legend-indicator bg-secondary"></span>Inactiva
+                                </span>
+                            @endif
+                        </td>
+                        <td>{{ $brand->created_at->format('d/m/Y') }}</td>
+                        <td>
+                            <!-- Dropdown -->
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm rounded-circle" id="settingsDropdown{{ $brand->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi-three-dots-vertical"></i>
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="settingsDropdown{{ $brand->id }}">
+                                    <span class="dropdown-header">Configuración</span>
+
+                                    <a class="dropdown-item" href="{{ route('brands.show', $brand) }}">
+                                        <i class="bi-eye dropdown-item-icon"></i> Ver detalles
+                                    </a>
+                                    <a class="dropdown-item" href="{{ route('brands.edit', $brand) }}">
+                                        <i class="bi-pencil dropdown-item-icon"></i> Editar
+                                    </a>
+
+                                    <div class="dropdown-divider"></div>
+
+                                    <form action="{{ route('brands.toggleStatus', $brand) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="dropdown-item">
+                                            @if($brand->activo)
+                                                <i class="bi-pause dropdown-item-icon"></i> Desactivar
+                                            @else
+                                                <i class="bi-play dropdown-item-icon"></i> Activar
+                                            @endif
+                                        </button>
+                                    </form>
+
+                                    <div class="dropdown-divider"></div>
+
+                                    <form action="{{ route('brands.destroy', $brand) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta marca?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi-trash dropdown-item-icon"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- End Dropdown -->
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <!-- End Table -->
+
+        <!-- Footer -->
+        <div class="card-footer">
+            <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
+                <div class="col-sm mb-2 mb-sm-0">
+                    <div class="d-flex justify-content-center justify-content-sm-start align-items-center">
+                        <span class="me-2">Mostrando:</span>
+                        <!-- Select -->
+                        <div class="tom-select-custom">
+                            <select id="datatableEntries" class="js-select form-select form-select-borderless w-auto" autocomplete="off" data-hs-tom-select-options='{
+                                "searchInDropdown": false,
+                                "hideSearch": true
+                            }'>
+                                <option value="10">10</option>
+                                <option value="15" selected>15</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+                        <!-- End Select -->
+                        <span class="text-secondary me-2">de</span>
+                        <!-- Pagination Quantity -->
+                        <span id="datatableWithPaginationInfoTotalQty"></span>
+                    </div>
+                </div>
+                <!-- End Col -->
+
+                <div class="col-sm-auto">
+                    <div class="d-flex justify-content-center justify-content-sm-end">
+                        <!-- Pagination -->
+                        <nav id="datatablePagination" aria-label="Activity pagination"></nav>
+                    </div>
+                </div>
+                <!-- End Col -->
+            </div>
+            <!-- End Row -->
+        </div>
+        <!-- End Footer -->
+    </div>
+    <!-- End Card -->
+@endsection
+
+@section('scripts')
+    <!-- DataTables JS via CDN -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            var table = $('#datatable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        className: 'd-none',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        className: 'd-none',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'd-none',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        className: 'd-none',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        className: 'd-none',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    }
+                ],
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                }
+            });
+
+            // Export button handlers
+            $('#export-copy').click(function(e) {
+                e.preventDefault();
+                table.button('.buttons-copy').trigger();
+            });
+
+            $('#export-excel').click(function(e) {
+                e.preventDefault();
+                table.button('.buttons-excel').trigger();
+            });
+
+            $('#export-csv').click(function(e) {
+                e.preventDefault();
+                table.button('.buttons-csv').trigger();
+            });
+
+            $('#export-pdf').click(function(e) {
+                e.preventDefault();
+                table.button('.buttons-pdf').trigger();
+            });
+
+            $('#export-print').click(function(e) {
+                e.preventDefault();
+                table.button('.buttons-print').trigger();
+            });
+        });
+    </script>
+@endsection

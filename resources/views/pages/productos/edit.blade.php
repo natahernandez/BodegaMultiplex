@@ -121,34 +121,54 @@
             <div class="col-sm-6">
               <!-- Marca -->
               <div class="mb-4">
-                <label for="marca" class="form-label">Marca</label>
-                <input type="text" class="form-control @error('marca') is-invalid @enderror" 
-                       id="marca" name="marca" 
-                       value="{{ old('marca', $producto->marca) }}" 
-                       placeholder="Marca del producto">
-                @error('marca')
+                <label for="brand_id" class="form-label">Marca</label>
+                <select class="form-select @error('brand_id') is-invalid @enderror" 
+                        id="brand_id" name="brand_id">
+                  <option value="">Seleccionar marca</option>
+                  @foreach($brands as $brand)
+                    <option value="{{ $brand->id }}" {{ old('brand_id', $producto->brand_id) == $brand->id ? 'selected' : '' }}>
+                      {{ $brand->nombre }}
+                    </option>
+                  @endforeach
+                </select>
+                @error('brand_id')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+                <small class="form-text text-muted">
+                  <a href="{{ route('brands.create') }}" target="_blank" class="text-primary">
+                    <i class="bi-plus-circle me-1"></i>Agregar nueva marca
+                  </a>
+                </small>
+                
+                <!-- Campo marca texto para compatibilidad -->
+                <input type="hidden" name="marca" value="{{ old('marca', $producto->brand ? $producto->brand->nombre : $producto->marca) }}">
               </div>
             </div>
 
             <div class="col-sm-6">
               <!-- Categoría -->
               <div class="mb-4">
-                <label for="categoria" class="form-label">Categoría <span class="text-danger">*</span></label>
-                <select class="form-select @error('categoria') is-invalid @enderror" 
-                        id="categoria" name="categoria" required>
+                <label for="category_id" class="form-label">Categoría <span class="text-danger">*</span></label>
+                <select class="form-select @error('category_id') is-invalid @enderror" 
+                        id="category_id" name="category_id" required>
                   <option value="">Seleccionar categoría</option>
-                  @foreach($categorias as $categoria)
-                    <option value="{{ $categoria }}" {{ old('categoria', $producto->categoria) == $categoria ? 'selected' : '' }}>
-                      {{ $categoria }}
+                  @foreach($categories as $category)
+                    <option value="{{ $category->id }}" {{ old('category_id', $producto->category_id) == $category->id ? 'selected' : '' }}>
+                      {{ $category->nombre }}
                     </option>
                   @endforeach
                 </select>
-                <div class="form-text">O escriba una nueva categoría</div>
-                @error('categoria')
+                @error('category_id')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+                <small class="form-text text-muted">
+                  <a href="{{ route('categories.create') }}" target="_blank" class="text-primary">
+                    <i class="bi-plus-circle me-1"></i>Agregar nueva categoría
+                  </a>
+                </small>
+                
+                <!-- Campo categoria texto para compatibilidad -->
+                <input type="hidden" name="categoria" id="categoria_hidden" value="{{ old('categoria', $producto->category ? $producto->category->nombre : $producto->categoria) }}">
               </div>
             </div>
           </div>
@@ -558,6 +578,36 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!Array.from(categoriaSelect.options).some(option => option.value === 'nueva')) {
         const nuevaOpcion = new Option('+ Nueva Categoría', 'nueva', false, false);
         categoriaSelect.add(nuevaOpcion);
+    }
+
+    // Sincronizar campos de marca y categoría para compatibilidad
+    const brandSelect = document.getElementById('brand_id');
+    const categorySelect = document.getElementById('category_id');
+    const marcaHidden = document.querySelector('input[name="marca"]');
+    const categoriaHidden = document.getElementById('categoria_hidden');
+
+    // Función para sincronizar campos
+    function syncFields() {
+        if (brandSelect && marcaHidden && brandSelect.value) {
+            const selectedText = brandSelect.options[brandSelect.selectedIndex].text;
+            marcaHidden.value = selectedText === 'Seleccionar marca' ? '' : selectedText;
+        }
+        
+        if (categorySelect && categoriaHidden && categorySelect.value) {
+            const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
+            categoriaHidden.value = selectedText === 'Seleccionar categoría' ? '' : selectedText;
+        }
+    }
+
+    // Sincronizar al cargar la página
+    syncFields();
+
+    if (brandSelect && marcaHidden) {
+        brandSelect.addEventListener('change', syncFields);
+    }
+
+    if (categorySelect && categoriaHidden) {
+        categorySelect.addEventListener('change', syncFields);
     }
 
     // Confirmación para eliminar imágenes

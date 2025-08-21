@@ -26,6 +26,25 @@
       </a>
     </div>
 
+    <!-- Mantenimiento -->
+    <div class="nav-item">
+      <a class="nav-link dropdown-toggle {{ request()->routeIs(['brands.*', 'categories.*']) ? 'active' : '' }}" href="#navbarVerticalMenuMantenimiento" role="button" data-bs-toggle="collapse" data-bs-target="#navbarVerticalMenuMantenimiento" aria-expanded="{{ request()->routeIs(['brands.*', 'categories.*']) ? 'true' : 'false' }}" aria-controls="navbarVerticalMenuMantenimiento">
+        <i class="bi-gear nav-icon"></i>
+        <span class="nav-link-title">Mantenimiento</span>
+      </a>
+
+      <div id="navbarVerticalMenuMantenimiento" class="nav-collapse collapse {{ request()->routeIs(['brands.*', 'categories.*']) ? 'show' : '' }}" data-bs-parent="#navbarVerticalMenu">
+        <a class="nav-link {{ request()->routeIs('brands.*') ? 'active' : '' }}" href="{{ route('brands.index') }}">
+          <i class="bi-tags nav-icon"></i>
+          <span class="nav-link-title">Marcas</span>
+        </a>
+        <a class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}" href="{{ route('categories.index') }}">
+          <i class="bi-grid nav-icon"></i>
+          <span class="nav-link-title">Categorías</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Órdenes -->
     <div class="nav-item">
       <a class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}" href="{{ route('orders.index') }}">
