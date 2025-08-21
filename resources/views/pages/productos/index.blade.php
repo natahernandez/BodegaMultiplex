@@ -450,8 +450,7 @@
         // Toggle status function
         function toggleStatus(productId, newStatus) {
             const action = newStatus ? 'activar' : 'desactivar';
-            if (confirm(`¿Está seguro de ${action} este producto?`)) {
-                $.ajax({
+            const exec = () => $.ajax({
                     url: `/productos/${productId}`,
                     method: 'PUT',
                     data: {
@@ -459,12 +458,22 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        location.reload();
+                        if (window.Swal) {
+                          Swal.fire({ icon: 'success', title: `Producto ${newStatus ? 'activado' : 'desactivado'}`, timer: 1000, showConfirmButton: false }).then(()=>location.reload());
+                        } else {
+                          location.reload();
+                        }
                     },
                     error: function() {
-                        alert('Error al cambiar el estado del producto');
+                        if (window.Swal) Swal.fire({ icon: 'error', title: 'Error al cambiar el estado' });
+                        else alert('Error al cambiar el estado del producto');
                     }
                 });
+
+            if (window.Swal) {
+              Swal.fire({ icon: 'question', title: `¿Está seguro de ${action} este producto?`, showCancelButton: true, confirmButtonText: 'Sí, continuar', cancelButtonText: 'Cancelar' }).then(r=>{ if (r.isConfirmed) exec(); });
+            } else {
+              if (confirm(`¿Está seguro de ${action} este producto?`)) exec();
             }
         }
 
@@ -490,7 +499,7 @@
             const observaciones = $('#observaciones').val();
 
             if (!stock) {
-                alert('Por favor ingrese el nuevo stock');
+                if (window.Swal) Swal.fire({ icon: 'warning', title: 'Ingrese el nuevo stock' }); else alert('Por favor ingrese el nuevo stock');
                 return;
             }
 
@@ -505,10 +514,14 @@
                 },
                 success: function(response) {
                     $('#updateStockModal').modal('hide');
-                    location.reload(); // Reload the page to show updated data
+                    if (window.Swal) {
+                      Swal.fire({ icon: 'success', title: 'Stock actualizado', timer: 1000, showConfirmButton: false }).then(()=>location.reload());
+                    } else {
+                      location.reload();
+                    }
                 },
                 error: function() {
-                    alert('Error al actualizar el stock');
+                    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error al actualizar el stock' }); else alert('Error al actualizar el stock');
                 }
             });
         }

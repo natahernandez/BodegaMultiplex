@@ -393,6 +393,7 @@
   <!-- Scripts -->
   <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
   <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     // Configuración CSRF
@@ -417,57 +418,97 @@
                 cantidad: newQuantity
             },
             success: function(response) {
-                location.reload();
+                if (window.Swal) {
+                  Swal.fire({ icon: 'success', title: 'Cantidad actualizada', timer: 1000, showConfirmButton: false })
+                    .then(() => location.reload());
+                } else {
+                  location.reload();
+                }
             },
             error: function(xhr) {
                 const response = xhr.responseJSON;
-                showAlert('danger', response.error || 'Error al actualizar el carrito');
+                if (window.Swal) {
+                  Swal.fire({ icon: 'error', title: response.error || 'Error al actualizar el carrito' });
+                } else {
+                  showAlert('danger', response.error || 'Error al actualizar el carrito');
+                }
             }
         });
     }
 
     // Eliminar del carrito
     function removeFromCart(productId, productName = '') {
-        if (productName) {
-            if (!confirm(`¿Estás seguro de que quieres eliminar "${productName}" del carrito?`)) {
-                return;
-            }
-        }
-
-        $.ajax({
+        const proceed = () => $.ajax({
             url: '{{ route("shop.cart.remove") }}',
             method: 'DELETE',
             data: {
                 producto_id: productId
             },
             success: function(response) {
-                location.reload();
+                if (window.Swal) {
+                  Swal.fire({ icon: 'success', title: 'Producto eliminado', timer: 1000, showConfirmButton: false })
+                    .then(() => location.reload());
+                } else {
+                  location.reload();
+                }
             },
             error: function(xhr) {
                 const response = xhr.responseJSON;
-                showAlert('danger', response.error || 'Error al eliminar del carrito');
+                if (window.Swal) {
+                  Swal.fire({ icon: 'error', title: response.error || 'Error al eliminar del carrito' });
+                } else {
+                  showAlert('danger', response.error || 'Error al eliminar del carrito');
+                }
             }
         });
+
+        if (productName && window.Swal) {
+            Swal.fire({
+              icon: 'question',
+              title: `¿Eliminar "${productName}" del carrito?`,
+              showCancelButton: true,
+              confirmButtonText: 'Sí, eliminar',
+              cancelButtonText: 'Cancelar'
+            }).then(r => { if (r.isConfirmed) proceed(); });
+        } else if (productName) {
+            if (confirm(`¿Eliminar "${productName}" del carrito?`)) proceed();
+        } else {
+            proceed();
+        }
     }
 
     function clearCart() {
-    if (!confirm("¿Estás seguro de vaciar todo el carrito?")) return;
-
-    $.ajax({
-        url: "{{ route('shop.cart.clear') }}", // Ruta que crearemos
+      const exec = () => $.ajax({
+        url: "{{ route('shop.cart.clear') }}",
         type: "POST",
-        data: {
-            _token: "{{ csrf_token() }}"
-        },
-        success: function(response) {
-            // Recargar la página o actualizar el DOM
+        data: { _token: "{{ csrf_token() }}" },
+        success: function() {
+          if (window.Swal) {
+            Swal.fire({ icon: 'success', title: 'Carrito vaciado', timer: 1000, showConfirmButton: false })
+              .then(() => location.reload());
+          } else {
             location.reload();
+          }
         },
         error: function() {
-            alert("Error al vaciar el carrito. Intenta de nuevo.");
+          if (window.Swal) Swal.fire({ icon: 'error', title: 'Error al vaciar el carrito' });
+          else alert('Error al vaciar el carrito');
         }
-    });
-}
+      });
+
+      if (window.Swal) {
+        Swal.fire({
+          icon: 'warning',
+          title: '¿Vaciar carrito?',
+          text: 'Esta acción eliminará todos los productos del carrito.',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, vaciar',
+          cancelButtonText: 'Cancelar'
+        }).then(r => { if (r.isConfirmed) exec(); });
+      } else {
+        if (confirm('¿Vaciar carrito?')) exec();
+      }
+    }
 
     // Función para mostrar alertas
     function showAlert(type, message) {
