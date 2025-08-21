@@ -323,7 +323,7 @@
               <span class="stock-badge bg-success text-white">Disponible</span>
             @endif
             <div class="card-body">
-              <span class="category-badge">{{ $producto->categoria }}</span>
+              <span class="category-badge">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
               <h5 class="card-title fw-bold">{{ $producto->nombre }}</h5>
               <p class="text-muted small">{{ Str::limit($producto->descripcion, 70) }}</p>
             </div>
