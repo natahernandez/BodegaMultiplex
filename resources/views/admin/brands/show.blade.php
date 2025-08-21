@@ -200,7 +200,7 @@
                             <i class="bi-pencil me-1"></i> Editar Marca
                         </a>
 
-                        <form action="{{ route('brands.toggleStatus', $brand) }}" method="POST">
+                        <form action="{{ route('brands.toggleStatus', $brand) }}" method="POST" data-confirm="¿Cambiar el estado de esta marca?">
                             @csrf
                             @method('PUT')
                             <button type="submit" class="btn btn-{{ $brand->activo ? 'warning' : 'success' }} w-100">
@@ -221,7 +221,7 @@
                                     <h6 class="dropdown-header">¿Estás seguro?</h6>
                                 </li>
                                 <li>
-                                    <form action="{{ route('brands.destroy', $brand) }}" method="POST">
+                                    <form action="{{ route('brands.destroy', $brand) }}" method="POST" data-confirm="¿Eliminar esta marca de forma permanente?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">

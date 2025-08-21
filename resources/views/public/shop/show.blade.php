@@ -478,7 +478,59 @@ $(document).ready(function () {
         });
     });
 });
-</script>
+
+// Control de cantidad
+function changeQuantity(delta) {
+  const input = document.getElementById('quantity');
+  if (!input) return;
+  const min = parseInt(input.min || '1', 10);
+  const max = parseInt(input.max || '999999', 10);
+  let value = parseInt(input.value || '1', 10) + delta;
+  if (value < min) value = min;
+  if (value > max) value = max;
+  input.value = value;
+}
+
+// Agregar al carrito y redirigir al inicio
+function addToCart() {
+  const cantidad = parseInt(document.getElementById('quantity').value || '1', 10);
+  const button = event.currentTarget;
+  const originalHtml = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Agregando...';
+
+  $.ajax({
+    url: '{{ route('shop.cart.add') }}',
+    method: 'POST',
+    data: {
+      producto_id: {{ $producto->id }},
+      cantidad: cantidad,
+      _token: '{{ csrf_token() }}'
+    },
+    success: function (resp) {
+      if (window.Swal) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Producto agregado al carrito',
+          timer: 1500,
+          showConfirmButton: false
+        }).then(function(){ window.location.href = '{{ route('welcome') }}'; });
+      } else {
+        window.location.href = '{{ route('welcome') }}';
+      }
+    },
+    error: function (xhr) {
+      if (window.Swal) {
+        Swal.fire({ icon: 'error', title: xhr.responseJSON?.error || 'No se pudo agregar al carrito' });
+      } else {
+        alert(xhr.responseJSON?.error || 'No se pudo agregar al carrito');
+      }
+      button.disabled = false;
+      button.innerHTML = originalHtml;
+    }
+  });
+}
+  </script>
 
   
 </body>

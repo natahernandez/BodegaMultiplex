@@ -200,7 +200,7 @@
                             <i class="bi-pencil me-1"></i> Editar Categoría
                         </a>
 
-                        <form action="{{ route('categories.toggleStatus', $category) }}" method="POST">
+                        <form action="{{ route('categories.toggleStatus', $category) }}" method="POST" data-confirm="¿Cambiar el estado de esta categoría?">
                             @csrf
                             @method('PUT')
                             <button type="submit" class="btn btn-{{ $category->activo ? 'warning' : 'success' }} w-100">
@@ -221,7 +221,7 @@
                                     <h6 class="dropdown-header">¿Estás seguro?</h6>
                                 </li>
                                 <li>
-                                    <form action="{{ route('categories.destroy', $category) }}" method="POST">
+                                    <form action="{{ route('categories.destroy', $category) }}" method="POST" data-confirm="¿Eliminar esta categoría de forma permanente?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">

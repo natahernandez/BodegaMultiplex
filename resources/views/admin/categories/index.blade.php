@@ -256,7 +256,7 @@
 
                                     <div class="dropdown-divider"></div>
 
-                                    <form action="{{ route('categories.toggleStatus', $category) }}" method="POST" style="display: inline;">
+                                    <form action="{{ route('categories.toggleStatus', $category) }}" method="POST" style="display: inline;" data-confirm="¿Cambiar el estado de esta categoría?">
                                         @csrf
                                         @method('PUT')
                                         <button type="submit" class="dropdown-item">
@@ -270,7 +270,7 @@
 
                                     <div class="dropdown-divider"></div>
 
-                                    <form action="{{ route('categories.destroy', $category) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta categoría?')">
+                                    <form action="{{ route('categories.destroy', $category) }}" method="POST" style="display: inline;" data-confirm="¿Eliminar esta categoría de forma permanente?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">

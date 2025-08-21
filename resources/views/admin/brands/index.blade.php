@@ -256,7 +256,7 @@
 
                                     <div class="dropdown-divider"></div>
 
-                                    <form action="{{ route('brands.toggleStatus', $brand) }}" method="POST" style="display: inline;">
+                                    <form action="{{ route('brands.toggleStatus', $brand) }}" method="POST" style="display: inline;" data-confirm="¿Cambiar el estado de esta marca?">
                                         @csrf
                                         @method('PUT')
                                         <button type="submit" class="dropdown-item">
@@ -270,7 +270,7 @@
 
                                     <div class="dropdown-divider"></div>
 
-                                    <form action="{{ route('brands.destroy', $brand) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta marca?')">
+                                    <form action="{{ route('brands.destroy', $brand) }}" method="POST" style="display: inline;" data-confirm="¿Eliminar esta marca de forma permanente?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">

@@ -15,6 +15,9 @@
 <!-- JS Front -->
 <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/theme.min.js') }}"></script>
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- JS Plugins Init. -->
 <script>
   $(document).on('ready', function () {
@@ -63,6 +66,83 @@
       HSBsDropdown.init()
     }
   })()
+</script>
+
+<script>
+  // SweetAlert2 - Flash messages
+  (function () {
+    const flash = {
+      success: @json(session('success')), 
+      error: @json(session('error')), 
+      warning: @json(session('warning')), 
+      info: @json(session('info'))
+    };
+    const type = Object.keys(flash).find(k => !!flash[k]);
+    if (type && window.Swal) {
+      Swal.fire({
+        icon: type,
+        title: flash[type],
+        timer: 2500,
+        showConfirmButton: false
+      });
+    }
+  })();
+
+  // SweetAlert2 - Confirmations for forms and links
+  (function () {
+    function attachConfirm(selector, getMessage) {
+      document.querySelectorAll(selector).forEach(function (el) {
+        if (el.dataset.confirmBound) return;
+        el.dataset.confirmBound = '1';
+        el.addEventListener('click', function (e) {
+          const message = getMessage(el) || '¿Estás seguro que deseas continuar?';
+          if (!window.Swal) return; // fallback silently
+          e.preventDefault();
+          Swal.fire({
+            icon: 'question',
+            title: message,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, continuar',
+            cancelButtonText: 'Cancelar'
+          }).then(function (result) {
+            if (result.isConfirmed) {
+              if (el.tagName === 'A' && el.getAttribute('href')) {
+                window.location.href = el.getAttribute('href');
+              } else if (el.closest('form')) {
+                el.closest('form').submit();
+              }
+            }
+          });
+        });
+      });
+    }
+
+    // Forms with data-confirm attribute
+    document.querySelectorAll('form[data-confirm]')
+      .forEach(function (form) {
+        if (form.dataset.confirmBound) return;
+        form.dataset.confirmBound = '1';
+        form.addEventListener('submit', function (e) {
+          if (!window.Swal) return; // fallback
+          e.preventDefault();
+          const message = form.getAttribute('data-confirm') || '¿Confirmas esta acción?';
+          Swal.fire({
+            icon: 'warning',
+            title: message,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+          }).then(function (result) {
+            if (result.isConfirmed) form.submit();
+          });
+        });
+      });
+
+    // Any element with data-confirm-message triggers confirmation on click
+    attachConfirm('[data-confirm-message]', function (el) { return el.getAttribute('data-confirm-message'); });
+    // Common destructive buttons by class
+    attachConfirm('.btn-delete, .btn-danger[data-confirm]', function (el) { return el.getAttribute('data-confirm') || '¿Eliminar este registro?'; });
+  })();
 </script>
 
 @yield('scripts') 
