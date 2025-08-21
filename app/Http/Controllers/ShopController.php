@@ -289,8 +289,8 @@ class ShopController extends Controller
             }
 
             $subtotal = array_sum(array_column($carrito, 'subtotal'));
-            $envio = $subtotal > 200 ? 0 : 25; // Envío gratis para compras mayores a Q200
-            $total = $subtotal + $envio;
+            $envio = 0; // El envío se gestiona aparte; no sumar al total
+            $total = $subtotal; // Total sin IVA ni envío
 
             // Generar número de orden único
             $numeroOrden = 'ORD-' . date('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
@@ -348,14 +348,12 @@ class ShopController extends Controller
 
             DB::commit();
 
-            // Limpiar carrito
-            Session::forget('carrito');
-
-            // Si es pago en línea, redirigir a Pagadito
+            // Si es pago en línea, mantener el carrito hasta confirmar pago
             if ($request->tipo_pago === 'linea') {
                 return redirect()->route('pagadito.iniciar', $order->id);
             } else {
-                // Si es contra entrega, ir directo al éxito
+                // Si es contra entrega, limpiar carrito e ir al éxito
+                Session::forget('carrito');
                 return redirect()->route('shop.order.success', $order->numero_orden)
                     ->with('success', 'Tu pedido ha sido procesado exitosamente');
             }

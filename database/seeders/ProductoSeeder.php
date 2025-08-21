@@ -30,8 +30,7 @@ class ProductoSeeder extends Seeder
                 'unidad_medida' => 'Unidad',
                 'ubicacion' => 'Pasillo 1, Estante A',
                 'proveedor' => 'FEMSA',
-                'activo' => true,
-                'iva' => 16.00
+                'activo' => true
             ],
             [
                 'codigo_barras' => '7501030405060',
@@ -50,8 +49,7 @@ class ProductoSeeder extends Seeder
                 'ubicacion' => 'Refrigerador 1',
                 'proveedor' => 'Grupo Lala',
                 'fecha_vencimiento' => now()->addDays(15),
-                'activo' => true,
-                'iva' => 0.00
+                'activo' => true
             ],
             [
                 'codigo_barras' => '7501110203040',
@@ -69,8 +67,7 @@ class ProductoSeeder extends Seeder
                 'unidad_medida' => 'Unidad',
                 'ubicacion' => 'Pasillo 3, Estante B',
                 'proveedor' => 'Fabrica de Jabón La Corona',
-                'activo' => true,
-                'iva' => 16.00
+                'activo' => true
             ],
             [
                 'codigo_barras' => '7801234567891',
@@ -88,8 +85,7 @@ class ProductoSeeder extends Seeder
                 'unidad_medida' => 'Kg',
                 'ubicacion' => 'Pasillo 2, Estante A',
                 'proveedor' => 'Distribuidora de Granos SA',
-                'activo' => true,
-                'iva' => 0.00
+                'activo' => true
             ],
             [
                 'codigo_barras' => '7502345678901',
@@ -127,8 +123,7 @@ class ProductoSeeder extends Seeder
                 'ubicacion' => 'Estante Pan',
                 'proveedor' => 'Grupo Bimbo',
                 'fecha_vencimiento' => now()->addDays(5),
-                'activo' => true,
-                'iva' => 0.00
+                'activo' => true
             ],
             [
                 'codigo_barras' => '7504567890123',
@@ -184,8 +179,7 @@ class ProductoSeeder extends Seeder
                 'unidad_medida' => 'Paquete',
                 'ubicacion' => 'Pasillo 3, Estante A',
                 'proveedor' => 'Kimberly Clark',
-                'activo' => true,
-                'iva' => 16.00
+                'activo' => true
             ],
             [
                 'codigo_barras' => '7507890123456',
@@ -203,8 +197,7 @@ class ProductoSeeder extends Seeder
                 'unidad_medida' => 'Unidad',
                 'ubicacion' => 'Pasillo 2, Estante D',
                 'proveedor' => 'Grupo Herdez',
-                'activo' => true,
-                'iva' => 0.00
+                'activo' => true
             ]
         ];
 

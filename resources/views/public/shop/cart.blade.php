@@ -267,21 +267,12 @@
                   <dl class="row text-sm-end">
                     <dt class="col-sm-6">Subtotal:</dt>
                     <dd class="col-sm-6">Q{{ number_format($total, 2) }}</dd>
-                    <dt class="col-sm-6">Envío:</dt>
-                    <dd class="col-sm-6">
-                      @if($total >= 200)
-                        <span class="text-success">Gratis</span>
-                      @else
-                        Q25.00
-                      @endif
-                    </dd>
-                    <dt class="col-sm-6">IVA (12%):</dt>
-                    <dd class="col-sm-6">Q{{ number_format($total * 0.12, 2) }}</dd>
                     <dt class="col-sm-6 border-top pt-2"><strong>Total:</strong></dt>
                     <dd class="col-sm-6 border-top pt-2">
-                      <strong>Q{{ number_format($total + ($total >= 200 ? 0 : 25) + ($total * 0.12), 2) }}</strong>
+                      <strong>Q{{ number_format($total, 2) }}</strong>
                     </dd>
                   </dl>
+                  
                 </div>
               </div>
             </div>
@@ -323,24 +314,11 @@
                   <span>Artículos ({{ $totalItems }}):</span>
                   <span>Q{{ number_format($total, 2) }}</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2">
-                  <span>Envío:</span>
-                  <span class="{{ $total >= 200 ? 'text-success' : '' }}">
-                    @if($total >= 200)
-                      Gratis
-                    @else
-                      Q25.00
-                    @endif
-                  </span>
-                </div>
-                <div class="d-flex justify-content-between mb-3">
-                  <span>IVA (12%):</span>
-                  <span>Q{{ number_format($total * 0.12, 2) }}</span>
-                </div>
+                
                 <hr>
                 <div class="d-flex justify-content-between fw-bold fs-5">
                   <span>Total:</span>
-                  <span>Q{{ number_format($total + ($total >= 200 ? 0 : 25) + ($total * 0.12), 2) }}</span>
+                  <span>Q{{ number_format($total, 2) }}</span>
                 </div>
               </div>
               

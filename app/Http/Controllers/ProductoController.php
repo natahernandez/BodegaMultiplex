@@ -143,8 +143,7 @@ class ProductoController extends Controller
             'proveedor' => 'nullable|string|max:255',
             'fecha_vencimiento' => 'nullable|date',
             'imagenes.*' => 'nullable|image|max:5120', // 5MB = 5120KB, all image formats allowed
-            'requiere_receta' => 'boolean',
-            'iva' => 'nullable|numeric|min:0|max:100'
+            'requiere_receta' => 'boolean'
         ]);
 
         // Generar código interno si no se proporciona
@@ -268,7 +267,6 @@ class ProductoController extends Controller
             'imagenes.*' => 'nullable|image|max:5120', // 5MB = 5120KB, all image formats allowed
             'activo' => 'boolean',
             'requiere_receta' => 'boolean',
-            'iva' => 'nullable|numeric|min:0|max:100',
             'eliminar_imagenes' => 'nullable|array',
             'eliminar_imagenes.*' => 'integer|exists:producto_imagens,id'
         ]);

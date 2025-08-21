@@ -300,10 +300,7 @@
               </dd>
               @endif
 
-              @if($producto->iva > 0)
-              <dt class="col-sm-4">IVA:</dt>
-              <dd class="col-sm-8">{{ $producto->iva }}%</dd>
-              @endif
+              
 
               <dt class="col-sm-4">Creado:</dt>
               <dd class="col-sm-8">{{ $producto->created_at->format('d/m/Y H:i') }}</dd>

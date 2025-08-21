@@ -48,23 +48,34 @@ class PagaditoController extends Controller
             ]);
             return redirect()->back()->withErrors(['pagadito' => 'No se pudo conectar con Pagadito. Intenta de nuevo.']);
         }
+        // Forzar moneda USD explícitamente (los importes enviados estarán en USD)
+        $pg->change_currency_usd();
 
-        // 2) Agregar ítems (detalles) que verá el cliente en Pagadito
-        foreach ($order->items as $item) {
-            $pg->add_detail(
-                (int) $item->cantidad,
-                mb_substr($item->nombre_producto, 0, 250),
-                number_format($item->precio_unitario, 2, '.', '')
-            );
+        // 2) Obtener tasa de cambio GTQ->USD y convertir importes mostrados al usuario (GTQ) a USD para Pagadito
+        $gtqToUsdRate = (float) $pg->get_exchange_rate_gtq();
+        if ($gtqToUsdRate <= 0) {
+            Log::warning('Fallo al obtener tasa de cambio GTQ desde Pagadito, usando respaldo de entorno.', [
+                'rs_code' => $pg->get_rs_code(),
+                'rs_message' => $pg->get_rs_message(),
+                'order_id' => $order->id
+            ]);
+            $gtqToUsdRate = (float) env('GTQ_USD_RATE', 7.8);
         }
 
-        // Si manejas descuentos/envíos, agrégalos como línea positiva/negativa según convenga.
-        if ($order->descuento > 0) {
-            $pg->add_detail(1, 'Descuento', number_format(0 - $order->descuento, 2, '.', ''));
+        // Nota: evitamos enviar custom_params para reducir rechazos de la API
+
+        // 3) Enviar una sola línea con el total en USD (simplifica y evita rechazos por descuentos negativos)
+        $totalUsd = round(((float) $order->total) / $gtqToUsdRate, 2);
+        if ($totalUsd <= 0) {
+            Log::error('Total USD inválido para Pagadito', [
+                'order_id' => $order->id,
+                'total_gtq' => (float) $order->total,
+                'rate' => $gtqToUsdRate,
+                'total_usd' => $totalUsd
+            ]);
+            return redirect()->route('shop.checkout')->with('error', 'No se pudo iniciar el pago.');
         }
-        if ($order->envio > 0) {
-            $pg->add_detail(1, 'Envío', number_format($order->envio, 2, '.', ''));
-        }
+        $pg->add_detail(1, 'Orden ' . $order->numero_orden . ' - Bodegas Multiplex', $totalUsd);
 
         // 3) ERN propio (número de pedido)
         $ern = $order->numero_orden;
@@ -136,6 +147,8 @@ class PagaditoController extends Controller
                     ];
                     
                     $order->confirmPayment($paymentData);
+                    // Limpiar carrito del usuario tras pago exitoso
+                    try { session()->forget('carrito'); } catch (\Throwable $t) {}
                     
                     Log::info('Pago completado exitosamente', [
                         'order_id' => $order->id,

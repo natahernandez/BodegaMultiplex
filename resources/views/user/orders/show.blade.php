@@ -140,10 +140,7 @@
           <dt class="col-sm-6">Subtotal:</dt>
           <dd class="col-sm-6 text-end">Q{{ number_format($order->subtotal, 2) }}</dd>
 
-          @if($order->impuestos > 0)
-          <dt class="col-sm-6">Impuestos:</dt>
-          <dd class="col-sm-6 text-end">Q{{ number_format($order->impuestos, 2) }}</dd>
-          @endif
+          
 
           @if($order->envio > 0)
           <dt class="col-sm-6">Envío:</dt>

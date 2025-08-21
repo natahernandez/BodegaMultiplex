@@ -290,6 +290,7 @@
                 <i class="bi-credit-card me-2"></i>
                 <strong>Pago Seguro con Pagadito</strong>
                 <br><small>Serás redirigido a la plataforma segura de Pagadito para completar tu pago con tarjeta de crédito o débito.</small>
+                <br><small>Los precios aquí se muestran en Quetzales (GTQ). En Pagadito verás el equivalente en USD calculado automáticamente.</small>
               </div>
               
               <div class="card border-primary">

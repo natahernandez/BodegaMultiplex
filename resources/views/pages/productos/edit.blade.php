@@ -234,24 +234,7 @@
             </div>
           </div>
 
-          <!-- IVA -->
-          <div class="row">
-            <div class="col-sm-6">
-              <div class="mb-4">
-                <label for="iva" class="form-label">IVA (%)</label>
-                <div class="input-group">
-                  <input type="number" step="0.01" min="0" max="100" 
-                         class="form-control @error('iva') is-invalid @enderror" 
-                         id="iva" name="iva" 
-                         value="{{ old('iva', $producto->iva) }}">
-                  <span class="input-group-text">%</span>
-                  @error('iva')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                  @enderror
-                </div>
-              </div>
-            </div>
-          </div>
+          
         </div>
       </div>
 

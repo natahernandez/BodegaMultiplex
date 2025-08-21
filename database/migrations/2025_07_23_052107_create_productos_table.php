@@ -32,7 +32,6 @@ return new class extends Migration
             $table->string('imagen')->nullable();
             $table->boolean('activo')->default(true);
             $table->boolean('requiere_receta')->default(false);
-            $table->decimal('iva', 5, 2)->default(0.00); // Porcentaje de IVA
             $table->timestamps();
         });
     }

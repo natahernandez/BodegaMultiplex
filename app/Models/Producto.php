@@ -31,15 +31,13 @@ class Producto extends Model
         'fecha_vencimiento',
         'imagen',
         'activo',
-        'requiere_receta',
-        'iva'
+        'requiere_receta'
     ];
 
     protected $casts = [
         'precio_compra' => 'decimal:2',
         'precio_venta' => 'decimal:2',
         'precio_mayoreo' => 'decimal:2',
-        'iva' => 'decimal:2',
         'fecha_vencimiento' => 'date',
         'activo' => 'boolean',
         'requiere_receta' => 'boolean',
@@ -95,12 +93,12 @@ class Producto extends Model
     // Accessors
     public function getPrecioVentaFormateadoAttribute()
     {
-        return '$' . number_format($this->precio_venta, 2);
+        return 'Q' . number_format($this->precio_venta, 2);
     }
 
     public function getPrecioCompraFormateadoAttribute()
     {
-        return '$' . number_format($this->precio_compra, 2);
+        return 'Q' . number_format($this->precio_compra, 2);
     }
 
     public function getMargenGananciaAttribute()
