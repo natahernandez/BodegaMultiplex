@@ -290,38 +290,9 @@
 
         <!-- Footer -->
         <div class="card-footer">
-            <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <div class="d-flex justify-content-center justify-content-sm-start align-items-center">
-                        <span class="me-2">Mostrando:</span>
-                        <!-- Select -->
-                        <div class="tom-select-custom">
-                            <select id="datatableEntries" class="js-select form-select form-select-borderless w-auto" autocomplete="off" data-hs-tom-select-options='{
-                                "searchInDropdown": false,
-                                "hideSearch": true
-                            }'>
-                                <option value="10">10</option>
-                                <option value="15" selected>15</option>
-                                <option value="20">20</option>
-                            </select>
-                        </div>
-                        <!-- End Select -->
-                        <span class="text-secondary me-2">de</span>
-                        <!-- Pagination Quantity -->
-                        <span id="datatableWithPaginationInfoTotalQty"></span>
-                    </div>
-                </div>
-                <!-- End Col -->
-
-                <div class="col-sm-auto">
-                    <div class="d-flex justify-content-center justify-content-sm-end">
-                        <!-- Pagination -->
-                        <nav id="datatablePagination" aria-label="Activity pagination"></nav>
-                    </div>
-                </div>
-                <!-- End Col -->
+            <div class="d-flex justify-content-center">
+                {{ $brands->links() }}
             </div>
-            <!-- End Row -->
         </div>
         <!-- End Footer -->
     </div>
@@ -344,7 +315,11 @@
         $(document).ready(function() {
             // Initialize DataTable
             var table = $('#datatable').DataTable({
-                dom: 'Bfrtip',
+                // Solo habilitamos los botones, sin paginación/filters propios de DataTables
+                dom: 'Brt',
+                paging: false,
+                info: false,
+                searching: false,
                 buttons: [
                     {
                         extend: 'copy',

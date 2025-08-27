@@ -375,19 +375,8 @@
         
         <!-- Footer -->
         <div class="card-footer">
-            <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <div class="d-flex justify-content-center justify-content-sm-start align-items-center">
-                        <span class="me-2">Mostrando:</span>
-                        <span class="text-secondary me-2">{{ $productos->firstItem() ?? 0 }} - {{ $productos->lastItem() ?? 0 }} de</span>
-                        <span id="datatableWithPaginationInfoTotalQty">{{ $productos->total() }}</span>
-                    </div>
-                </div>
-                <div class="col-sm-auto">
-                    <div class="d-flex justify-content-center justify-content-sm-end">
-                        {{ $productos->links() }}
-                    </div>
-                </div>
+            <div class="d-flex justify-content-center">
+                {{ $productos->links() }}
             </div>
         </div>
     </div>
