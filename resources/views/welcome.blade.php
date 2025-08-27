@@ -1,424 +1,233 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <title>Bodegas Multiplex - Tienda Online</title>
+    <title>Bodegas Multiphlex - Tienda Online</title>
 
-  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
-
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8f9fa;
-    }
-
-    /* Navbar */
-    .navbar {
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-      background: #fff;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-    }
-
-    /* Hero Section */
-    .hero-section {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 60px 0;
-      border-radius: 0 0 25px 25px;
-      margin-bottom: 40px;
-      text-align: center;
-    }
-
-    .hero-section h1 {
-      font-size: 2.8rem;
-      font-weight: bold;
-    }
-
-    .hero-section .badge {
-      background: rgba(255, 255, 255, 0.2);
-      font-size: 0.9rem;
-      margin: 5px;
-    }
-
-    /* Filtros */
-    .filters-section {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      margin-bottom: 30px;
-    }
-
-    /* Tarjetas de productos */
-    .product-card {
-      border: none;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      background: white;
-      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .product-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .product-image {
-      height: 220px;
-      object-fit: contain;
-      background: #f8f9fa;
-      transition: transform 0.3s;
-    }
-
-    .product-card:hover .product-image {
-      transform: scale(1.05);
-    }
-
-    .price-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: linear-gradient(45deg, #007bff, #0056b3);
-      color: white;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    .stock-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      padding: 4px 10px;
-      border-radius: 15px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .category-badge {
-      background: linear-gradient(45deg, #28a745, #20c997);
-      color: white;
-      font-size: 0.8rem;
-      padding: 4px 12px;
-      border-radius: 12px;
-      display: inline-block;
-      margin-bottom: 8px;
-    }
-
-    .btn-add-cart {
-      background: linear-gradient(45deg, #007bff, #0056b3);
-      border: none;
-      border-radius: 25px;
-      padding: 10px 25px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      color: white;
-    }
-
-    .btn-add-cart:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
-    }
-
-    .btn-outline-primary.btn-sm {
-      border-radius: 20px;
-    }
-
-    /* Footer */
-    footer {
-      background: #343a40;
-      color: #ddd;
-      padding-top: 40px;
-      margin-top: 60px;
-    }
-
-    footer h6, footer h5 {
-      color: #fff;
-      font-weight: bold;
-    }
-
-    footer a {
-      color: #ccc;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      color: white;
-    }
-
-    footer .bi {
-      font-size: 1.5rem;
-    }
-  </style>
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/estilos-pagina-principal.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
+
 <body>
-  <!-- Navbar -->
-<header class="navbar navbar-expand-lg navbar-light">
-  <div class="container">
-    <a class="navbar-brand text-primary" href="/">Bodegas <span class="text-warning">Multiplex</span></a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <header class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand text-primary" href="/">Bodegas <span class="text-warning">Multiphlex</span></a>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <div class="ms-auto d-flex align-items-center">
-        <!-- Carrito -->
-        <a href="{{ route('shop.cart') }}" class="btn btn-outline-primary position-relative me-3">
-          <i class="bi-cart3 fs-5"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">
-            {{ session('carrito') ? array_sum(array_column(session('carrito'), 'cantidad')) : 0 }}
-          </span>
-        </a>
-
-        <!-- Botones de usuario -->
-        @auth
-          <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-              <i class="bi-person-circle"></i> {{ auth()->user()->name }}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/mis-pedidos">Mis Pedidos</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <form method="POST" action="{{ route('logout') }}">
-                  @csrf
-                  <button type="submit" class="dropdown-item text-danger">Cerrar Sesión</button>
-                </form>
-              </li>
-            </ul>
-          </div>
-        @else
-          <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">Iniciar Sesión</a>
-          <a href="{{ route('register') }}" class="btn btn-primary">Registrarse</a>
-        @endauth
-      </div>
-    </div>
-  </div>
-</header>
 
-  <!-- Hero Section -->
-  <div class="hero-section">
-    <h1> <strong class="text-white">Bienvenidos a Bodegas Multiplex</strong></h1>
-    <p>Encuentra los mejores productos con envío a toda Guatemala</p>
-    <span class="badge"><i class="bi-truck"></i> Envío Gratis en compras +Q200</span>
-    <span class="badge"><i class="bi-clock"></i> Entrega en 24-48 horas</span>
-  </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto d-flex align-items-center">
 
-  <main class="container">
-    
-    <!-- Filtros -->
-    <!-- Filtros + Buscador -->
-  <div class="filters-section shadow-sm p-4 rounded bg-white mb-4">
-    <form method="GET" class="row g-3 align-items-end">
-      <!-- Buscador -->
-      <div class="col-md-4">
-        <label class="form-label fw-semibold">Buscar Producto</label>
-        <div class="input-group">
-          <input type="search" 
-                 name="search" 
-                 value="{{ request('search') }}" 
-                 class="form-control" 
-                 placeholder="Buscar productos...">
-          <button class="btn btn-primary px-3" type="submit">
-            <i class="bi-search fs-5"></i>
-          </button>
-        </div>
-      </div>
+                    <!-- Carrito -->
+                    <a href="{{ route('shop.cart') }}" class="btn btn-outline-primary position-relative me-3">
+                        <i class="bi-cart3 fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            id="cartCount">
+                            {{ session('carrito') ? array_sum(array_column(session('carrito'), 'cantidad')) : 0 }}
+                        </span>
+                    </a>
 
-      <!-- Categoría -->
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">Categoría</label>
-        <select name="categoria" class="form-select">
-          <option value="">Todas</option>
-          @foreach($categorias as $categoria)
-            <option value="{{ $categoria }}" {{ request('categoria') == $categoria ? 'selected' : '' }}>
-              {{ $categoria }}
-            </option>
-          @endforeach
-        </select>
-      </div>
-
-      <!-- Precio Mín -->
-      <div class="col-md-2">
-        <label class="form-label fw-semibold">Precio Mín.</label>
-        <input type="number" 
-               name="precio_min" 
-               class="form-control" 
-               value="{{ request('precio_min') }}" 
-               placeholder="0">
-      </div>
-
-      <!-- Precio Máx -->
-      <div class="col-md-2">
-        <label class="form-label fw-semibold">Precio Máx.</label>
-        <input type="number" 
-               name="precio_max" 
-               class="form-control" 
-               value="{{ request('precio_max') }}" 
-               placeholder="1000">
-      </div>
-
-      <!-- Ordenar -->
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">Ordenar</label>
-        <select name="order_by" class="form-select">
-          <option value="created_at" {{ request('order_by') == 'created_at' ? 'selected' : '' }}>Más recientes</option>
-          <option value="precio_asc" {{ request('order_by') == 'precio_asc' ? 'selected' : '' }}>Precio: Menor a Mayor</option>
-          <option value="precio_desc" {{ request('order_by') == 'precio_desc' ? 'selected' : '' }}>Precio: Mayor a Menor</option>
-        </select>
-      </div>
-
-      <!-- Botones -->
-      <div class="col-md-3 d-flex gap-2">
-        <button type="submit" class="btn btn-primary w-50">
-          <i class="bi-funnel me-1"></i> Filtrar
-        </button>
-
-        @if(request('search') || request('categoria') || request('precio_min') || request('precio_max') || request('order_by'))
-          <a href="/" class="btn btn-outline-secondary w-50">
-            <i class="bi-arrow-clockwise me-1"></i> Limpiar
-          </a>
-        @endif
-      </div>
-    </form>
-  </div>
-
-    <!-- Productos -->
-    <div class="row">
-      @foreach($productos as $producto)
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-          <div class="card product-card position-relative">
-            @if($producto->imagen_principal_url)
-              <img src="{{ $producto->imagen_principal_url }}" class="card-img-top product-image" alt="{{ $producto->nombre }}">
-            @else
-              <div class="product-image d-flex align-items-center justify-content-center">
-                <i class="bi-image fs-3 text-muted"></i>
-              </div>
-            @endif
-            <span class="price-badge">Q{{ number_format($producto->precio_venta, 2) }}</span>
-            @if($producto->stock_actual <= 0)
-              <span class="stock-badge bg-danger text-white">Agotado</span>
-            @elseif($producto->stock_actual <= $producto->stock_minimo)
-              <span class="stock-badge bg-warning text-dark">Stock Bajo</span>
-            @else
-              <span class="stock-badge bg-success text-white">Disponible</span>
-            @endif
-            <div class="card-body">
-              <span class="category-badge">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
-              <h5 class="card-title fw-bold">{{ $producto->nombre }}</h5>
-              <p class="text-muted small">{{ Str::limit($producto->descripcion, 70) }}</p>
+                    <!-- Botones de usuario -->
+                    @auth
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi-person-circle"></i> {{ auth()->user()->name }}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/mis-pedidos">Mis Pedidos</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">Cerrar Sesión</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">Iniciar Sesión</a>
+                        <a href="{{ route('register') }}" class="btn btn-primary">Registrarse</a>
+                    @endauth
+                </div>
             </div>
-            <div class="card-footer bg-transparent">
-              <button class="btn btn-add-cart w-100 mb-2" onclick="addToCart({{ $producto->id }}, '{{ $producto->nombre }}')">
-                <i class="bi-cart-plus"></i> Agregar al Carrito
-              </button>
-              <a href="{{ route('shop.product.show', $producto) }}" class="btn btn-outline-primary w-100 btn-sm">
-                <i class="bi-eye"></i> Ver Detalles
-              </a>
-            </div>
-          </div>
         </div>
-      @endforeach
+    </header>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1> <strong class="text-white">Bienvenidos a Bodegas Multiphlex</strong></h1>
+        <p>Encuentra los mejores productos con envío a toda Guatemala</p>
+        <span class="badge"><i class="bi-truck"></i> Envío Gratis en compras mayores a Q200</span>
+        <span class="badge"><i class="bi-clock"></i> Entrega en 24-48 horas</span>
     </div>
 
-    <!-- Paginación -->
-    <div class="d-flex justify-content-center">
-      {{ $productos->links() }}
-    </div>
-  </main>
+    <main class="container">
+        <div class="filters-section shadow-sm p-4 rounded bg-white mb-4">
+            <form method="GET" class="row g-3 align-items-end">
 
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <div class="row">
-        <div class="col-md-4">
-          <h5>Bodegas Multiplex</h5>
-          <p>Tu tienda de confianza con los mejores productos.</p>
+                <!-- Buscador -->
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Buscar Producto</label>
+                    <div class="input-group">
+                        <input type="search" name="search" value="{{ request('search') }}" class="form-control"
+                            placeholder="Buscar productos...">
+                        <button class="btn btn-primary px-3" type="submit">
+                            <i class="bi-search fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtro de Categoría -->
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Categoría</label>
+                    <select name="categoria" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach ($categorias as $categoria)
+                            <option value="{{ $categoria }}"
+                                {{ request('categoria') == $categoria ? 'selected' : '' }}>
+                                {{ $categoria }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Precio Mín -->
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Precio Mín.</label>
+                    <input type="number" name="precio_min" class="form-control" value="{{ request('precio_min') }}"
+                        placeholder="0">
+                </div>
+
+                <!-- Precio Máx -->
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Precio Máx.</label>
+                    <input type="number" name="precio_max" class="form-control" value="{{ request('precio_max') }}"
+                        placeholder="1000">
+                </div>
+
+                <!-- Ordenar -->
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Ordenar</label>
+                    <select name="order_by" class="form-select">
+                        <option value="created_at" {{ request('order_by') == 'created_at' ? 'selected' : '' }}>Más
+                            recientes</option>
+                        <option value="precio_asc" {{ request('order_by') == 'precio_asc' ? 'selected' : '' }}>Precio:
+                            Menor a Mayor</option>
+                        <option value="precio_desc" {{ request('order_by') == 'precio_desc' ? 'selected' : '' }}>
+                            Precio: Mayor a Menor</option>
+                    </select>
+                </div>
+
+                <!-- Boton de Filtrar-->
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-50">
+                        <i class="bi-funnel me-1"></i> Filtrar
+                    </button>
+
+                    <!-- Boton de Limpiar -->
+                    @if (request('search') || request('categoria') || request('precio_min') || request('precio_max') || request('order_by'))
+                        <a href="/" class="btn btn-outline-secondary w-50">
+                            <i class="bi-arrow-clockwise me-1"></i> Limpiar
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
-        <div class="col-md-4">
-          <h6>Categorías</h6>
-          <ul class="list-unstyled">
-            @foreach($categorias->take(5) as $categoria)
-              <li><a href="?categoria={{ $categoria }}">{{ $categoria }}</a></li>
+
+        <!-- Productos -->
+        <div class="row">
+            @foreach ($productos as $producto)
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card product-card position-relative">
+                        @if ($producto->imagen_principal_url)
+                            <img src="{{ $producto->imagen_principal_url }}" class="card-img-top product-image"
+                                alt="{{ $producto->nombre }}">
+                        @else
+                            <div class="product-image d-flex align-items-center justify-content-center">
+                                <i class="bi-image fs-3 text-muted"></i>
+                            </div>
+                        @endif
+                        <span class="price-badge">Q{{ number_format($producto->precio_venta, 2) }}</span>
+                        @if ($producto->stock_actual <= 0)
+                            <span class="stock-badge bg-danger text-white">Agotado</span>
+                        @elseif($producto->stock_actual <= $producto->stock_minimo)
+                            <span class="stock-badge bg-warning text-dark">Stock Bajo</span>
+                        @else
+                            <span class="stock-badge bg-success text-white">Disponible</span>
+                        @endif
+                        <div class="card-body">
+                            <span
+                                class="category-badge">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
+                            <h5 class="card-title fw-bold">{{ $producto->nombre }}</h5>
+                            <p class="text-muted small">{{ Str::limit($producto->descripcion, 70) }}</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-add-cart w-100 mb-2"
+                                onclick="addToCart({{ $producto->id }}, '{{ $producto->nombre }}', '{{ route('shop.cart.add') }}')">
+                                <i class="bi-cart-plus"></i> Agregar al Carrito
+                            </button>
+                            <a href="{{ route('shop.product.show', $producto) }}"
+                                class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="bi-eye"></i> Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
             @endforeach
-          </ul>
         </div>
-        <div class="col-md-4">
-          <h6>Contacto</h6>
-          <p><i class="bi-telephone"></i> +502 1234-5678</p>
-          <p><i class="bi-envelope"></i> info@bodegasmultiplex.com</p>
+
+        <!-- Paginación -->
+        <div class="pagination-section mt-5">
+            {{ $productos->links('vendor.pagination.advanced') }}
         </div>
-      </div>
-      <hr>
-      <div class="text-center">&copy; {{ date('Y') }} Bodegas Multiplex. Todos los derechos reservados.</div>
-    </div>
-  </footer>
+    </main>
 
-  <!-- Scripts -->
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Bodegas Multiphlex</h5>
+                    <p>Tu tienda de confianza con los mejores productos.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6>Categorías</h6>
+                    <ul class="list-unstyled">
+                        @foreach ($categorias->take(5) as $categoria)
+                            <li><a href="?categoria={{ $categoria }}">{{ $categoria }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Contacto</h6>
+                    <p><i class="bi-telephone"></i> +502 5928-9905</p>
+                    <p><i class="bi-envelope"></i> bdgsmultiphlex@gmail.com</p>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">&copy; {{ date('Y') }} Bodegas Multiplex. Todos los derechos reservados.
+            </div>
+        </div>
+    </footer>
 
-  <script>
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-
-    function addToCart(productId, productName) {
-        const button = event.target;
-        const originalText = button.innerHTML;
-
-        button.innerHTML = '<i class="spinner-border spinner-border-sm"></i> Agregando...';
-        button.disabled = true;
-
-        $.ajax({
-            url: '{{ route("shop.cart.add") }}',
-            method: 'POST',
-            data: { producto_id: productId, cantidad: 1 },
-            success: function(response) {
-                $('#cartCount').text(response.totalItems);
-                showAlert('success', `${productName} agregado al carrito`);
-                button.innerHTML = originalText;
-                button.disabled = false;
-            },
-            error: function() {
-                showAlert('danger', 'Error al agregar al carrito');
-                button.innerHTML = originalText;
-                button.disabled = false;
-            }
-        });
-    }
-
-    function showAlert(type, message) {
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show position-fixed"
-                 style="top: 20px; right: 20px; z-index: 9999;" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>`;
-        $('body').append(alertHtml);
-        setTimeout(() => $('.alert').fadeOut(), 5000);
-    }
-  </script>
+    <!-- Scripts -->
+    <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('js/funciones-pagina-principal.js') }}"></script>
 </body>
+
 </html>
