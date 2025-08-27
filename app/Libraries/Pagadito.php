@@ -97,6 +97,37 @@ class Pagadito {
     }
 
     /**
+     * Variante de exec_trans que NO redirige, sino que devuelve la URL de pago.
+     * Útil para integraciones en iframe/modal sin sacar al usuario del sitio.
+     * @param string $ern
+     * @return string|false URL de pago o false en error
+     */
+    public function exec_trans_url($ern){
+        if($this->get_rs_code() == "PG1001"){
+            $params = array(
+                'operation'     => $this->op_exec_trans_key,
+                'token'         => $this->get_rs_value(),
+                'ern'           => $ern,
+                'amount'        => $this->calc_amount(),
+                'details'       => json_encode($this->details),
+                'custom_params' => json_encode($this->custom_params),
+                'currency'      => $this->currency,
+                'format_return' => $this->format_return
+            );
+            $this->response = $this->call($params);
+            if($this->get_rs_code() == "PG1002"){
+                return urldecode($this->get_rs_value());
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            return false;
+        }
+    }
+
+    /**
      * Solicita el estado de una transacción en base a su token.
      * @param string $token_trans El identificador de la conexión a consultar.
      * @return bool

@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Producto;
 use App\Models\Brand;
 use App\Models\Category;
+use Illuminate\Support\Str;
 
 class ProductoSeeder extends Seeder
 {
@@ -100,10 +101,15 @@ class ProductoSeeder extends Seeder
             $stock_actual = rand(0, 100);
             $stock_minimo = rand(10, 30);
             $stock_maximo = $stock_minimo * rand(3, 6);
-            
+            // Código interno seguro (solo ASCII / alfanumérico)
+            $nombreAscii = Str::upper(substr(Str::ascii($nombre), 0, 3));
+            $marcaAscii = Str::upper(substr(Str::ascii(preg_replace('/[^A-Za-z0-9]/', '', $marca)), 0, 3));
+            if (strlen($nombreAscii) < 3) { $nombreAscii = str_pad($nombreAscii, 3, 'X'); }
+            if (strlen($marcaAscii) < 3) { $marcaAscii = str_pad($marcaAscii, 3, 'X'); }
+
             $productos[] = [
                 'codigo_barras' => '75' . str_pad(rand(100000000, 999999999), 9, '0', STR_PAD_LEFT),
-                'codigo_interno' => strtoupper(substr($nombre, 0, 3)) . '-' . strtoupper(substr($marca, 0, 3)) . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'codigo_interno' => $nombreAscii . '-' . $marcaAscii . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'nombre' => $nombre . ' ' . $marca . ' ' . $unidad,
                 'descripcion' => 'Producto ' . $nombre . ' de la marca ' . $marca . ' en presentación de ' . $unidad,
                 'marca' => $marca,

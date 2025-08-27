@@ -10,8 +10,7 @@
 
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet"
-        href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('css/estilos-pagina-principal.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
@@ -177,7 +176,7 @@
                         </div>
                         <div class="card-footer bg-transparent">
                             <button class="btn btn-add-cart w-100 mb-2"
-                                onclick="addToCart({{ $producto->id }}, '{{ $producto->nombre }}', '{{ route('shop.cart.add') }}')">
+                                onclick="addToCart(event, {{ $producto->id }}, '{{ $producto->nombre }}', '{{ route('shop.cart.add') }}')">
                                 <i class="bi-cart-plus"></i> Agregar al Carrito
                             </button>
                             <a href="{{ route('shop.product.show', $producto) }}"
@@ -225,8 +224,8 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/funciones-pagina-principal.js') }}"></script>
 </body>
 

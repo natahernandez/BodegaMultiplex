@@ -73,7 +73,12 @@ Route::prefix('pagos/pagadito')->middleware('auth')->group(function () {
 
     // URL de retorno configurada en Pagadito
     Route::get('/retorno', [PagaditoController::class, 'retorno'])->name('pagadito.retorno');
+    // Consulta de estado para polling en el checkout (mantiene al usuario en el sitio)
+    Route::get('/status', [PagaditoController::class, 'status'])->name('pagadito.status');
 });
+
+// Webhook/IPN de Pagadito (no requiere auth). Configura esta URL en el panel de Pagadito
+Route::post('/webhooks/pagadito', [PagaditoController::class, 'webhook'])->name('pagadito.webhook');
 
 Auth::routes();
 

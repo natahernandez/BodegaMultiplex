@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -202,14 +203,33 @@ class Order extends Model
     // Confirmar pago de pre-orden
     public function confirmPayment($paymentData = null)
     {
-        if ($this->estado === 'pre_orden') {
-            $this->update([
-                'estado' => 'confirmado',
-                'estado_pago' => 'pagado',
-                'info_pago' => $paymentData ? json_encode($paymentData) : $this->info_pago
-            ]);
-            return true;
+        if ($this->estado !== 'pre_orden') {
+            return false;
         }
-        return false;
+
+        return DB::transaction(function () use ($paymentData) {
+            // 1) Marcar como pagado/confirmado
+            $data = $paymentData ?: [];
+            $data['stock_descargado'] = $data['stock_descargado'] ?? false;
+
+            $this->estado = 'confirmado';
+            $this->estado_pago = 'pagado';
+            $this->info_pago = json_encode($data);
+            $this->save();
+
+            // 2) Descargar stock solo una vez
+            if (empty($data['stock_descargado'])) {
+                foreach ($this->items as $item) {
+                    if ($item->producto) {
+                        $item->producto->decrement('stock_actual', (int) $item->cantidad);
+                    }
+                }
+                $data['stock_descargado'] = true;
+                $this->info_pago = json_encode($data);
+                $this->save();
+            }
+
+            return true;
+        });
     }
 }

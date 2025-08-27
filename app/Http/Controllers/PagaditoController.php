@@ -80,8 +80,9 @@ class PagaditoController extends Controller
         // 3) ERN propio (número de pedido)
         $ern = $order->numero_orden;
 
-        // 4) Ejecutar transacción: Pagadito redirige a su página de pago
-        if (!$pg->exec_trans($ern)) {
+        // 4) Ejecutar transacción (variante URL para integrar en iframe/modal)
+        $paymentUrl = $pg->exec_trans_url($ern);
+        if (!$paymentUrl) {
             Log::error('Pagadito exec_trans() failed', [
                 'code' => $pg->get_rs_code(),
                 'message' => $pg->get_rs_message(),
@@ -91,8 +92,31 @@ class PagaditoController extends Controller
             return redirect()->route('shop.checkout')->with('error', 'No se pudo iniciar el pago.');
         }
 
-        // Importante: la librería ya envía la redirección. Este return es por si acaso.
-        return response('Redirigiendo a Pagadito...', 302);
+        // Guardar token_trans (viene en el querystring de la URL) para poder verificar sin esperar retorno/IPN
+        try {
+            $query = parse_url($paymentUrl, PHP_URL_QUERY);
+            parse_str($query, $params);
+            if (!empty($params['token'])) {
+                $payload = [
+                    'tipo' => 'pagadito',
+                    'estado' => 'iniciado',
+                    'token_trans' => $params['token'],
+                    'fecha_inicio' => now(),
+                ];
+                $info = json_decode($order->info_pago ?? '{}', true);
+                $order->info_pago = json_encode(array_merge($info ?: [], $payload));
+                $order->save();
+            }
+        } catch (\Throwable $t) {
+            \Log::warning('No se pudo guardar token_trans de Pagadito', ['err' => $t->getMessage()]);
+        }
+
+        // Responder vista ligera que abre modal/iframe, o JSON si se llama vía AJAX
+        if (request()->wantsJson()) {
+            return response()->json(['url' => $paymentUrl, 'ern' => $ern]);
+        }
+        // Como fallback, redirigir (comportamiento anterior)
+        return redirect()->away($paymentUrl);
     }
 
     public function retorno(Request $request)
@@ -218,5 +242,115 @@ class PagaditoController extends Controller
             ]);
             return redirect()->route('shop.checkout')->with('error', 'No se pudo verificar el pago.');
         }
+    }
+
+    /**
+     * Endpoint para polling del estado desde el frontend (modal abierto)
+     * ?ern=ORD-...
+     */
+    public function status(Request $request)
+    {
+        $ern = $request->query('ern');
+        if (!$ern) {
+            return response()->json(['error' => 'ERN requerido'], 400);
+        }
+        $order = Order::where('numero_orden', $ern)->first();
+        if (!$order) {
+            return response()->json(['error' => 'Orden no encontrada'], 404);
+        }
+        // Si aún no está pagada, intentamos verificar directamente con Pagadito usando el token_trans guardado
+        if (!in_array($order->estado_pago, ['pagado'])) {
+            try {
+                $info = json_decode($order->info_pago ?? '{}', true);
+                $tokenTrans = $info['token_trans'] ?? null;
+                if ($tokenTrans) {
+                    $pg = $this->client();
+                    if ($pg->connect() && $pg->get_status($tokenTrans)) {
+                        $estado = $pg->get_rs_status();
+                        $referencia = $pg->get_rs_reference();
+                        $fecha = $pg->get_rs_date_trans();
+                        if ($estado === 'COMPLETED') {
+                            $order->confirmPayment([
+                                'tipo' => 'pagadito',
+                                'referencia' => $referencia,
+                                'fecha_procesamiento' => $fecha,
+                                'token' => $tokenTrans,
+                                'estado_pagadito' => $estado
+                            ]);
+                            try { session()->forget('carrito'); } catch (\Throwable $t) {}
+                        } elseif (in_array($estado, ['REVOKED','FAILED','CANCELED','EXPIRED'])) {
+                            $order->estado = 'expirado';
+                            $order->estado_pago = 'cancelado';
+                            $order->save();
+                        }
+                    }
+                }
+            } catch (\Throwable $t) {
+                \Log::warning('Pagadito status polling error', ['err' => $t->getMessage(), 'ern' => $ern]);
+            }
+        }
+
+        return response()->json([
+            'estado' => $order->estado,
+            'estado_pago' => $order->estado_pago,
+            'paid' => $order->estado_pago === 'pagado' || $order->estado === 'confirmado',
+        ]);
+    }
+
+    /**
+     * Webhook/IPN de Pagadito.
+     * NOTA: Ajustar validación de firma/seguridad según documentación de Pagadito.
+     */
+    public function webhook(Request $request)
+    {
+        // Log básico para sandbox
+        Log::info('Pagadito webhook recibido', ['payload' => $request->all()]);
+
+        $ern = $request->input('ern') ?? $request->input('reference') ?? $request->input('numero_orden');
+        $estado = $request->input('status') ?? $request->input('estado');
+        $token = $request->input('token');
+        $referencia = $request->input('reference');
+
+        if (!$ern) {
+            return response()->json(['error' => 'Falta ERN'], 400);
+        }
+        $order = Order::where('numero_orden', $ern)->first();
+        if (!$order) {
+            return response()->json(['error' => 'Orden no encontrada'], 404);
+        }
+
+        try {
+            switch ($estado) {
+                case 'COMPLETED':
+                    $order->confirmPayment([
+                        'tipo' => 'pagadito',
+                        'referencia' => $referencia,
+                        'token' => $token,
+                        'estado_pagadito' => $estado,
+                        'fecha_procesamiento' => now(),
+                    ]);
+                    break;
+                case 'VERIFYING':
+                case 'REGISTERED':
+                    $order->estado = 'pre_orden';
+                    $order->estado_pago = 'pendiente';
+                    $order->save();
+                    break;
+                case 'REVOKED':
+                case 'FAILED':
+                case 'CANCELED':
+                case 'EXPIRED':
+                default:
+                    $order->estado = 'expirado';
+                    $order->estado_pago = 'cancelado';
+                    $order->save();
+                    break;
+            }
+        } catch (\Throwable $t) {
+            Log::error('Error procesando webhook Pagadito', ['err' => $t->getMessage(), 'ern' => $ern]);
+            return response()->json(['ok' => false]);
+        }
+
+        return response()->json(['ok' => true]);
     }
 }

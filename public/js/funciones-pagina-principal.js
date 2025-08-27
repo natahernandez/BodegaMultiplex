@@ -4,8 +4,9 @@ $.ajaxSetup({
     }
 });
 
-function addToCart(productId, productName, addToCartUrl) {
-    const button = event.target;
+function addToCart(evt, productId, productName, addToCartUrl) {
+    const e = evt || window.event;
+    const button = (e && (e.currentTarget || e.target)) || null;
     const originalText = button.innerHTML;
 
     button.innerHTML = '<i class="spinner-border spinner-border-sm"></i> Agregando...';
@@ -21,13 +22,11 @@ function addToCart(productId, productName, addToCartUrl) {
         success: function(response) {
             $('#cartCount').text(response.totalItems);
             showAlert('success', `${productName} agregado al carrito`);
-            button.innerHTML = originalText;
-            button.disabled = false;
+            if (button) { button.innerHTML = originalText; button.disabled = false; }
         },
         error: function() {
             showAlert('danger', 'Error al agregar al carrito');
-            button.innerHTML = originalText;
-            button.disabled = false;
+            if (button) { button.innerHTML = originalText; button.disabled = false; }
         }
     });
 }

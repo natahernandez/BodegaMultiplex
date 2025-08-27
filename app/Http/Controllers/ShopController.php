@@ -350,6 +350,13 @@ class ShopController extends Controller
 
             // Si es pago en línea, mantener el carrito hasta confirmar pago
             if ($request->tipo_pago === 'linea') {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'order_id' => $order->id,
+                        'ern' => $order->numero_orden,
+                        'iniciar_url' => route('pagadito.iniciar', $order->id),
+                    ]);
+                }
                 return redirect()->route('pagadito.iniciar', $order->id);
             } else {
                 // Si es contra entrega, limpiar carrito e ir al éxito

@@ -131,7 +131,8 @@ class ProductoController extends Controller
             'marca' => 'nullable|string|max:255',
             'categoria' => 'nullable|string|max:255',
             'brand_id' => 'nullable|exists:brands,id',
-            'category_id' => 'required|exists:categories,id',
+            // Hacer opcional: permitir usar solo el campo de texto "categoria" si no se selecciona category_id
+            'category_id' => 'nullable|exists:categories,id',
             'precio_compra' => 'required|numeric|min:0',
             'precio_venta' => 'required|numeric|min:0',
             'precio_mayoreo' => 'nullable|numeric|min:0',
@@ -253,7 +254,8 @@ class ProductoController extends Controller
             'marca' => 'nullable|string|max:255',
             'categoria' => 'nullable|string|max:255',
             'brand_id' => 'nullable|exists:brands,id',
-            'category_id' => 'required|exists:categories,id',
+            // Hacer opcional: mantener compatibilidad con campo de texto "categoria"
+            'category_id' => 'nullable|exists:categories,id',
             'precio_compra' => 'required|numeric|min:0',
             'precio_venta' => 'required|numeric|min:0',
             'precio_mayoreo' => 'nullable|numeric|min:0',

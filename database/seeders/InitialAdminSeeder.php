@@ -18,15 +18,15 @@ class InitialAdminSeeder extends Seeder
         if (!User::where('role', 1)->exists()) {
             User::create([
                 'name' => 'Administrador Principal',
-                'email' => 'admin@bodegamultiplex.com',
+                'email' => 'gerheral01@gmail.com',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('12345678'),
                 'role' => 1, // Administrador
             ]);
 
             $this->command->info('Administrador principal creado exitosamente.');
-            $this->command->info('Email: admin@bodegamultiplex.com');
-            $this->command->info('Contraseña: password123');
+            $this->command->info('Email: gerheral01@gmail.com');
+            $this->command->info('Contraseña: 12345678');
             $this->command->warn('¡IMPORTANTE! Cambia la contraseña después del primer login.');
         } else {
             $this->command->info('Ya existe al menos un administrador en el sistema.');
