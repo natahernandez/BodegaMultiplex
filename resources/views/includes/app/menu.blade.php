@@ -1,9 +1,9 @@
 <!-- Logo -->
 <a class="navbar-brand" href="{{ route('home') }}" aria-label="Front">
-  <img class="navbar-brand-logo" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/logos/logo.svg') }}" alt="Logo" data-hs-theme-appearance="default">
-  <img class="navbar-brand-logo" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/logos-light/logo.svg') }}" alt="Logo" data-hs-theme-appearance="dark">
-  <img class="navbar-brand-logo-mini" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/logos/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="default">
-  <img class="navbar-brand-logo-mini" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/logos-light/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="dark">
+  <img class="navbar-brand-logo" src="{{ asset('svg/logos/logo.svg') }}" alt="Logo" data-hs-theme-appearance="default" style="height: 40px;">
+  <img class="navbar-brand-logo" src="{{ asset('svg/logos-light/logo.svg') }}" alt="Logo" data-hs-theme-appearance="dark" style="height: 40px;">
+  <img class="navbar-brand-logo-mini" src="{{ asset('svg/logos/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="default" style="height: 30px;">
+  <img class="navbar-brand-logo-mini" src="{{ asset('svg/logos-light/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="dark" style="height: 30px;">
 </a>
 <!-- End Logo -->
 

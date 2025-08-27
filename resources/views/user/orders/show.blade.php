@@ -1,4 +1,6 @@
-@extends('layouts.user')
+@extends('layouts.shop')
+
+@section('title', 'Detalle del Pedido - ' . $order->numero_orden)
 
 @section('content')
 <!-- Page Header -->

@@ -1,16 +1,8 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
+@extends('layouts.shop')
 
-  <title>Mis Pedidos - Bodegas Multiplex</title>
+@section('title', 'Mis Pedidos')
 
-  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
-  <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/css/theme.min.css') }}">
+@push('styles')
 
   <style>
     body {
@@ -87,29 +79,9 @@
       margin-bottom: 1.5rem;
     }
   </style>
-</head>
+@endpush
 
-<body>
-  <!-- Header -->
-  <header class="orders-header py-3">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-          <h2 class="h4 mb-0 text-primary me-3">
-            <i class="bi-shop me-2"></i>Bodegas Multiplex
-          </h2>
-        </div>
-        <div class="d-flex align-items-center">
-          <span class="text-muted me-3">{{ Auth::user()->name }}</span>
-          <a href="{{ route('welcome') }}" class="btn btn-outline-primary btn-sm">
-            <i class="bi-house me-1"></i> Inicio
-          </a>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
+@section('content')
   <div class="container">
     <!-- Page Header -->
     <div class="row">
@@ -374,8 +346,4 @@
       </div>
     @endif
   </div>
-
-  <!-- Scripts -->
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-</body>
-</html>
+@endsection

@@ -4,7 +4,7 @@
 
     <!-- Logotipo -->
     <a class="navbar-brand" href="{{ route('home') }}" aria-label="Front">
-      <img class="navbar-brand-logo" src="{{ asset('front-dashboard-v2.1.1/src/assets/svg/logos/logo.svg') }}" alt="Logo">
+      <img class="navbar-brand-logo" src="{{ asset('svg/logos/logo.svg') }}" alt="Logo" style="height: 40px;">
     </a>
 
     <div class="navbar-nav-wrap-content-start">

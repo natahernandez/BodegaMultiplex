@@ -1,7 +1,7 @@
 <div class="dropdown">
   <a class="navbar-dropdown-account-wrapper" href="javascript:;" id="accountNavbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
     <div class="avatar avatar-sm avatar-circle">
-      <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img6.jpg') }}" alt="Image Description">
+      <img class="avatar-img" src="{{ asset('img/160x160/img6.jpg') }}" alt="Image Description">
       <span class="avatar-status avatar-sm-status avatar-status-success"></span>
     </div>
   </a>
@@ -10,7 +10,7 @@
     <div class="dropdown-item-text">
       <div class="d-flex align-items-center">
         <div class="avatar avatar-sm avatar-circle">
-          <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/src/assets/img/160x160/img6.jpg') }}" alt="Image Description">
+          <img class="avatar-img" src="{{ asset('img/160x160/img6.jpg') }}" alt="Image Description">
         </div>
         <div class="flex-grow-1 ms-3">
           <h5 class="mb-0">{{ Auth::user()->name ?? 'Usuario' }}</h5>

@@ -15,19 +15,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- CSS Implementing Plugins -->
-  <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/tom-select/dist/css/tom-select.bootstrap5.css') }}">
 
   <!-- CSS Front -->
-  <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/css/theme.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
 
   @yield('styles')
 </head>
 
 <body class="has-navbar-vertical-aside navbar-vertical-aside-show-xl   footer-offset">
 
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/hs.theme-appearance.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside-mini-cache.js') }}"></script>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="{{ asset('js/hs.theme-appearance.js') }}"></script>
+  <script src="{{ asset('vendor/hs-navbar-vertical-aside/src/hs-navbar-vertical-aside-mini-cache.js') }}"></script>
 
   <!-- ========== HEADER ========== -->
   <header id="header" class="navbar navbar-expand-lg navbar-fixed navbar-height navbar-container navbar-bordered bg-white">
@@ -58,7 +59,7 @@
             <div class="dropdown">
               <a class="navbar-dropdown-account-wrapper" href="javascript:;" id="accountNavbarDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" data-bs-dropdown-animation>
                 <div class="avatar avatar-sm avatar-circle">
-                  <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/dist/assets/img/160x160/img6.jpg') }}" alt="Image Description">
+                  <img class="avatar-img" src="{{ asset('img/160x160/img6.jpg') }}" alt="Image Description">
                   <span class="avatar-status avatar-sm-status avatar-status-success"></span>
                 </div>
               </a>
@@ -67,7 +68,7 @@
                 <div class="dropdown-item-text">
                   <div class="d-flex align-items-center">
                     <div class="avatar avatar-sm avatar-circle">
-                      <img class="avatar-img" src="{{ asset('front-dashboard-v2.1.1/dist/assets/img/160x160/img6.jpg') }}" alt="Image Description">
+                      <img class="avatar-img" src="{{ asset('img/160x160/img6.jpg') }}" alt="Image Description">
                     </div>
                     <div class="flex-grow-1 ms-3">
                       <h5 class="mb-0">{{ auth()->user()->name }}</h5>
@@ -115,10 +116,10 @@
 
         <!-- Logo -->
         <a class="navbar-brand" href="{{ route('user.orders.index') }}" aria-label="{{ config('app.name') }}">
-          <img class="navbar-brand-logo" src="{{ asset('front-dashboard-v2.1.1/dist/assets/svg/logos/logo.svg') }}" alt="Logo" data-hs-theme-appearance="default">
-          <img class="navbar-brand-logo" src="{{ asset('front-dashboard-v2.1.1/dist/assets/svg/logos-light/logo.svg') }}" alt="Logo" data-hs-theme-appearance="dark">
-          <img class="navbar-brand-logo-mini" src="{{ asset('front-dashboard-v2.1.1/dist/assets/svg/logos/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="default">
-          <img class="navbar-brand-logo-mini" src="{{ asset('front-dashboard-v2.1.1/dist/assets/svg/logos-light/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="dark">
+          <img class="navbar-brand-logo" src="{{ asset('svg/logos/logo.svg') }}" alt="Logo" data-hs-theme-appearance="default" style="height: 40px;">
+          <img class="navbar-brand-logo" src="{{ asset('svg/logos-light/logo.svg') }}" alt="Logo" data-hs-theme-appearance="dark" style="height: 40px;">
+          <img class="navbar-brand-logo-mini" src="{{ asset('svg/logos/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="default" style="height: 30px;">
+          <img class="navbar-brand-logo-mini" src="{{ asset('svg/logos-light/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="dark" style="height: 30px;">
         </a>
         <!-- End Logo -->
 
@@ -186,31 +187,44 @@
   <!-- ========== END FOOTER ========== -->
 
   <!-- JS Implementing Plugins -->
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside.min.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-form-search/dist/hs-form-search.min.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/tom-select/dist/js/tom-select.complete.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ asset('vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside.min.js') }}"></script>
+  <script src="{{ asset('js/hs.core.js') }}"></script>
 
   <!-- JS Front -->
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/theme.min.js') }}"></script>
+  <script src="{{ asset('js/theme-custom.js') }}"></script>
 
   <!-- JS Plugins Init. -->
   <script>
-    (function() {
-      window.onload = function () {
-        // INITIALIZATION OF NAVBAR VERTICAL ASIDE
-        new HSSideNav('.js-navbar-vertical-aside').init()
-
-        // INITIALIZATION OF FORM SEARCH
-        new HSFormSearch('.js-form-search')
-
-        // INITIALIZATION OF BOOTSTRAP DROPDOWN
-        HSBsDropdown.init()
-
-        // INITIALIZATION OF SELECT
-        HSCore.components.HSTomSelect.init('.js-select')
+    document.addEventListener('DOMContentLoaded', function() {
+      // INITIALIZATION OF NAVBAR VERTICAL ASIDE
+      if (typeof HSSideNav !== 'undefined') {
+        new HSSideNav('.js-navbar-vertical-aside').init();
       }
-    })()
+
+      // INITIALIZATION OF FORM SEARCH
+      if (typeof HSFormSearch !== 'undefined') {
+        new HSFormSearch('.js-form-search');
+      }
+
+      // INITIALIZATION OF BOOTSTRAP DROPDOWN - Using native Bootstrap 5
+      var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+      var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+        return new bootstrap.Dropdown(dropdownToggleEl);
+      });
+
+      // INITIALIZATION OF BOOTSTRAP TOOLTIPS
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+
+      // INITIALIZATION OF BOOTSTRAP COLLAPSE (for sidebar menu)
+      var collapseElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="collapse"]'));
+      var collapseList = collapseElementList.map(function (collapseToggleEl) {
+        return new bootstrap.Collapse(collapseToggleEl, { toggle: false });
+      });
+    });
   </script>
 
   @yield('scripts')

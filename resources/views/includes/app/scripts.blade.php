@@ -1,19 +1,16 @@
 <!-- JS Global Compulsory -->
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- JS Implementing Plugins -->
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-form-search/dist/hs-form-search.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-nav-scroller/dist/hs-nav-scroller.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/chart.js/dist/Chart.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/daterangepicker/moment.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/daterangepicker/daterangepicker.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jsvectormap/dist/js/jsvectormap.min.js') }}"></script>
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jsvectormap/dist/maps/world.js') }}"></script>
+<script src="{{ asset('vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside.min.js') }}"></script>
+<script src="{{ asset('js/hs.core.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <!-- JS Front -->
-<script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/theme.min.js') }}"></script>
+<script src="{{ asset('js/theme-custom.js') }}"></script>
 
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -49,23 +46,47 @@
 </script>
 
 <script>
-  (function() {
-    window.onload = function () {
-      // INITIALIZATION OF NAVBAR VERTICAL ASIDE
-      new HSSideNav('.js-navbar-vertical-aside').init()
+  document.addEventListener('DOMContentLoaded', function() {
+    // INITIALIZATION OF NAVBAR VERTICAL ASIDE
+    if (typeof HSSideNav !== 'undefined') {
+      new HSSideNav('.js-navbar-vertical-aside').init();
+    }
 
-      // INITIALIZATION OF NAV SCROLLER
+    // INITIALIZATION OF NAV SCROLLER
+    if (typeof HsNavScroller !== 'undefined') {
       new HsNavScroller('.js-nav-scroller', {
         delay: 400
-      })
-
-      // INITIALIZATION OF FORM SEARCH
-      new HSFormSearch('.js-form-search')
-
-      // INITIALIZATION OF BOOTSTRAP DROPDOWN
-      HSBsDropdown.init()
+      });
     }
-  })()
+
+    // INITIALIZATION OF FORM SEARCH
+    if (typeof HSFormSearch !== 'undefined') {
+      new HSFormSearch('.js-form-search');
+    }
+
+    // INITIALIZATION OF BOOTSTRAP DROPDOWN - Using native Bootstrap 5
+    var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+    var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+      return new bootstrap.Dropdown(dropdownToggleEl);
+    });
+
+    // INITIALIZATION OF BOOTSTRAP TOOLTIPS
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // INITIALIZATION OF NAVBAR TOGGLE
+    const navbarToggler = document.querySelector('.js-navbar-vertical-aside-toggle-invoker');
+    if (navbarToggler) {
+      navbarToggler.addEventListener('click', function() {
+        const navbar = document.querySelector('.js-navbar-vertical-aside');
+        if (navbar) {
+          navbar.classList.toggle('navbar-vertical-aside-mini');
+        }
+      });
+    }
+  });
 </script>
 
 <script>
