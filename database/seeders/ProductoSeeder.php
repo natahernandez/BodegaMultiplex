@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Producto;
+use App\Models\Brand;
+use App\Models\Category;
 
 class ProductoSeeder extends Seeder
 {
@@ -13,7 +15,17 @@ class ProductoSeeder extends Seeder
      */
     public function run(): void
     {
+        // Obtener marcas y categorías existentes
+        $brands = Brand::all();
+        $categories = Category::all();
+        
+        if ($brands->isEmpty() || $categories->isEmpty()) {
+            $this->command->error('Debes ejecutar primero BrandSeeder y CategorySeeder');
+            return;
+        }
+
         $productos = [
+            // Productos originales
             [
                 'codigo_barras' => '7501234567890',
                 'codigo_interno' => 'COCA-355ML',
@@ -30,7 +42,9 @@ class ProductoSeeder extends Seeder
                 'unidad_medida' => 'Unidad',
                 'ubicacion' => 'Pasillo 1, Estante A',
                 'proveedor' => 'FEMSA',
-                'activo' => true
+                'activo' => true,
+                'brand_id' => $brands->where('nombre', 'Coca-Cola')->first()?->id ?? $brands->random()->id,
+                'category_id' => $categories->where('nombre', 'Bebidas')->first()?->id ?? $categories->random()->id,
             ],
             [
                 'codigo_barras' => '7501030405060',
@@ -49,160 +63,85 @@ class ProductoSeeder extends Seeder
                 'ubicacion' => 'Refrigerador 1',
                 'proveedor' => 'Grupo Lala',
                 'fecha_vencimiento' => now()->addDays(15),
-                'activo' => true
-            ],
-            [
-                'codigo_barras' => '7501110203040',
-                'codigo_interno' => 'JABON-ZOT-800G',
-                'nombre' => 'Jabón Zote Rosa 800g',
-                'descripcion' => 'Jabón para lavar ropa en barra color rosa de 800 gramos',
-                'marca' => 'Zote',
-                'categoria' => 'Limpieza',
-                'precio_compra' => 18.00,
-                'precio_venta' => 25.00,
-                'precio_mayoreo' => 22.00,
-                'stock_actual' => 8,
-                'stock_minimo' => 12,
-                'stock_maximo' => 48,
-                'unidad_medida' => 'Unidad',
-                'ubicacion' => 'Pasillo 3, Estante B',
-                'proveedor' => 'Fabrica de Jabón La Corona',
-                'activo' => true
-            ],
-            [
-                'codigo_barras' => '7801234567891',
-                'codigo_interno' => 'ARROZ-VERDE-1KG',
-                'nombre' => 'Arroz Verde Valle 1kg',
-                'descripcion' => 'Arroz blanco grano largo premium en bolsa de 1 kilogramo',
-                'marca' => 'Verde Valle',
-                'categoria' => 'Abarrotes',
-                'precio_compra' => 24.00,
-                'precio_venta' => 32.00,
-                'precio_mayoreo' => 29.00,
-                'stock_actual' => 36,
-                'stock_minimo' => 18,
-                'stock_maximo' => 72,
-                'unidad_medida' => 'Kg',
-                'ubicacion' => 'Pasillo 2, Estante A',
-                'proveedor' => 'Distribuidora de Granos SA',
-                'activo' => true
-            ],
-            [
-                'codigo_barras' => '7502345678901',
-                'codigo_interno' => 'SHAMPOO-H&S-400ML',
-                'nombre' => 'Shampoo Head & Shoulders 400ml',
-                'descripcion' => 'Shampoo anticaspa para cabello graso en envase de 400ml',
-                'marca' => 'Head & Shoulders',
-                'categoria' => 'Cuidado Personal',
-                'precio_compra' => 45.00,
-                'precio_venta' => 65.00,
-                'precio_mayoreo' => 58.00,
-                'stock_actual' => 24,
-                'stock_minimo' => 12,
-                'stock_maximo' => 48,
-                'unidad_medida' => 'Unidad',
-                'ubicacion' => 'Pasillo 4, Estante C',
-                'proveedor' => 'Procter & Gamble',
                 'activo' => true,
-                'iva' => 16.00
+                'brand_id' => $brands->where('nombre', 'Lala')->first()?->id ?? $brands->random()->id,
+                'category_id' => $categories->where('nombre', 'Lácteos')->first()?->id ?? $categories->random()->id,
             ],
-            [
-                'codigo_barras' => '7503456789012',
-                'codigo_interno' => 'PAN-BIMBO-680G',
-                'nombre' => 'Pan de Caja Bimbo Integral 680g',
-                'descripcion' => 'Pan de caja integral con granos y semillas en bolsa de 680g',
-                'marca' => 'Bimbo',
-                'categoria' => 'Panadería',
-                'precio_compra' => 35.00,
-                'precio_venta' => 48.00,
-                'precio_mayoreo' => 42.00,
-                'stock_actual' => 12,
-                'stock_minimo' => 15,
-                'stock_maximo' => 30,
-                'unidad_medida' => 'Unidad',
-                'ubicacion' => 'Estante Pan',
-                'proveedor' => 'Grupo Bimbo',
-                'fecha_vencimiento' => now()->addDays(5),
-                'activo' => true
-            ],
-            [
-                'codigo_barras' => '7504567890123',
-                'codigo_interno' => 'ACEITE-CAP-1L',
-                'nombre' => 'Aceite Capullo 1L',
-                'descripcion' => 'Aceite vegetal comestible puro de cártamo en botella de 1 litro',
-                'marca' => 'Capullo',
-                'categoria' => 'Abarrotes',
-                'precio_compra' => 28.00,
-                'precio_venta' => 38.50,
-                'precio_mayoreo' => 34.00,
-                'stock_actual' => 20,
-                'stock_minimo' => 15,
-                'stock_maximo' => 45,
-                'unidad_medida' => 'Litro',
-                'ubicacion' => 'Pasillo 2, Estante B',
-                'proveedor' => 'Capullo',
-                'activo' => true,
-                'iva' => 0.00
-            ],
-            [
-                'codigo_barras' => '7505678901234',
-                'codigo_interno' => 'PASTA-BARILLA-500G',
-                'nombre' => 'Pasta Barilla Spaghetti 500g',
-                'descripcion' => 'Pasta italiana spaghetti #5 en caja de 500 gramos',
-                'marca' => 'Barilla',
-                'categoria' => 'Abarrotes',
-                'precio_compra' => 22.00,
-                'precio_venta' => 32.00,
-                'precio_mayoreo' => 28.00,
-                'stock_actual' => 0,
-                'stock_minimo' => 24,
-                'stock_maximo' => 72,
-                'unidad_medida' => 'Unidad',
-                'ubicacion' => 'Pasillo 2, Estante C',
-                'proveedor' => 'Barilla México',
-                'activo' => true,
-                'iva' => 0.00
-            ],
-            [
-                'codigo_barras' => '7506789012345',
-                'codigo_interno' => 'PAPEL-REGIO-4R',
-                'nombre' => 'Papel Higiénico Regio 4 rollos',
-                'descripcion' => 'Papel higiénico doble hoja suave y resistente paquete de 4 rollos',
-                'marca' => 'Regio',
-                'categoria' => 'Higiene',
-                'precio_compra' => 32.00,
-                'precio_venta' => 45.00,
-                'precio_mayoreo' => 40.00,
-                'stock_actual' => 6,
-                'stock_minimo' => 12,
-                'stock_maximo' => 36,
-                'unidad_medida' => 'Paquete',
-                'ubicacion' => 'Pasillo 3, Estante A',
-                'proveedor' => 'Kimberly Clark',
-                'activo' => true
-            ],
-            [
-                'codigo_barras' => '7507890123456',
-                'codigo_interno' => 'ATUN-HERDEZ-140G',
-                'nombre' => 'Atún Herdez en Agua 140g',
-                'descripcion' => 'Atún en agua bajo en sodio en lata de 140 gramos',
-                'marca' => 'Herdez',
-                'categoria' => 'Enlatados',
-                'precio_compra' => 18.50,
-                'precio_venta' => 26.00,
-                'precio_mayoreo' => 23.00,
-                'stock_actual' => 42,
-                'stock_minimo' => 24,
-                'stock_maximo' => 96,
-                'unidad_medida' => 'Unidad',
-                'ubicacion' => 'Pasillo 2, Estante D',
-                'proveedor' => 'Grupo Herdez',
-                'activo' => true
-            ]
         ];
 
-        foreach ($productos as $producto) {
-            Producto::create($producto);
+        // Generar productos adicionales
+        $nombres = [
+            'Aceite', 'Arroz', 'Azúcar', 'Café', 'Chocolate', 'Detergente', 'Enjuague', 'Galletas',
+            'Harina', 'Jabón', 'Jugo', 'Leche', 'Mantequilla', 'Mayonesa', 'Mermelada', 'Mostaza',
+            'Néctar', 'Pasta', 'Queso', 'Refresco', 'Sal', 'Salsa', 'Shampoo', 'Sopa', 'Té', 'Vinagre',
+            'Yogurt', 'Zumo', 'Aceitunas', 'Atún', 'Cereales', 'Conservas', 'Desodorante', 'Enlatados',
+            'Frijoles', 'Gelatina', 'Helado', 'Huevos', 'Jalea', 'Ketchup', 'Limpieza', 'Mantequilla',
+            'Nueces', 'Oregano', 'Pan', 'Papel', 'Queso', 'Refresco', 'Salsa', 'Shampoo', 'Sopa',
+            'Té', 'Vinagre', 'Yogurt', 'Zumo', 'Aceitunas', 'Atún', 'Cereales', 'Conservas'
+        ];
+
+        $marcas = ['Nestlé', 'Kraft', 'Unilever', 'P&G', 'Coca-Cola', 'Pepsi', 'Frito-Lay', 'General Mills'];
+        $categorias = ['Bebidas', 'Lácteos', 'Abarrotes', 'Limpieza', 'Cuidado Personal', 'Enlatados', 'Panadería', 'Higiene'];
+        $unidades = ['Unidad', 'Kg', 'Litro', 'Paquete', 'Botella', 'Caja', 'Bolsa', 'Frasco'];
+        $proveedores = ['Distribuidora Central', 'Importadora del Norte', 'Comercial del Sur', 'Mayorista Express', 'Distribuidora Nacional'];
+
+        // Generar 120 productos adicionales
+        for ($i = 1; $i <= 120; $i++) {
+            $nombre = $nombres[array_rand($nombres)];
+            $marca = $marcas[array_rand($marcas)];
+            $categoria = $categorias[array_rand($categorias)];
+            $unidad = $unidades[array_rand($unidades)];
+            $proveedor = $proveedores[array_rand($proveedores)];
+            
+            $precio_compra = rand(500, 5000) / 100; // Precio entre 5.00 y 50.00
+            $precio_venta = $precio_compra * (1 + (rand(20, 50) / 100)); // Margen del 20% al 50%
+            $precio_mayoreo = $precio_compra * (1 + (rand(15, 35) / 100)); // Margen del 15% al 35%
+            
+            $stock_actual = rand(0, 100);
+            $stock_minimo = rand(10, 30);
+            $stock_maximo = $stock_minimo * rand(3, 6);
+            
+            $productos[] = [
+                'codigo_barras' => '75' . str_pad(rand(100000000, 999999999), 9, '0', STR_PAD_LEFT),
+                'codigo_interno' => strtoupper(substr($nombre, 0, 3)) . '-' . strtoupper(substr($marca, 0, 3)) . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'nombre' => $nombre . ' ' . $marca . ' ' . $unidad,
+                'descripcion' => 'Producto ' . $nombre . ' de la marca ' . $marca . ' en presentación de ' . $unidad,
+                'marca' => $marca,
+                'categoria' => $categoria,
+                'precio_compra' => $precio_compra,
+                'precio_venta' => round($precio_venta, 2),
+                'precio_mayoreo' => round($precio_mayoreo, 2),
+                'stock_actual' => $stock_actual,
+                'stock_minimo' => $stock_minimo,
+                'stock_maximo' => $stock_maximo,
+                'unidad_medida' => $unidad,
+                'ubicacion' => 'Pasillo ' . rand(1, 5) . ', Estante ' . chr(65 + rand(0, 3)),
+                'proveedor' => $proveedor,
+                'activo' => rand(0, 10) > 1, // 90% de probabilidad de estar activo
+                'brand_id' => $brands->random()->id,
+                'category_id' => $categories->random()->id,
+                'fecha_vencimiento' => rand(0, 10) > 7 ? now()->addDays(rand(1, 365)) : null, // 30% de probabilidad de tener fecha de vencimiento
+                'requiere_receta' => rand(0, 100) > 95, // 5% de probabilidad de requerir receta
+            ];
         }
+
+        $productosCreados = 0;
+        $productosExistentes = 0;
+
+        foreach ($productos as $producto) {
+            // Verificar si el producto ya existe por código interno
+            if (!Producto::where('codigo_interno', $producto['codigo_interno'])->exists()) {
+                Producto::create($producto);
+                $productosCreados++;
+            } else {
+                $productosExistentes++;
+            }
+        }
+
+        $this->command->info("Se han creado {$productosCreados} productos nuevos.");
+        if ($productosExistentes > 0) {
+            $this->command->info("Se omitieron {$productosExistentes} productos que ya existían.");
+        }
+        $this->command->info('Total de productos en la base de datos: ' . Producto::count());
     }
 }
