@@ -66,6 +66,17 @@ class PagaditoController extends Controller
 
         // 3) Enviar una sola línea con el total en USD (simplifica y evita rechazos por descuentos negativos)
         $totalUsd = round(((float) $order->total) / $gtqToUsdRate, 2);
+        
+        // Log detallado para debugging de descuentos
+        Log::info('Pagadito - Cálculo de total', [
+            'order_id' => $order->id,
+            'numero_orden' => $order->numero_orden,
+            'total_gtq' => (float) $order->total,
+            'subtotal_gtq' => (float) $order->subtotal,
+            'gtq_to_usd_rate' => $gtqToUsdRate,
+            'total_usd' => $totalUsd,
+        ]);
+        
         if ($totalUsd <= 0) {
             Log::error('Total USD inválido para Pagadito', [
                 'order_id' => $order->id,

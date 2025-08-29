@@ -12,7 +12,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/">Inicio</a></li>
             <li class="breadcrumb-item"><a
-                    href="/?categoria={{ optional($producto->category)->nombre ?? $producto->categoria }}">{{ optional($producto->category)->nombre ?? $producto->categoria }}</a>
+                    href="{{ route('welcome', ['categoria' => $producto->categoria]) }}">{{ $producto->categoria }}</a>
             </li>
             <li class="breadcrumb-item active">{{ $producto->nombre }}</li>
         </ol>
@@ -68,8 +68,7 @@
         <!-- Info -->
         <div class="col-lg-6">
             <div class="product-info card-soft p-4">
-                <span
-                    class="badge bg-primary mb-3">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
+                <span class="badge bg-primary mb-3">{{ $producto->categoria }}</span>
                 <h1 class="display-5 fw-bold mb-3">{{ $producto->nombre }}</h1>
 
                 @php($brandName = optional($producto->brand)->nombre ?? $producto->marca)
@@ -80,13 +79,18 @@
                 <div class="price-section">
                     <div class="row align-items-center">
                         <div class="col">
-                            <h3 class="mb-0 text-white">Q{{ number_format($producto->precio_venta, 2) }}</h3>
-                            @if ($producto->precio_mayoreo && $producto->precio_mayoreo < $producto->precio_venta)
-                                <small class="opacity-75">Precio mayoreo:
-                                    Q{{ number_format($producto->precio_mayoreo, 2) }}</small>
+                            @if($producto->es_oferta_activa)
+                                <div class="offer-prices-detail">
+                                    <span class="price-original-detail">Q{{ number_format($producto->precio_venta, 2) }}</span>
+                                    <h3 class="mb-0 text-white">Q{{ number_format($producto->precio_final, 2) }}</h3>
+                                    @if($producto->descuento_calculado > 0)
+                                        <span class="discount-detail">¡Ahorras {{ $producto->descuento_calculado }}%!</span>
+                                    @endif
+                                </div>
+                            @else
+                                <h3 class="mb-0 text-white">Q{{ number_format($producto->precio_final, 2) }}</h3>
                             @endif
                         </div>
-                        <div class="col-auto"><span class="fs-6">{{ $producto->unidad_medida }}</span></div>
                     </div>
                 </div>
 
@@ -108,8 +112,7 @@
                         </div>
                         <div class="col-6">
                             <div class="d-flex align-items-center"><i class="bi-archive me-2 text-success"></i>
-                                <div><small class="text-muted d-block">Stock</small><strong>{{ $producto->stock_actual }}
-                                        {{ $producto->unidad_medida }}</strong></div>
+                                <div><small class="text-muted d-block">Stock</small><strong>{{ $producto->stock_actual }}</strong></div>
                             </div>
                         </div>
                         @if ($producto->codigo_barras)
@@ -120,15 +123,7 @@
                                 </div>
                             </div>
                         @endif
-                        @if ($producto->peso)
-                            <div class="col-6">
-                                <div class="d-flex align-items-center"><i class="bi-speedometer me-2 text-warning"></i>
-                                    <div><small
-                                            class="text-muted d-block">Peso</small><strong>{{ $producto->peso }}g</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
+
                     </div>
                 </div>
 
@@ -211,29 +206,35 @@
                 interval;
             const mainImage = $('#mainImage');
 
-            function changeImage(index) {
-                if (index < 0) index = images.length - 1;
-                if (index >= images.length) index = 0;
-                currentIndex = index;
-                mainImage.fadeOut(300, function() {
-                    $(this).attr('src', `/storage/${images[currentIndex]}`).fadeIn(300);
-                });
-                $('.thumbnail').removeClass('active').filter(`[data-index="${currentIndex}"]`).addClass('active');
-            }
+            // Solo configurar carrusel si hay múltiples imágenes
+            if (images.length > 1) {
+                function changeImage(index) {
+                    if (index < 0) index = images.length - 1;
+                    if (index >= images.length) index = 0;
+                    currentIndex = index;
+                    const imageUrl = `{{ url('/storage/productos/') }}/${images[currentIndex]}`;
+                    mainImage.fadeOut(300, function() {
+                        $(this).attr('src', imageUrl).fadeIn(300);
+                    });
+                    $('.thumbnail').removeClass('active').filter(`[data-index="${currentIndex}"]`).addClass('active');
+                }
 
-            function autoSlide() {
-                clearInterval(interval);
-                interval = setInterval(() => {
-                    changeImage((currentIndex + 1) % images.length);
-                }, 5000);
-            }
-            $('.main-image-container').hover(() => clearInterval(interval), () => autoSlide());
-            $('.thumbnail').on('click', function() {
-                const i = $(this).data('index');
-                changeImage(i);
+                function autoSlide() {
+                    clearInterval(interval);
+                    interval = setInterval(() => {
+                        changeImage((currentIndex + 1) % images.length);
+                    }, 5000);
+                }
+                
+                $('.main-image-container').hover(() => clearInterval(interval), () => autoSlide());
+                $('.thumbnail').on('click', function() {
+                    const i = $(this).data('index');
+                    changeImage(i);
+                    autoSlide();
+                });
+                
                 autoSlide();
-            });
-            if (images.length > 1) autoSlide();
+            }
             const container = $('.main-image-container');
             let zoomLevel = 2;
             container.on('mousemove', function(e) {

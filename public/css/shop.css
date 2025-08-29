@@ -74,4 +74,48 @@ body {
 .badge-stock { position: absolute; top: 15px; left: 15px; z-index: 10; }
 .product-features { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
 
+/* Estilos para ofertas en vista de detalle */
+.offer-prices-detail {
+  position: relative;
+}
+
+.price-original-detail {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: line-through;
+  font-size: 1.2em;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.price-offer-detail {
+  color: #ff6b6b !important;
+  text-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+  animation: pulse-glow 2s infinite;
+}
+
+.discount-detail {
+  display: inline-block;
+  background: linear-gradient(45deg, #51cf66, #69db7c);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  font-weight: 600;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(81, 207, 102, 0.3);
+  animation: bounce-small 3s infinite;
+}
+
+@keyframes pulse-glow {
+  0% { text-shadow: 0 2px 4px rgba(255, 107, 107, 0.3); }
+  50% { text-shadow: 0 4px 8px rgba(255, 107, 107, 0.6), 0 0 20px rgba(255, 107, 107, 0.2); }
+  100% { text-shadow: 0 2px 4px rgba(255, 107, 107, 0.3); }
+}
+
+@keyframes bounce-small {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-3px); }
+  60% { transform: translateY(-2px); }
+}
+
 

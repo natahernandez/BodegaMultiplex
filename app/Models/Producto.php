@@ -31,16 +31,26 @@ class Producto extends Model
         'fecha_vencimiento',
         'imagen',
         'activo',
-        'requiere_receta'
+        'requiere_receta',
+        'en_oferta',
+        'descuento_porcentaje',
+        'precio_oferta',
+        'fecha_inicio_oferta',
+        'fecha_fin_oferta'
     ];
 
     protected $casts = [
         'precio_compra' => 'decimal:2',
         'precio_venta' => 'decimal:2',
         'precio_mayoreo' => 'decimal:2',
+        'precio_oferta' => 'decimal:2',
+        'descuento_porcentaje' => 'decimal:2',
         'fecha_vencimiento' => 'date',
+        'fecha_inicio_oferta' => 'datetime',
+        'fecha_fin_oferta' => 'datetime',
         'activo' => 'boolean',
         'requiere_receta' => 'boolean',
+        'en_oferta' => 'boolean',
     ];
 
     // Scopes
@@ -67,6 +77,19 @@ class Producto extends Model
     public function scopePorCategory($query, $categoryId)
     {
         return $query->where('category_id', $categoryId);
+    }
+
+    public function scopeEnOferta($query)
+    {
+        return $query->where('en_oferta', true)
+                     ->where(function($q) {
+                         $q->whereNull('fecha_inicio_oferta')
+                           ->orWhere('fecha_inicio_oferta', '<=', now());
+                     })
+                     ->where(function($q) {
+                         $q->whereNull('fecha_fin_oferta')
+                           ->orWhere('fecha_fin_oferta', '>=', now());
+                     });
     }
 
     // Relaciones
@@ -168,5 +191,61 @@ class Producto extends Model
             \Log::error('Error en getImagenPrincipalUrlAttribute: ' . $e->getMessage());
             return null;
         }
+    }
+
+    // Métodos para manejo de ofertas
+    public function getEsOfertaActivaAttribute()
+    {
+        if (!$this->en_oferta) {
+            return false;
+        }
+
+        $now = now();
+        
+        // Verificar fechas de inicio y fin
+        if ($this->fecha_inicio_oferta && $this->fecha_inicio_oferta > $now) {
+            return false;
+        }
+        
+        if ($this->fecha_fin_oferta && $this->fecha_fin_oferta < $now) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getPrecioFinalAttribute()
+    {
+        if ($this->es_oferta_activa && $this->precio_oferta) {
+            return $this->precio_oferta;
+        }
+        
+        return $this->precio_venta;
+    }
+
+    public function getDescuentoCalculadoAttribute()
+    {
+        if (!$this->es_oferta_activa) {
+            return 0;
+        }
+
+        if ($this->descuento_porcentaje) {
+            return $this->descuento_porcentaje;
+        }
+
+        if ($this->precio_oferta && $this->precio_venta > 0) {
+            return round((($this->precio_venta - $this->precio_oferta) / $this->precio_venta) * 100, 2);
+        }
+
+        return 0;
+    }
+
+    public function getAhorroAttribute()
+    {
+        if (!$this->es_oferta_activa) {
+            return 0;
+        }
+
+        return $this->precio_venta - $this->precio_final;
     }
 }

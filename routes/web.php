@@ -108,6 +108,11 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::put('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggleStatus');
     
+    // Rutas de Ofertas (Admin)
+    Route::resource('ofertas', \App\Http\Controllers\OfertaController::class);
+    Route::get('ofertas-parallax', [\App\Http\Controllers\OfertaController::class, 'parallax'])->name('ofertas.parallax');
+    Route::post('ofertas-masiva', [\App\Http\Controllers\OfertaController::class, 'masiva'])->name('ofertas.masiva');
+    
     // Rutas de Órdenes (Admin)
     Route::resource('orders', OrderController::class);
     Route::put('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');

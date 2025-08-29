@@ -13,11 +13,18 @@ class ShopController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Producto::with(['imagenes', 'imagenPrincipal'])->where('activo', true);
+        $query = Producto::with(['imagenes', 'imagenPrincipal'])
+                         ->where('activo', true)
+                         ->where('stock_actual', '>', 0); // Solo productos con stock
 
         // Filtro por categoría
         if ($request->filled('categoria')) {
             $query->where('categoria', $request->categoria);
+        }
+
+        // Filtro por ofertas
+        if ($request->filled('en_oferta')) {
+            $query->enOferta();
         }
 
         // Filtro por búsqueda
@@ -74,7 +81,15 @@ class ShopController extends Controller
         $precioMin = Producto::where('activo', true)->min('precio_venta');
         $precioMax = Producto::where('activo', true)->max('precio_venta');
 
-        return view('welcome', compact('productos', 'categorias', 'precioMin', 'precioMax'));
+        // Obtener productos en oferta para el parallax (máximo 6)
+        $productosEnOferta = Producto::with(['imagenes', 'imagenPrincipal'])
+            ->where('activo', true)
+            ->where('stock_actual', '>', 0) // Solo productos con stock
+            ->enOferta()
+            ->limit(6)
+            ->get();
+
+        return view('welcome', compact('productos', 'categorias', 'precioMin', 'precioMax', 'productosEnOferta'));
     }
 
     public function show(Producto $producto)
@@ -85,15 +100,19 @@ class ShopController extends Controller
 
         $producto->load(['imagenes', 'imagenPrincipal']);
         
+        // Obtener las imágenes del producto
+        $imagenes = $producto->imagenes;
+        
         // Productos relacionados (misma categoría)
         $productosRelacionados = Producto::with(['imagenes', 'imagenPrincipal'])
             ->where('categoria', $producto->categoria)
             ->where('id', '!=', $producto->id)
             ->where('activo', true)
+            ->where('stock_actual', '>', 0) // Solo productos con stock
             ->limit(4)
             ->get();
 
-        return view('public.shop.show', compact('producto', 'productosRelacionados'));
+        return view('public.shop.show', compact('producto', 'productosRelacionados', 'imagenes'));
     }
 
     public function addToCart(Request $request)
@@ -124,16 +143,19 @@ class ShopController extends Controller
             }
             
             $carrito[$productoId]['cantidad'] = $nuevaCantidad;
-            $carrito[$productoId]['subtotal'] = $nuevaCantidad * $producto->precio_venta;
+            $carrito[$productoId]['subtotal'] = $nuevaCantidad * $producto->precio_final;
         } else {
             $carrito[$productoId] = [
                 'id' => $producto->id,
                 'nombre' => $producto->nombre,
-                'precio' => $producto->precio_venta,
+                'precio' => $producto->precio_final, // Usar precio final (con descuento si aplica)
+                'precio_original' => $producto->precio_venta, // Mantener precio original para mostrar
                 'cantidad' => $request->cantidad,
-                'subtotal' => $request->cantidad * $producto->precio_venta,
+                'subtotal' => $request->cantidad * $producto->precio_final,
                 'imagen' => $producto->imagen_principal_url,
                 'codigo' => $producto->codigo_interno,
+                'en_oferta' => $producto->es_oferta_activa,
+                'descuento_porcentaje' => $producto->descuento_calculado,
             ];
         }
 
@@ -182,6 +204,13 @@ class ShopController extends Controller
             if (isset($carrito[$productoId])) {
                 $carrito[$productoId]['cantidad'] = $request->cantidad;
                 $carrito[$productoId]['subtotal'] = $request->cantidad * $carrito[$productoId]['precio'];
+                
+                // Actualizar información de oferta si cambió
+                $carrito[$productoId]['en_oferta'] = $producto->es_oferta_activa;
+                $carrito[$productoId]['descuento_porcentaje'] = $producto->descuento_calculado;
+                $carrito[$productoId]['precio'] = $producto->precio_final; // Actualizar precio por si cambió la oferta
+                $carrito[$productoId]['precio_original'] = $producto->precio_venta;
+                $carrito[$productoId]['subtotal'] = $request->cantidad * $producto->precio_final; // Recalcular con precio actualizado
             }
         }
 
@@ -338,7 +367,7 @@ class ShopController extends Controller
                     'codigo_producto' => $producto->codigo_interno,
                     'descripcion_producto' => $producto->descripcion,
                     'categoria_producto' => $producto->categoria,
-                    'precio_unitario' => $producto->precio_venta,
+                    'precio_unitario' => $item['precio'], // Usar precio del carrito (con descuento si aplica)
                     'cantidad' => $item['cantidad'],
                     'subtotal' => $item['subtotal'],
                 ]);

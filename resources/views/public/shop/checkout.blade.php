@@ -208,11 +208,26 @@
                         </div>
                         <div class="card-body">
                             @foreach ($carrito as $item)
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-0">{{ $item['nombre'] }}</h6><small class="text-muted">Cantidad:
-                                            {{ $item['cantidad'] }}</small>
-                                    </div><span class="fw-bold">Q{{ number_format($item['subtotal'], 2) }}</span>
+                                        <h6 class="mb-1">{{ $item['nombre'] }}</h6>
+                                        <small class="text-muted d-block">Cantidad: {{ $item['cantidad'] }}</small>
+                                        
+                                        {{-- Mostrar si está en oferta --}}
+                                        @if(isset($item['en_oferta']) && $item['en_oferta'])
+                                            <span class="badge bg-success mt-1">
+                                                <i class="bi-fire me-1"></i>{{ $item['descuento_porcentaje'] }}% OFF
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="text-end">
+                                        @if(isset($item['en_oferta']) && $item['en_oferta'])
+                                            <div class="text-decoration-line-through text-muted small">Q{{ number_format($item['precio_original'] * $item['cantidad'], 2) }}</div>
+                                            <span class="fw-bold text-danger">Q{{ number_format($item['subtotal'], 2) }}</span>
+                                        @else
+                                            <span class="fw-bold">Q{{ number_format($item['subtotal'], 2) }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                             <hr>

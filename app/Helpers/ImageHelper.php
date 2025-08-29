@@ -13,15 +13,27 @@ class ImageHelper
             return null;
         }
 
-        // Verificar si el archivo existe físicamente
-        $fullPath = storage_path('app/public/' . $rutaImagen);
-        if (!file_exists($fullPath)) {
-            return null;
+        // Primero intentar en storage/app/public/productos/
+        $fullPath1 = storage_path('app/public/productos/' . $rutaImagen);
+        if (file_exists($fullPath1)) {
+            return url('/storage/productos/' . $rutaImagen);
         }
 
-        // Generar URL usando las rutas Laravel que creamos
-        // Esto funciona tanto en desarrollo como producción
-        return url('/storage/' . $rutaImagen);
+        // Luego intentar en public/storage/productos/
+        $fullPath2 = public_path('storage/productos/' . $rutaImagen);
+        if (file_exists($fullPath2)) {
+            return url('/storage/productos/' . $rutaImagen);
+        }
+
+        // Intentar en storage/app/public/ directamente
+        $fullPath3 = storage_path('app/public/' . $rutaImagen);
+        if (file_exists($fullPath3)) {
+            return url('/storage/' . $rutaImagen);
+        }
+
+        // Fallback: devolver URL aunque el archivo no exista físicamente
+        // Esto permite que las imágenes se muestren si están en la ubicación correcta
+        return url('/storage/productos/' . $rutaImagen);
     }
 
     /**
@@ -33,8 +45,20 @@ class ImageHelper
             return false;
         }
 
-        $fullPath = storage_path('app/public/' . $rutaImagen);
-        return file_exists($fullPath);
+        // Verificar en múltiples ubicaciones
+        $paths = [
+            storage_path('app/public/productos/' . $rutaImagen),
+            public_path('storage/productos/' . $rutaImagen),
+            storage_path('app/public/' . $rutaImagen),
+        ];
+
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

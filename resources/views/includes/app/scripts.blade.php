@@ -11,6 +11,7 @@
 
 <!-- JS Front -->
 <script src="{{ asset('js/theme-custom.js') }}"></script>
+<script src="{{ asset('js/dashboard.js') }}"></script>
 
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

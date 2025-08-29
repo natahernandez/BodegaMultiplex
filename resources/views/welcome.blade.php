@@ -91,7 +91,7 @@
                 </div>
 
                 <!-- Filtro de Categoría -->
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label fw-semibold">Categoría</label>
                     <select name="categoria" class="form-select">
                         <option value="">Todas</option>
@@ -101,6 +101,15 @@
                                 {{ $categoria }}
                             </option>
                         @endforeach
+                    </select>
+                </div>
+
+                <!-- Filtro de Ofertas -->
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Ofertas</label>
+                    <select name="en_oferta" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="1" {{ request('en_oferta') == '1' ? 'selected' : '' }}>Solo Ofertas</option>
                     </select>
                 </div>
 
@@ -138,7 +147,7 @@
                     </button>
 
                     <!-- Boton de Limpiar -->
-                    @if (request('search') || request('categoria') || request('precio_min') || request('precio_max') || request('order_by'))
+                    @if (request('search') || request('categoria') || request('en_oferta') || request('precio_min') || request('precio_max') || request('order_by'))
                         <a href="/" class="btn btn-outline-secondary w-50">
                             <i class="bi-arrow-clockwise me-1"></i> Limpiar
                         </a>
@@ -160,19 +169,28 @@
                                 <i class="bi-image fs-3 text-muted"></i>
                             </div>
                         @endif
-                        <span class="price-badge">Q{{ number_format($producto->precio_venta, 2) }}</span>
-                        @if ($producto->stock_actual <= 0)
-                            <span class="stock-badge bg-danger text-white">Agotado</span>
-                        @elseif($producto->stock_actual <= $producto->stock_minimo)
-                            <span class="stock-badge bg-warning text-dark">Stock Bajo</span>
-                        @else
-                            <span class="stock-badge bg-success text-white">Disponible</span>
+                        
+                        {{-- Badge de descuento --}}
+                        @if($producto->descuento_calculado > 0)
+                            <span class="discount-badge-small">-{{ $producto->descuento_calculado }}%</span>
                         @endif
+                        
                         <div class="card-body">
-                            <span
-                                class="category-badge">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
+                            <span class="category-badge">{{ optional($producto->category)->nombre ?? $producto->categoria }}</span>
                             <h5 class="card-title fw-bold">{{ $producto->nombre }}</h5>
                             <p class="text-muted small">{{ Str::limit($producto->descripcion, 70) }}</p>
+                            
+                            {{-- Precios --}}
+                            @if($producto->es_oferta_activa)
+                                <div class="mb-3">
+                                    <span class="text-decoration-line-through text-muted me-2">Q{{ number_format($producto->precio_venta, 2) }}</span>
+                                    <span class="h5 text-danger mb-0">Q{{ number_format($producto->precio_final, 2) }}</span>
+                                </div>
+                            @else
+                                <div class="mb-3">
+                                    <span class="h5 text-primary mb-0">Q{{ number_format($producto->precio_venta, 2) }}</span>
+                                </div>
+                            @endif
                         </div>
                         <div class="card-footer bg-transparent">
                             <button class="btn btn-add-cart w-100 mb-2"
@@ -195,15 +213,20 @@
         </div>
     </main>
 
+    {{-- Sección de Ofertas Parallax --}}
+    @if(isset($productosEnOferta) && $productosEnOferta->count() > 0)
+        @include('partials.offers-parallax')
+    @endif
+
     <!-- Footer -->
     <footer>
-        <div class="container">
+        <div class="container-fluid">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3    ">
                     <h5>Bodegas Multiphlex</h5>
                     <p>Tu tienda de confianza con los mejores productos.</p>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <h6>Categorías</h6>
                     <ul class="list-unstyled">
                         @foreach ($categorias->take(5) as $categoria)
@@ -211,10 +234,15 @@
                         @endforeach
                     </ul>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <h6>Contacto</h6>
                     <p><i class="bi-telephone"></i> +502 5928-9905</p>
                     <p><i class="bi-envelope"></i> bdgsmultiphlex@gmail.com</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Certificado por:</h6>
+                    <script type="text/javascript"
+                        src="https://comercios.pagadito.com/validate/index.php?merchant=07f67001af3242bc11ea755ed69c30e2&size=m&_idioma=es"></script>
                 </div>
             </div>
             <hr>

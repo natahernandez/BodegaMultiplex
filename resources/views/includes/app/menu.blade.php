@@ -26,6 +26,29 @@
       </a>
     </div>
 
+    <!-- Ofertas -->
+    <div class="nav-item">
+      <a class="nav-link dropdown-toggle {{ request()->routeIs(['ofertas.*']) ? 'active' : '' }}" href="#navbarVerticalMenuOfertas" role="button" data-bs-toggle="collapse" data-bs-target="#navbarVerticalMenuOfertas" aria-expanded="{{ request()->routeIs(['ofertas.*']) ? 'true' : 'false' }}" aria-controls="navbarVerticalMenuOfertas">
+        <i class="bi-fire nav-icon"></i>
+        <span class="nav-link-title">Ofertas</span>
+      </a>
+
+      <div id="navbarVerticalMenuOfertas" class="nav-collapse collapse {{ request()->routeIs(['ofertas.*']) ? 'show' : '' }}" data-bs-parent="#navbarVerticalMenu">
+        <a class="nav-link {{ request()->routeIs('ofertas.index') ? 'active' : '' }}" href="{{ route('ofertas.index') }}">
+          <i class="bi-percent nav-icon"></i>
+          <span class="nav-link-title">Gestionar Ofertas</span>
+        </a>
+        <a class="nav-link {{ request()->routeIs('ofertas.create') ? 'active' : '' }}" href="{{ route('ofertas.create') }}">
+          <i class="bi-plus-circle nav-icon"></i>
+          <span class="nav-link-title">Nueva Oferta</span>
+        </a>
+        <a class="nav-link {{ request()->routeIs('ofertas.parallax') ? 'active' : '' }}" href="{{ route('ofertas.parallax') }}">
+          <i class="bi-layers nav-icon"></i>
+          <span class="nav-link-title">Configurar Parallax</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Mantenimiento -->
     <div class="nav-item">
       <a class="nav-link dropdown-toggle {{ request()->routeIs(['brands.*', 'categories.*']) ? 'active' : '' }}" href="#navbarVerticalMenuMantenimiento" role="button" data-bs-toggle="collapse" data-bs-target="#navbarVerticalMenuMantenimiento" aria-expanded="{{ request()->routeIs(['brands.*', 'categories.*']) ? 'true' : 'false' }}" aria-controls="navbarVerticalMenuMantenimiento">

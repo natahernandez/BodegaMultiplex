@@ -6,7 +6,14 @@
 </head>
 
 <body class="has-navbar-vertical-aside navbar-vertical-aside-show-xl footer-offset">
-  <script src="{{ asset('vendor/hs-navbar-vertical-aside/src/hs-navbar-vertical-aside-mini-cache.js') }}"></script>
+  <script>
+    // FORCE LAYOUT CLASSES IMMEDIATELY
+    document.body.classList.add('has-navbar-vertical-aside');
+    if (window.innerWidth >= 1200) {
+      document.body.classList.add('navbar-vertical-aside-show-xl');
+    }
+  </script>
+  <script src="{{ asset('vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside-mini-cache.js') }}"></script>
 
   @include('includes.app.header')
 

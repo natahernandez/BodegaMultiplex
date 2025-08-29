@@ -55,10 +55,24 @@
                                                 <span>Código:</span>
                                                 <span class="fw-semibold">{{ $item['codigo'] }}</span>
                                             </div>
+                                            
+                                            {{-- Mostrar si está en oferta --}}
+                                            @if(isset($item['en_oferta']) && $item['en_oferta'])
+                                                <div class="mt-2">
+                                                    <span class="badge bg-success">
+                                                        <i class="bi-fire me-1"></i>{{ $item['descuento_porcentaje'] }}% OFF
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
 
                                         <div class="col col-md-2 align-self-center">
-                                            <h5 class="mb-0">Q{{ number_format($item['precio'], 2) }}</h5>
+                                            @if(isset($item['en_oferta']) && $item['en_oferta'])
+                                                <div class="text-decoration-line-through text-muted small">Q{{ number_format($item['precio_original'], 2) }}</div>
+                                                <h5 class="mb-0 text-danger">Q{{ number_format($item['precio'], 2) }}</h5>
+                                            @else
+                                                <h5 class="mb-0">Q{{ number_format($item['precio'], 2) }}</h5>
+                                            @endif
                                         </div>
 
                                         <div class="col col-md-2 align-self-center">
