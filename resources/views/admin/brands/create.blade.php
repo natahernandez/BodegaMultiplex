@@ -94,8 +94,9 @@
 
                             <div class="col-sm-9">
                                 <!-- Form Switch -->
+                                <input type="hidden" name="activo" value="0">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="activo" name="activo" {{ old('activo', true) ? 'checked' : '' }}>
+                                    <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" {{ old('activo', 1) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="activo">Marca activa</label>
                                 </div>
                                 <!-- End Form Switch -->

@@ -38,14 +38,6 @@
           <i class="bi-percent nav-icon"></i>
           <span class="nav-link-title">Gestionar Ofertas</span>
         </a>
-        <a class="nav-link {{ request()->routeIs('ofertas.create') ? 'active' : '' }}" href="{{ route('ofertas.create') }}">
-          <i class="bi-plus-circle nav-icon"></i>
-          <span class="nav-link-title">Nueva Oferta</span>
-        </a>
-        <a class="nav-link {{ request()->routeIs('ofertas.parallax') ? 'active' : '' }}" href="{{ route('ofertas.parallax') }}">
-          <i class="bi-layers nav-icon"></i>
-          <span class="nav-link-title">Configurar Parallax</span>
-        </a>
       </div>
     </div>
 

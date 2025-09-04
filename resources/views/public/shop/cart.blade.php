@@ -168,12 +168,10 @@
                             </div>
                         @endif
                         <div class="row text-center mt-4 pt-3 border-top">
-                            <div class="col-4"><i class="bi-shield-check text-success fs-4 d-block mb-1"></i><small
+                            <div class="col-6"><i class="bi-shield-check text-success fs-4 d-block mb-1"></i><small
                                     class="text-muted">Compra Segura</small></div>
-                            <div class="col-4"><i class="bi-truck text-primary fs-4 d-block mb-1"></i><small
+                            <div class="col-6"><i class="bi-truck text-primary fs-4 d-block mb-1"></i><small
                                     class="text-muted">Envío Rápido</small></div>
-                            <div class="col-4"><i class="bi-arrow-clockwise text-info fs-4 d-block mb-1"></i><small
-                                    class="text-muted">Devoluciones</small></div>
                         </div>
                     </div>
                 </div>

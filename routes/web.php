@@ -110,7 +110,6 @@ Route::middleware(['auth', 'is_admin'])->group(function () {
     
     // Rutas de Ofertas (Admin)
     Route::resource('ofertas', \App\Http\Controllers\OfertaController::class);
-    Route::get('ofertas-parallax', [\App\Http\Controllers\OfertaController::class, 'parallax'])->name('ofertas.parallax');
     Route::post('ofertas-masiva', [\App\Http\Controllers\OfertaController::class, 'masiva'])->name('ofertas.masiva');
     
     // Rutas de Órdenes (Admin)

@@ -13,6 +13,7 @@ class OfertaController extends Controller
      */
     public function index(Request $request)
     {
+        // Mostrar TODOS los productos activos para gestionar ofertas
         $query = Producto::with(['imagenes', 'imagenPrincipal', 'brand', 'category'])
                          ->where('activo', true);
 
@@ -73,13 +74,23 @@ class OfertaController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        $productos = Producto::where('activo', true)
-                            ->orderBy('nombre')
-                            ->get(['id', 'nombre', 'precio_venta', 'categoria']);
+        $productoId = $request->get('producto');
+        
+        if (!$productoId) {
+            return redirect()->route('ofertas.index')->with('error', 'Debe especificar un producto para crear la oferta.');
+        }
+        
+        $producto = Producto::with(['imagenes', 'imagenPrincipal', 'brand', 'category'])
+                           ->where('activo', true)
+                           ->findOrFail($productoId);
+                           
+        if ($producto->en_oferta) {
+            return redirect()->route('ofertas.index')->with('error', 'Este producto ya tiene una oferta activa.');
+        }
 
-        return view('admin.ofertas.create', compact('productos'));
+        return view('admin.ofertas.create', compact('producto'));
     }
 
     /**
@@ -88,46 +99,62 @@ class OfertaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'productos' => 'required|array|min:1',
-            'productos.*' => 'exists:productos,id',
+            'producto_id' => 'required|exists:productos,id',
             'tipo_descuento' => 'required|in:porcentaje,precio_fijo',
-            'descuento_porcentaje' => 'required_if:tipo_descuento,porcentaje|numeric|min:1|max:90',
-            'precio_oferta' => 'required_if:tipo_descuento,precio_fijo|numeric|min:0',
-            'fecha_inicio_oferta' => 'nullable|date|after_or_equal:today',
+            'descuento_porcentaje' => 'required_if:tipo_descuento,porcentaje|nullable|numeric|min:1|max:90',
+            'precio_oferta' => 'required_if:tipo_descuento,precio_fijo|nullable|numeric|min:0',
+            'fecha_inicio_oferta' => 'nullable|date',
             'fecha_fin_oferta' => 'nullable|date|after:fecha_inicio_oferta',
         ]);
 
         try {
             DB::beginTransaction();
 
-            foreach ($request->productos as $productoId) {
-                $producto = Producto::findOrFail($productoId);
-                
-                $data = [
-                    'en_oferta' => true,
-                    'fecha_inicio_oferta' => $request->fecha_inicio_oferta,
-                    'fecha_fin_oferta' => $request->fecha_fin_oferta,
-                ];
-
-                if ($request->tipo_descuento === 'porcentaje') {
-                    $data['descuento_porcentaje'] = $request->descuento_porcentaje;
-                    $data['precio_oferta'] = $producto->precio_venta * (1 - $request->descuento_porcentaje / 100);
-                } else {
-                    $data['precio_oferta'] = $request->precio_oferta;
-                    $data['descuento_porcentaje'] = round((($producto->precio_venta - $request->precio_oferta) / $producto->precio_venta) * 100, 2);
-                }
-
-                $producto->update($data);
+            $producto = Producto::findOrFail($request->producto_id);
+            
+            \Log::info('Creando oferta para producto: ' . $producto->nombre, [
+                'producto_id' => $request->producto_id,
+                'tipo_descuento' => $request->tipo_descuento,
+                'descuento_porcentaje' => $request->descuento_porcentaje,
+                'precio_oferta' => $request->precio_oferta,
+                'en_oferta_actual' => $producto->en_oferta
+            ]);
+            
+            if ($producto->en_oferta) {
+                \Log::warning('Producto ya tiene oferta activa: ' . $producto->nombre);
+                return back()->with('error', 'Este producto ya tiene una oferta activa.')->withInput();
             }
+            
+            $data = [
+                'en_oferta' => true,
+                'fecha_inicio_oferta' => $request->fecha_inicio_oferta,
+                'fecha_fin_oferta' => $request->fecha_fin_oferta,
+            ];
+
+            if ($request->tipo_descuento === 'porcentaje') {
+                $data['descuento_porcentaje'] = $request->descuento_porcentaje;
+                $data['precio_oferta'] = $producto->precio_venta * (1 - $request->descuento_porcentaje / 100);
+            } else {
+                $data['precio_oferta'] = $request->precio_oferta;
+                $data['descuento_porcentaje'] = round((($producto->precio_venta - $request->precio_oferta) / $producto->precio_venta) * 100, 2);
+            }
+
+            $producto->update($data);
+            
+            \Log::info('Oferta creada exitosamente', [
+                'producto_id' => $producto->id,
+                'producto_nombre' => $producto->nombre,
+                'datos_actualizados' => $data
+            ]);
 
             DB::commit();
 
             return redirect()->route('ofertas.index')
-                           ->with('success', 'Ofertas creadas exitosamente para ' . count($request->productos) . ' productos.');
+                           ->with('success', 'Oferta creada exitosamente para el producto: ' . $producto->nombre);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error al crear las ofertas: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Error al crear la oferta: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -213,18 +240,6 @@ class OfertaController extends Controller
         }
     }
 
-    /**
-     * Configurar el módulo parallax
-     */
-    public function parallax()
-    {
-        $productosEnOferta = Producto::with(['imagenes', 'imagenPrincipal', 'brand', 'category'])
-                                   ->enOferta()
-                                   ->orderBy('created_at', 'desc')
-                                   ->get();
-
-        return view('admin.ofertas.parallax', compact('productosEnOferta'));
-    }
 
     /**
      * Aplicar oferta masiva

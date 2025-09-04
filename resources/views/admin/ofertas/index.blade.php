@@ -60,13 +60,35 @@
             <h1 class="page-header-title">Gestión de Ofertas</h1>
             <p class="page-header-text">Administra descuentos y ofertas especiales para tus productos</p>
         </div>
-        <div class="col-auto">
-            <a class="btn btn-primary" href="{{ route('ofertas.create') }}">
-                <i class="bi-plus me-1"></i> Nueva Oferta
-            </a>
-        </div>
     </div>
 </div>
+
+<!-- Alertas de éxito/error -->
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi-check-circle me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi-exclamation-triangle me-2"></i>{{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi-exclamation-triangle me-2"></i>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
 
 <!-- Estadísticas -->
 <div class="row mb-4">

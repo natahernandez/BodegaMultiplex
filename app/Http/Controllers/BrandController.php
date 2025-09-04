@@ -39,7 +39,7 @@ class BrandController extends Controller
         ]);
 
         $data = $request->all();
-        $data['activo'] = $request->has('activo');
+        $data['activo'] = $request->boolean('activo');
 
         // Procesar imagen si se subió
         if ($request->hasFile('imagen')) {

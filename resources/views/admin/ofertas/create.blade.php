@@ -2,33 +2,46 @@
 
 @section('styles')
 <style>
-.product-selector {
-    max-height: 400px;
-    overflow-y: auto;
+.product-card {
     border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    background: #f8f9fa;
+    margin-bottom: 20px;
+}
+.product-image {
+    height: 120px;
+    width: 120px;
+    object-fit: cover;
     border-radius: 8px;
-    padding: 15px;
-}
-.product-item {
-    padding: 10px;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.product-item:hover {
-    background-color: #f8f9fa;
-}
-.product-item.selected {
-    background-color: #e3f2fd;
-    border-color: #2196f3;
 }
 .preview-section {
-    background: #f8f9fa;
+    background: #fff;
+    border: 1px solid #e9ecef;
     border-radius: 8px;
     padding: 20px;
     margin-top: 20px;
+}
+.price-comparison {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.2em;
+}
+.price-original {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+.price-offer {
+    color: #dc3545;
+    font-weight: bold;
+}
+.savings-badge {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
 }
 </style>
 @endsection
@@ -44,50 +57,86 @@
                     <li class="breadcrumb-item active" aria-current="page">Nueva Oferta</li>
                 </ol>
             </nav>
-            <h1 class="page-header-title">Nueva Oferta</h1>
-            <p class="page-header-text">Crea ofertas especiales para tus productos</p>
+            <h1 class="page-header-title">Crear Oferta para Producto</h1>
+            <p class="page-header-text">Configura una oferta especial para este producto</p>
         </div>
     </div>
 </div>
 
-<form action="{{ route('ofertas.store') }}" method="POST">
+<!-- Alertas de éxito/error -->
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi-check-circle me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi-exclamation-triangle me-2"></i>{{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi-exclamation-triangle me-2"></i>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+<form action="{{ route('ofertas.store') }}" method="POST" onsubmit="return validateForm()">
     @csrf
+    <input type="hidden" name="producto_id" value="{{ $producto->id }}">
     
     <div class="row">
         <div class="col-lg-8">
-            <!-- Selección de Productos -->
+            <!-- Información del Producto -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h4 class="card-header-title">Seleccionar Productos</h4>
+                    <h4 class="card-header-title">Producto Seleccionado</h4>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <input type="text" id="searchProducts" class="form-control" placeholder="Buscar productos...">
-                    </div>
-                    
-                    <div class="product-selector" id="productSelector">
-                        @foreach($productos as $producto)
-                            <div class="product-item" data-id="{{ $producto->id }}" data-name="{{ strtolower($producto->nombre) }}" data-category="{{ strtolower($producto->categoria) }}">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="productos[]" value="{{ $producto->id }}" id="producto_{{ $producto->id }}">
-                                    <label class="form-check-label" for="producto_{{ $producto->id }}">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>{{ $producto->nombre }}</strong>
-                                                <br>
-                                                <small class="text-muted">{{ $producto->categoria }} - Q{{ number_format($producto->precio_venta, 2) }}</small>
-                                            </div>
-                                            <span class="badge bg-primary">Q{{ number_format($producto->precio_venta, 2) }}</span>
-                                        </div>
-                                    </label>
+                    <div class="product-card">
+                        <div class="d-flex align-items-center">
+                            @if($producto->imagen_principal_url)
+                                <img src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}" class="product-image me-4">
+                            @else
+                                <div class="product-image me-4 bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi-image text-muted fs-1"></i>
+                                </div>
+                            @endif
+                            <div class="flex-grow-1">
+                                <h5 class="mb-2">{{ $producto->nombre }}</h5>
+                                <div class="mb-2">
+                                    <span class="badge bg-secondary me-2">{{ $producto->categoria }}</span>
+                                    @if($producto->brand)
+                                        <span class="badge bg-info">{{ $producto->brand->nombre }}</span>
+                                    @endif
+                                </div>
+                                <p class="text-muted mb-2">{{ $producto->descripcion }}</p>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div>
+                                        <small class="text-muted d-block">Código</small>
+                                        <strong>{{ $producto->codigo_interno }}</strong>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Stock</small>
+                                        <strong>{{ $producto->stock_actual }}</strong>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Precio Actual</small>
+                                        <strong class="text-primary fs-5">Q{{ number_format($producto->precio_venta, 2) }}</strong>
+                                    </div>
                                 </div>
                             </div>
-                        @endforeach
+                        </div>
                     </div>
-                    
-                    @error('productos')
-                        <div class="text-danger small mt-2">{{ $message }}</div>
-                    @enderror
                 </div>
             </div>
         </div>
@@ -152,7 +201,7 @@
                 </div>
                 <div class="card-body">
                     <div id="offerPreview">
-                        <p class="text-muted text-center">Selecciona productos y configura el descuento para ver la vista previa</p>
+                        <p class="text-muted text-center">Configura el descuento para ver la vista previa</p>
                     </div>
                 </div>
             </div>
@@ -166,7 +215,7 @@
                 <a href="{{ route('ofertas.index') }}" class="btn btn-outline-secondary">
                     <i class="bi-arrow-left me-1"></i> Cancelar
                 </a>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
                     <i class="bi-check-lg me-1"></i> Crear Oferta
                 </button>
             </div>
@@ -177,74 +226,30 @@
 
 @section('scripts')
 <script>
-// Productos seleccionados
-let selectedProducts = [];
-
-// Búsqueda de productos
-document.getElementById('searchProducts').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    const productItems = document.querySelectorAll('.product-item');
-    
-    productItems.forEach(item => {
-        const name = item.dataset.name;
-        const category = item.dataset.category;
-        
-        if (name.includes(searchTerm) || category.includes(searchTerm)) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-});
-
-// Manejo de selección de productos
-document.querySelectorAll('.product-item').forEach(item => {
-    const checkbox = item.querySelector('input[type="checkbox"]');
-    
-    item.addEventListener('click', function(e) {
-        if (e.target.type !== 'checkbox') {
-            checkbox.checked = !checkbox.checked;
-        }
-        
-        if (checkbox.checked) {
-            item.classList.add('selected');
-            selectedProducts.push({
-                id: item.dataset.id,
-                name: checkbox.nextElementSibling.querySelector('strong').textContent,
-                price: parseFloat(checkbox.nextElementSibling.querySelector('.badge').textContent.replace('Q', '').replace(',', ''))
-            });
-        } else {
-            item.classList.remove('selected');
-            selectedProducts = selectedProducts.filter(p => p.id !== item.dataset.id);
-        }
-        
-        updatePreview();
-    });
-    
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
-        }
-    });
-});
+const productPrice = {{ $producto->precio_venta }};
+const productName = '{{ $producto->nombre }}';
 
 // Toggle campos de descuento
 function toggleDescuentoFields(select) {
     const porcentajeField = document.getElementById('porcentaje_field');
     const precioField = document.getElementById('precio_field');
+    const porcentajeInput = porcentajeField.querySelector('input');
+    const precioInput = precioField.querySelector('input');
     
     if (select.value === 'porcentaje') {
         porcentajeField.style.display = 'block';
         precioField.style.display = 'none';
-        porcentajeField.querySelector('input').required = true;
-        precioField.querySelector('input').required = false;
+        porcentajeInput.required = true;
+        precioInput.required = false;
+        precioInput.value = ''; // Limpiar valor del campo oculto
+        precioInput.removeAttribute('required');
     } else {
         porcentajeField.style.display = 'none';
         precioField.style.display = 'block';
-        porcentajeField.querySelector('input').required = false;
-        precioField.querySelector('input').required = true;
+        porcentajeInput.required = false;
+        precioInput.required = true;
+        porcentajeInput.value = ''; // Limpiar valor del campo oculto
+        porcentajeInput.removeAttribute('required');
     }
     
     updatePreview();
@@ -257,60 +262,116 @@ function updatePreview() {
     const descuentoPorcentaje = parseFloat(document.querySelector('input[name="descuento_porcentaje"]').value) || 0;
     const precioOferta = parseFloat(document.querySelector('input[name="precio_oferta"]').value) || 0;
     
-    if (selectedProducts.length === 0) {
-        preview.innerHTML = '<p class="text-muted text-center">Selecciona productos para ver la vista previa</p>';
+    let precioFinal, ahorro, porcentajeAhorro;
+    
+    if (tipoDescuento === 'porcentaje' && descuentoPorcentaje > 0) {
+        precioFinal = productPrice * (1 - descuentoPorcentaje / 100);
+        ahorro = productPrice - precioFinal;
+        porcentajeAhorro = descuentoPorcentaje;
+    } else if (tipoDescuento === 'precio_fijo' && precioOferta > 0) {
+        precioFinal = precioOferta;
+        ahorro = productPrice - precioOferta;
+        porcentajeAhorro = ((productPrice - precioOferta) / productPrice) * 100;
+    } else {
+        preview.innerHTML = '<p class="text-muted text-center">Configura el descuento para ver la vista previa</p>';
         return;
     }
     
-    let html = '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Producto</th><th>Precio Original</th><th>Precio Oferta</th><th>Ahorro</th></tr></thead><tbody>';
+    if (precioFinal >= productPrice) {
+        preview.innerHTML = '<div class="alert alert-warning"><i class="bi-exclamation-triangle me-2"></i>El precio de oferta debe ser menor al precio original</div>';
+        return;
+    }
     
-    selectedProducts.forEach(product => {
-        let precioFinal, ahorro, porcentajeAhorro;
-        
-        if (tipoDescuento === 'porcentaje' && descuentoPorcentaje > 0) {
-            precioFinal = product.price * (1 - descuentoPorcentaje / 100);
-            ahorro = product.price - precioFinal;
-            porcentajeAhorro = descuentoPorcentaje;
-        } else if (tipoDescuento === 'precio_fijo' && precioOferta > 0) {
-            precioFinal = precioOferta;
-            ahorro = product.price - precioOferta;
-            porcentajeAhorro = ((product.price - precioOferta) / product.price) * 100;
-        } else {
-            precioFinal = product.price;
-            ahorro = 0;
-            porcentajeAhorro = 0;
+    preview.innerHTML = `
+        <div class="text-center">
+            <h5 class="mb-3">${productName}</h5>
+            <div class="price-comparison justify-content-center mb-3">
+                <span class="price-original">Q${productPrice.toFixed(2)}</span>
+                <i class="bi-arrow-right text-muted"></i>
+                <span class="price-offer">Q${precioFinal.toFixed(2)}</span>
+            </div>
+            <div class="savings-badge">
+                Ahorras Q${ahorro.toFixed(2)} (${porcentajeAhorro.toFixed(1)}%)
+            </div>
+        </div>
+    `;
+}
+
+// Validar formulario antes de enviar
+function validateForm() {
+    console.log('Validando formulario...');
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const tipoDescuento = document.querySelector('select[name="tipo_descuento"]').value;
+    const descuentoPorcentaje = document.querySelector('input[name="descuento_porcentaje"]').value;
+    const precioOferta = document.querySelector('input[name="precio_oferta"]').value;
+    
+    console.log('Tipo descuento:', tipoDescuento);
+    console.log('Descuento porcentaje:', descuentoPorcentaje);
+    console.log('Precio oferta:', precioOferta);
+    
+    if (tipoDescuento === 'porcentaje') {
+        if (!descuentoPorcentaje || descuentoPorcentaje <= 0 || descuentoPorcentaje > 90) {
+            alert('Por favor ingresa un porcentaje de descuento válido (1-90%).');
+            return false;
+        }
+    }
+    
+    if (tipoDescuento === 'precio_fijo') {
+        if (!precioOferta || precioOferta <= 0) {
+            alert('Por favor ingresa un precio de oferta válido.');
+            return false;
         }
         
-        html += `
-            <tr>
-                <td><strong>${product.name}</strong></td>
-                <td>Q${product.price.toFixed(2)}</td>
-                <td class="text-success">Q${precioFinal.toFixed(2)}</td>
-                <td class="text-primary">Q${ahorro.toFixed(2)} (${porcentajeAhorro.toFixed(1)}%)</td>
-            </tr>
-        `;
-    });
-    
-    html += '</tbody></table></div>';
-    
-    const totalAhorro = selectedProducts.reduce((sum, product) => {
-        if (tipoDescuento === 'porcentaje' && descuentoPorcentaje > 0) {
-            return sum + (product.price * descuentoPorcentaje / 100);
-        } else if (tipoDescuento === 'precio_fijo' && precioOferta > 0) {
-            return sum + (product.price - precioOferta);
+        if (parseFloat(precioOferta) >= productPrice) {
+            alert('El precio de oferta debe ser menor al precio original (Q' + productPrice.toFixed(2) + ').');
+            return false;
         }
-        return sum;
-    }, 0);
+    }
     
-    html += `<div class="text-center mt-3"><strong>Ahorro Total Estimado: <span class="text-success">Q${totalAhorro.toFixed(2)}</span></strong></div>`;
+    console.log('Formulario válido, enviando...');
     
-    preview.innerHTML = html;
+    // Cambiar el botón para mostrar que se está procesando
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creando oferta...';
+    
+    return true;
+}
+
+// Limpiar campos antes de enviar
+function cleanFormFields() {
+    const tipoDescuento = document.querySelector('select[name="tipo_descuento"]').value;
+    const porcentajeInput = document.querySelector('input[name="descuento_porcentaje"]');
+    const precioInput = document.querySelector('input[name="precio_oferta"]');
+    
+    if (tipoDescuento === 'porcentaje') {
+        precioInput.value = '';
+        precioInput.removeAttribute('name');
+    } else {
+        porcentajeInput.value = '';
+        porcentajeInput.removeAttribute('name');
+    }
 }
 
 // Inicializar campos según el valor seleccionado
 document.addEventListener('DOMContentLoaded', function() {
     const tipoDescuento = document.querySelector('select[name="tipo_descuento"]');
     toggleDescuentoFields(tipoDescuento);
+    
+    // Agregar evento al formulario para limpiar campos antes de enviar
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // No limpiar campos, solo asegurar que los valores estén correctos
+        const tipoDescuentoVal = document.querySelector('select[name="tipo_descuento"]').value;
+        const porcentajeInput = document.querySelector('input[name="descuento_porcentaje"]');
+        const precioInput = document.querySelector('input[name="precio_oferta"]');
+        
+        if (tipoDescuentoVal === 'porcentaje') {
+            precioInput.value = '';
+        } else {
+            porcentajeInput.value = '';
+        }
+    });
 });
 </script>
 @endsection

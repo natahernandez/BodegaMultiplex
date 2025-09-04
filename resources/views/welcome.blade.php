@@ -77,7 +77,6 @@
     <main class="container">
         <div class="filters-section shadow-sm p-4 rounded bg-white mb-4">
             <form method="GET" class="row g-3 align-items-end">
-
                 <!-- Buscador -->
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Buscar Producto</label>
@@ -171,8 +170,10 @@
                         @endif
                         
                         {{-- Badge de descuento --}}
-                        @if($producto->descuento_calculado > 0)
+                        @if($producto->es_oferta_activa && $producto->descuento_calculado > 0)
                             <span class="discount-badge-small">-{{ $producto->descuento_calculado }}%</span>
+                        @elseif($producto->en_oferta && !$producto->es_oferta_activa)
+                            <span class="badge bg-warning text-dark position-absolute" style="top: 10px; right: 10px; z-index: 5;">Oferta Vencida</span>
                         @endif
                         
                         <div class="card-body">
@@ -213,10 +214,7 @@
         </div>
     </main>
 
-    {{-- Sección de Ofertas Parallax --}}
-    @if(isset($productosEnOferta) && $productosEnOferta->count() > 0)
-        @include('partials.offers-parallax')
-    @endif
+    
 
     <!-- Footer -->
     <footer>

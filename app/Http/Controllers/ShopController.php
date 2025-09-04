@@ -27,13 +27,14 @@ class ShopController extends Controller
             $query->enOferta();
         }
 
-        // Filtro por búsqueda
+        // Filtro por búsqueda: nombre, marca, categoría, descripción, código
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
-                  ->orWhere('descripcion', 'like', "%{$search}%")
                   ->orWhere('marca', 'like', "%{$search}%")
+                  ->orWhere('categoria', 'like', "%{$search}%")
+                  ->orWhere('descripcion', 'like', "%{$search}%")
                   ->orWhere('codigo_interno', 'like', "%{$search}%");
             });
         }
@@ -46,9 +47,12 @@ class ShopController extends Controller
             $query->where('precio_venta', '<=', $request->precio_max);
         }
 
-        // Ordenamiento
+        // Ordenamiento - Productos en oferta aparecen primero
         $orderBy = $request->get('order_by', 'created_at');
         $orderDirection = $request->get('order_direction', 'desc');
+        
+        // Siempre mostrar productos en oferta primero
+        $query->orderByRaw('en_oferta DESC');
         
         switch ($orderBy) {
             case 'precio_asc':
@@ -81,15 +85,7 @@ class ShopController extends Controller
         $precioMin = Producto::where('activo', true)->min('precio_venta');
         $precioMax = Producto::where('activo', true)->max('precio_venta');
 
-        // Obtener productos en oferta para el parallax (máximo 6)
-        $productosEnOferta = Producto::with(['imagenes', 'imagenPrincipal'])
-            ->where('activo', true)
-            ->where('stock_actual', '>', 0) // Solo productos con stock
-            ->enOferta()
-            ->limit(6)
-            ->get();
-
-        return view('welcome', compact('productos', 'categorias', 'precioMin', 'precioMax', 'productosEnOferta'));
+        return view('welcome', compact('productos', 'categorias', 'precioMin', 'precioMax'));
     }
 
     public function show(Producto $producto)

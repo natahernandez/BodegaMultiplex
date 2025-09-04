@@ -25,6 +25,18 @@
                 @php
                     $imagenes = $producto->imagenes;
                     $imagenPrincipal = $imagenes->where('es_principal', true)->first() ?? $imagenes->first();
+                    // Construimos una lista de URLs válidas y consistentes para las imágenes
+                    $imageUrls = collect($imagenes)
+                        ->map(fn ($img) => \App\Helpers\ImageHelper::getProductImageUrl($img->ruta_imagen))
+                        ->filter()
+                        ->values();
+                    if ($imagenPrincipal) {
+                        $principalUrl = \App\Helpers\ImageHelper::getProductImageUrl($imagenPrincipal->ruta_imagen);
+                        // Asegurar que la imagen principal sea la primera del arreglo
+                        $imageUrls = collect([$principalUrl])
+                            ->merge($imageUrls->reject(fn ($u) => $u === $principalUrl))
+                            ->values();
+                    }
                 @endphp
                 <div class="mb-4 position-relative">
                     @if ($producto->stock_actual <= 0)
@@ -36,8 +48,8 @@
                     @endif
 
                     <div class="main-image-container">
-                        @if ($producto->imagen_principal_url)
-                            <img id="mainImage" src="{{ $producto->imagen_principal_url }}" alt="{{ $producto->nombre }}"
+                        @if (($imageUrls->count() ?? 0) > 0)
+                            <img id="mainImage" src="{{ $imageUrls[0] }}" alt="{{ $producto->nombre }}"
                                 class="img-fluid main-image w-100"
                                 style="height:400px; object-fit:contain; background:#f8f9fa;">
                         @else
@@ -49,13 +61,12 @@
                     </div>
                 </div>
 
-                @if ($imagenes->count() > 1)
+                @if (($imageUrls->count() ?? 0) > 1)
                     <div class="row g-2">
-                        @foreach ($imagenes as $i => $imagen)
+                        @foreach ($imageUrls as $i => $url)
                             <div class="col-3">
-                                <img src="{{ \App\Helpers\ImageHelper::getProductImageUrl($imagen->ruta_imagen) }}"
-                                    alt="{{ $producto->nombre }}"
-                                    class="img-fluid thumbnail w-100 {{ $imagen->es_principal ? 'active' : '' }}"
+                                <img src="{{ $url }}" alt="{{ $producto->nombre }}"
+                                    class="img-fluid thumbnail w-100 {{ $i === 0 ? 'active' : '' }}"
                                     data-index="{{ $i }}"
                                     style="height:80px; object-fit:contain; background:#f8f9fa;">
                             </div>
@@ -151,12 +162,10 @@
                 @endif
 
                 <div class="row text-center">
-                    <div class="col-4"><i class="bi-truck text-primary fs-4 d-block mb-2"></i><small
+                    <div class="col-6"><i class="bi-truck text-primary fs-4 d-block mb-2"></i><small
                             class="text-muted">Envío Gratis<br>en compras +Q200</small></div>
-                    <div class="col-4"><i class="bi-shield-check text-success fs-4 d-block mb-2"></i><small
+                    <div class="col-6"><i class="bi-shield-check text-success fs-4 d-block mb-2"></i><small
                             class="text-muted">Compra<br>Segura</small></div>
-                    <div class="col-4"><i class="bi-arrow-clockwise text-info fs-4 d-block mb-2"></i><small
-                            class="text-muted">Devoluciones<br>24 horas</small></div>
                 </div>
             </div>
         </div>
@@ -201,7 +210,7 @@
 @push('scripts')
     <script>
         $(function() {
-            const images = @json($imagenes->pluck('ruta_imagen'));
+            const images = @json($imageUrls ?? collect());
             let currentIndex = 0,
                 interval;
             const mainImage = $('#mainImage');
@@ -212,7 +221,7 @@
                     if (index < 0) index = images.length - 1;
                     if (index >= images.length) index = 0;
                     currentIndex = index;
-                    const imageUrl = `{{ url('/storage/productos/') }}/${images[currentIndex]}`;
+                    const imageUrl = images[currentIndex];
                     mainImage.fadeOut(300, function() {
                         $(this).attr('src', imageUrl).fadeIn(300);
                     });
