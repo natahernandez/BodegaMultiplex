@@ -29,23 +29,23 @@ class HomeController extends Controller
     {
         $this->setSimplePage('Dashboard Principal', 'Panel de control y estadísticas generales');
         
-        // Estadísticas generales
+        // Estadísticas generales - Solo órdenes confirmadas (excluir pre-órdenes sin pagar)
         $stats = [
             'ventas_hoy' => Order::whereDate('fecha_pedido', today())
-                ->where('estado', '!=', 'cancelado')
+                ->whereNotIn('estado', ['cancelado', 'pre_orden', 'expirado'])
                 ->sum('total'),
             'productos_vendidos_hoy' => DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereDate('orders.fecha_pedido', today())
-                ->where('orders.estado', '!=', 'cancelado')
+                ->whereNotIn('orders.estado', ['cancelado', 'pre_orden', 'expirado'])
                 ->sum('order_items.cantidad'),
             'clientes_atendidos_hoy' => Order::whereDate('fecha_pedido', today())
-                ->where('estado', '!=', 'cancelado')
+                ->whereNotIn('estado', ['cancelado', 'pre_orden', 'expirado'])
                 ->distinct('email_cliente')
                 ->count(),
             'ganancia_neta_mes' => Order::whereMonth('fecha_pedido', now()->month)
                 ->whereYear('fecha_pedido', now()->year)
-                ->where('estado', '!=', 'cancelado')
+                ->whereNotIn('estado', ['cancelado', 'pre_orden', 'expirado'])
                 ->sum('total') * 0.3, // Asumiendo 30% de ganancia neta
         ];
 
@@ -55,7 +55,7 @@ class HomeController extends Controller
             $fecha = now()->subMonths($i);
             $ventas = Order::whereMonth('fecha_pedido', $fecha->month)
                 ->whereYear('fecha_pedido', $fecha->year)
-                ->where('estado', '!=', 'cancelado')
+                ->whereNotIn('estado', ['cancelado', 'pre_orden', 'expirado'])
                 ->sum('total');
             
             $ventasPorMes->push([
@@ -64,11 +64,11 @@ class HomeController extends Controller
             ]);
         }
 
-        // Productos más vendidos
+        // Productos más vendidos - Solo órdenes confirmadas
         $productosMasVendidos = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('productos', 'order_items.producto_id', '=', 'productos.id')
-            ->where('orders.estado', '!=', 'cancelado')
+            ->whereNotIn('orders.estado', ['cancelado', 'pre_orden', 'expirado'])
             ->select('productos.nombre', DB::raw('SUM(order_items.cantidad) as total_vendido'))
             ->groupBy('productos.id', 'productos.nombre')
             ->orderBy('total_vendido', 'desc')
