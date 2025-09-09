@@ -317,74 +317,93 @@ class ShopController extends Controller
             $envio = 0; // El envío se gestiona aparte; no sumar al total
             $total = $subtotal; // Total sin IVA ni envío
 
-            // Generar número de orden único
-            $numeroOrden = 'ORD-' . date('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
-
-            // Crear la orden
-            $order = Order::create([
-                'user_id' => auth()->id(),
-                'numero_orden' => $numeroOrden,
-                'nombre_cliente' => $request->nombre_completo,
-                'email_cliente' => $request->email_cliente,
-                'telefono_cliente' => $request->telefono_cliente,
-                'dpi' => $request->dpi,
-                'nit' => $request->nit ?? 'C/F',
-                'direccion_entrega' => $request->direccion_entrega,
-                'ciudad' => $request->ciudad,
-                'departamento' => $request->departamento,
-                'tipo_pago' => $request->tipo_pago,
-                'metodo_pago' => $request->tipo_pago === 'linea' ? 'tarjeta' : 'contra_entrega',
-                'estado' => $request->tipo_pago === 'linea' ? 'pre_orden' : 'pendiente',
-                'estado_pago' => $request->tipo_pago === 'linea' ? 'pendiente' : 'contra_entrega',
-                'subtotal' => $subtotal,
-                'envio' => $envio,
-                'total' => $total,
-                'notas_cliente' => $request->notas_cliente,
-                'fecha_pedido' => now(),
-                // Pago en línea: expira en 30 minutos si no se completa
-                'fecha_entrega_estimada' => $request->tipo_pago === 'linea' ? now()->addMinutes(30) : null,
-                // Si es pago en línea, se procesará con Pagadito
-                'info_pago' => $request->tipo_pago === 'linea' ? json_encode([
-                    'tipo' => 'pagadito',
-                    'estado' => 'iniciando',
-                    'fecha_creacion' => now(),
-                    'expira_en' => now()->addMinutes(30),
-                ]) : null,
-            ]);
-
-            // Crear los items de la orden (NO actualizar stock aún, se hace cuando el admin marca como completado)
-            foreach ($carrito as $item) {
-                $producto = Producto::findOrFail($item['id']);
-                
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'producto_id' => $producto->id,
-                    'nombre_producto' => $producto->nombre,
-                    'codigo_producto' => $producto->codigo_interno,
-                    'descripcion_producto' => $producto->descripcion,
-                    'categoria_producto' => $producto->categoria,
-                    'precio_unitario' => $item['precio'], // Usar precio del carrito (con descuento si aplica)
-                    'cantidad' => $item['cantidad'],
-                    'subtotal' => $item['subtotal'],
-                ]);
-
-                // NO actualizar stock aquí - se actualiza cuando admin marca como completado
-            }
-
-            DB::commit();
-
-            // Si es pago en línea, mantener el carrito hasta confirmar pago
             if ($request->tipo_pago === 'linea') {
+                // PAGO CON TARJETA: NO crear orden, solo preparar datos para Pagadito
+                
+                // Generar número de orden temporal
+                $numeroOrden = 'ORD-' . date('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
+                
+                // Guardar datos del checkout en sesión para crear orden después del pago
+                Session::put('checkout_data', [
+                    'numero_orden' => $numeroOrden,
+                    'user_id' => auth()->id(),
+                    'nombre_cliente' => $request->nombre_completo,
+                    'email_cliente' => $request->email_cliente,
+                    'telefono_cliente' => $request->telefono_cliente,
+                    'dpi' => $request->dpi,
+                    'nit' => $request->nit ?? 'C/F',
+                    'direccion_entrega' => $request->direccion_entrega,
+                    'ciudad' => $request->ciudad,
+                    'departamento' => $request->departamento,
+                    'tipo_pago' => $request->tipo_pago,
+                    'metodo_pago' => 'tarjeta',
+                    'subtotal' => $subtotal,
+                    'envio' => $envio,
+                    'total' => $total,
+                    'notas_cliente' => $request->notas_cliente,
+                    'carrito' => $carrito,
+                    'fecha_checkout' => now(),
+                ]);
+                
+                DB::commit();
+                
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
-                        'order_id' => $order->id,
-                        'ern' => $order->numero_orden,
-                        'iniciar_url' => route('pagadito.iniciar', $order->id),
+                        'ern' => $numeroOrden,
+                        'iniciar_url' => route('pagadito.iniciar.checkout'),
                     ]);
                 }
-                return redirect()->route('pagadito.iniciar', $order->id);
+                return redirect()->route('pagadito.iniciar.checkout');
+                
             } else {
-                // Si es contra entrega, limpiar carrito e ir al éxito
+                // CONTRA ENTREGA: Crear orden inmediatamente como siempre
+                
+                // Generar número de orden único
+                $numeroOrden = 'ORD-' . date('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
+
+                // Crear la orden
+                $order = Order::create([
+                    'user_id' => auth()->id(),
+                    'numero_orden' => $numeroOrden,
+                    'nombre_cliente' => $request->nombre_completo,
+                    'email_cliente' => $request->email_cliente,
+                    'telefono_cliente' => $request->telefono_cliente,
+                    'dpi' => $request->dpi,
+                    'nit' => $request->nit ?? 'C/F',
+                    'direccion_entrega' => $request->direccion_entrega,
+                    'ciudad' => $request->ciudad,
+                    'departamento' => $request->departamento,
+                    'tipo_pago' => $request->tipo_pago,
+                    'metodo_pago' => 'contra_entrega',
+                    'estado' => 'pendiente',
+                    'estado_pago' => 'contra_entrega',
+                    'subtotal' => $subtotal,
+                    'envio' => $envio,
+                    'total' => $total,
+                    'notas_cliente' => $request->notas_cliente,
+                    'fecha_pedido' => now(),
+                ]);
+
+                // Crear los items de la orden
+                foreach ($carrito as $item) {
+                    $producto = Producto::findOrFail($item['id']);
+                    
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'producto_id' => $producto->id,
+                        'nombre_producto' => $producto->nombre,
+                        'codigo_producto' => $producto->codigo_interno,
+                        'descripcion_producto' => $producto->descripcion,
+                        'categoria_producto' => $producto->categoria,
+                        'precio_unitario' => $item['precio'],
+                        'cantidad' => $item['cantidad'],
+                        'subtotal' => $item['subtotal'],
+                    ]);
+                }
+
+                DB::commit();
+                
+                // Limpiar carrito e ir al éxito
                 Session::forget('carrito');
                 return redirect()->route('shop.order.success', $order->numero_orden)
                     ->with('success', 'Tu pedido ha sido procesado exitosamente');

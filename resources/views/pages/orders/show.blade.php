@@ -1,6 +1,68 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+/* Estilos responsivos adicionales */
+@media (max-width: 768px) {
+  .page-header-title {
+    font-size: 1.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.9rem;
+  }
+  
+  .btn {
+    font-size: 0.9rem;
+  }
+  
+  .badge {
+    font-size: 0.8rem;
+  }
+  
+  /* Mejorar espaciado en móviles */
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .mb-4 {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Ajustar el header en móviles */
+  .page-header .row {
+    margin-bottom: 1rem;
+  }
+  
+  .page-header .col-sm-auto {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-header-title {
+    font-size: 1.25rem;
+  }
+  
+  .card-title {
+    font-size: 1rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  /* Hacer que los botones ocupen todo el ancho en móviles muy pequeños */
+  .d-grid .btn {
+    width: 100%;
+  }
+}
+</style>
 <!-- Page Header -->
 <div class="page-header">
   <div class="row align-items-center mb-3">
@@ -39,7 +101,7 @@
     <!-- End Col -->
 
     <div class="col-sm-auto">
-      <div class="d-flex gap-2">
+        <div class="d-flex flex-column flex-sm-row gap-2">
         <a href="{{ route('orders.index') }}" class="btn btn-outline-primary">
           <i class="bi-arrow-left me-1"></i> Volver a Órdenes
         </a>
@@ -47,11 +109,20 @@
         @if($order->estado === 'completado')
           <a href="{{ route('orders.generate-pdf', $order) }}" class="btn btn-success" target="_blank">
             <i class="bi-file-earmark-pdf me-1"></i> 
-            @if($order->tipo_pago === 'linea')
-              Generar Comprobante de Pago
-            @else
-              Generar Factura
-            @endif
+            <span class="d-none d-sm-inline">
+              @if($order->tipo_pago === 'linea')
+                Generar Comprobante de Pago
+              @else
+                Generar Factura
+              @endif
+            </span>
+            <span class="d-sm-none">
+              @if($order->tipo_pago === 'linea')
+                Comprobante
+              @else
+                Factura
+              @endif
+            </span>
           </a>
         @endif
       </div>
@@ -80,7 +151,7 @@
 
 <div class="row">
   <!-- Información de la Orden -->
-  <div class="col-lg-8">
+  <div class="col-lg-8 order-lg-1 order-2">
     <!-- Datos del Cliente -->
     <div class="card mb-4">
       <div class="card-header">
@@ -133,50 +204,118 @@
         </h4>
       </div>
       <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-borderless">
-            <thead class="thead-light">
-              <tr>
-                <th>Producto</th>
-                <th>Precio Unitario</th>
-                <th>Cantidad</th>
-                <th class="text-end">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach($order->items as $item)
+        <!-- Vista de escritorio -->
+        <div class="d-none d-md-block">
+          <div class="table-responsive">
+            <table class="table table-borderless">
+              <thead class="thead-light">
                 <tr>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      @if($item->producto && $item->producto->imagen_principal_url)
-                        <img src="{{ $item->producto->imagen_principal_url }}" 
-                             alt="{{ $item->nombre_producto }}" 
-                             class="rounded me-3" 
-                             style="width: 60px; height: 60px; object-fit: contain; background: #f8f9fa;">
-                      @else
-                        <div class="d-flex align-items-center justify-content-center me-3 bg-light rounded" 
-                             style="width: 60px; height: 60px;">
-                          <i class="bi-box text-muted"></i>
+                  <th>Producto</th>
+                  <th>Precio Unitario</th>
+                  <th>Cantidad</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($order->items as $item)
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        @php
+                          $imagenUrl = null;
+                          if ($item->producto) {
+                            // Solo obtener la imagen principal
+                            $imagenUrl = $item->producto->imagen_principal_url;
+                          }
+                        @endphp
+                        
+                        @if($imagenUrl)
+                          <img src="{{ $imagenUrl }}" 
+                               alt="{{ $item->nombre_producto }}" 
+                               class="rounded border me-3"
+                               style="width: 60px; height: 60px; object-fit: contain; background: #f8f9fa;">
+                        @else
+                          <!-- Sin imagen: mostrar iniciales del producto -->
+                          <div class="rounded d-flex align-items-center justify-content-center fw-bold text-white me-3" 
+                               style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 1.2rem;">
+                            {{ strtoupper(substr($item->nombre_producto, 0, 2)) }}
+                          </div>
+                        @endif
+                        <div>
+                          <h6 class="mb-0">{{ $item->nombre_producto }}</h6>
+                          <small class="text-muted">Código: {{ $item->codigo_producto }}</small>
+                          @if($item->descripcion_producto)
+                            <small class="text-muted d-block">{{ Str::limit($item->descripcion_producto, 50) }}</small>
+                          @endif
                         </div>
-                      @endif
-                      <div>
-                        <h6 class="mb-0">{{ $item->nombre_producto }}</h6>
-                        <small class="text-muted">Código: {{ $item->codigo_producto }}</small>
+                      </div>
+                    </td>
+                    <td>Q{{ number_format($item->precio_unitario, 2) }}</td>
+                    <td>{{ $item->cantidad }}</td>
+                    <td class="text-end fw-semibold">Q{{ number_format($item->subtotal, 2) }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Vista móvil -->
+        <div class="d-md-none">
+          @foreach($order->items as $item)
+            <div class="card mb-3 border">
+              <div class="card-body p-3">
+                <div class="d-flex align-items-start">
+                  @php
+                    $imagenUrl = null;
+                    if ($item->producto) {
+                      $imagenUrl = $item->producto->imagen_principal_url;
+                    }
+                  @endphp
+                  
+                  @if($imagenUrl)
+                    <img src="{{ $imagenUrl }}" 
+                         alt="{{ $item->nombre_producto }}" 
+                         class="rounded border me-3"
+                         style="width: 50px; height: 50px; object-fit: contain; background: #f8f9fa;">
+                  @else
+                    <div class="rounded d-flex align-items-center justify-content-center fw-bold text-white me-3" 
+                         style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 1rem;">
+                      {{ strtoupper(substr($item->nombre_producto, 0, 2)) }}
+                    </div>
+                  @endif
+                  
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1 fw-semibold">{{ $item->nombre_producto }}</h6>
+                    <small class="text-muted d-block">Código: {{ $item->codigo_producto }}</small>
+                    @if($item->descripcion_producto)
+                      <small class="text-muted d-block">{{ Str::limit($item->descripcion_producto, 40) }}</small>
+                    @endif
+                    
+                    <div class="row mt-2">
+                      <div class="col-6">
+                        <small class="text-muted">Precio:</small>
+                        <div class="fw-semibold">Q{{ number_format($item->precio_unitario, 2) }}</div>
+                      </div>
+                      <div class="col-3">
+                        <small class="text-muted">Cantidad:</small>
+                        <div class="fw-semibold">{{ $item->cantidad }}</div>
+                      </div>
+                      <div class="col-3 text-end">
+                        <small class="text-muted">Subtotal:</small>
+                        <div class="fw-bold text-primary">Q{{ number_format($item->subtotal, 2) }}</div>
                       </div>
                     </div>
-                  </td>
-                  <td>Q{{ number_format($item->precio_unitario, 2) }}</td>
-                  <td>{{ $item->cantidad }}</td>
-                  <td class="text-end fw-semibold">Q{{ number_format($item->subtotal, 2) }}</td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          @endforeach
         </div>
 
         <!-- Totales -->
         <div class="row justify-content-end">
-          <div class="col-md-4">
+          <div class="col-md-4 col-12">
             <div class="border-top pt-3">
               <div class="d-flex justify-content-between mb-2">
                 <span>Subtotal:</span>
@@ -213,7 +352,7 @@
   </div>
 
   <!-- Panel de Estado y Acciones -->
-  <div class="col-lg-4">
+  <div class="col-lg-4 order-lg-2 order-1">
     <!-- Estado Actual -->
     <div class="card mb-4">
       <div class="card-header">
@@ -239,26 +378,16 @@
             @method('PUT')
             
             <div class="d-grid gap-2">
-              <button type="button" class="btn btn-danger" onclick="changeStatus('cancelado')">
-                <i class="bi-x-circle me-2"></i>Cancelar Orden
-              </button>
-              
               <button type="button" class="btn btn-success" onclick="showCompleteModal()">
-                <i class="bi-check-circle me-2"></i>Marcar como Completado
+                <i class="bi-check-circle me-2"></i>
+                <span class="d-none d-sm-inline">Marcar como Completado</span>
+                <span class="d-sm-none">Completar</span>
               </button>
             </div>
             
             <input type="hidden" name="estado" id="estadoInput">
           </form>
-        @endif</thinking>
-
-Tienes razón, hay varios problemas. Vamos a solucionarlos:
-
-## 1. Primero arreglo el error de ruta
-
-<function_calls>
-<invoke name="read_file">
-<parameter name="target_file">resources/views/pages/orders/index.blade.php
+        @endif
 
         <!-- Información de Pago -->
         <div class="mt-4">

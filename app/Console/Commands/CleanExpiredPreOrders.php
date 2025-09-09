@@ -25,9 +25,9 @@ class CleanExpiredPreOrders extends Command
     {
         $this->info('Limpiando pre-órdenes expiradas...');
         
-        // Buscar pre-órdenes que han expirado (más de 30 minutos sin pagar)
+        // Buscar pre-órdenes que han expirado (más de 3 minutos sin pagar)
         $expiredOrders = Order::where('estado', 'pre_orden')
-            ->where('created_at', '<', now()->subMinutes(30))
+            ->where('created_at', '<', now()->subMinutes(3))
             ->get();
             
         $count = 0;
@@ -37,7 +37,7 @@ class CleanExpiredPreOrders extends Command
             $order->update([
                 'estado' => 'expirado',
                 'estado_pago' => 'cancelado',
-                'notas_admin' => 'Pre-orden expirada automáticamente - no se completó el pago en 30 minutos'
+                'notas_admin' => 'Pre-orden expirada automáticamente - no se completó el pago en 3 minutos'
             ]);
             
             $count++;

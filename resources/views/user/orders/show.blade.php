@@ -100,20 +100,34 @@
               <tr>
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                      @if($item->producto && $item->producto->imagen_principal_url)
-                        <div class="avatar">
-                          <img class="avatar-img" src="{{ $item->producto->imagen_principal_url }}" alt="{{ $item->nombre_producto }}" style="object-fit: contain;">
-                        </div>
+                    <div class="flex-shrink-0 me-3">
+                      @php
+                        $imagenUrl = null;
+                        if ($item->producto) {
+                          // Solo obtener la imagen principal
+                          $imagenUrl = $item->producto->imagen_principal_url;
+                        }
+                      @endphp
+                      
+                      @if($imagenUrl)
+                        <img src="{{ $imagenUrl }}" 
+                             alt="{{ $item->nombre_producto }}" 
+                             class="rounded border"
+                             style="width: 60px; height: 60px; object-fit: contain; background: #f8f9fa;">
                       @else
-                        <div class="avatar avatar-soft-primary">
-                          <span class="avatar-initials">{{ strtoupper(substr($item->nombre_producto, 0, 2)) }}</span>
+                        <!-- Sin imagen: mostrar solo iniciales del producto -->
+                        <div class="rounded d-flex align-items-center justify-content-center fw-bold text-white" 
+                             style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 1.2rem;">
+                          {{ strtoupper(substr($item->nombre_producto, 0, 2)) }}
                         </div>
                       @endif
                     </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h6 class="text-inherit mb-0">{{ $item->nombre_producto }}</h6>
-                      <small class="text-muted">{{ $item->codigo_producto }}</small>
+                    <div class="flex-grow-1">
+                      <h6 class="text-inherit mb-1 fw-bold">{{ $item->nombre_producto }}</h6>
+                      <small class="text-muted d-block">Código: {{ $item->codigo_producto }}</small>
+                      @if($item->descripcion_producto)
+                        <small class="text-muted">{{ Str::limit($item->descripcion_producto, 50) }}</small>
+                      @endif
                     </div>
                   </div>
                 </td>
@@ -276,7 +290,7 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
   padding: 0;
 }
 
@@ -288,23 +302,23 @@
 .timeline-item:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: 2.5rem;
-  top: 5rem;
-  width: 3px;
+  left: 2rem;
+  top: 4rem;
+  width: 2px;
   height: calc(100% - 3rem);
-  background: linear-gradient(180deg, #e9ecef 0%, #dee2e6 100%);
-  border-radius: 2px;
-  z-index: 1;
+  background: #e9ecef;
+  border-radius: 1px;
+  z-index: 0;
 }
 
 .timeline-item-success:not(:last-child)::after {
-  background: linear-gradient(180deg, #28a745 0%, #20c997 100%);
-  box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+  background: #28a745;
+  box-shadow: 0 0 8px rgba(40, 167, 69, 0.2);
 }
 
 .timeline-item-danger:not(:last-child)::after {
-  background: linear-gradient(180deg, #dc3545 0%, #e74c3c 100%);
-  box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+  background: #dc3545;
+  box-shadow: 0 0 8px rgba(220, 53, 69, 0.2);
 }
 
 /* Timeline Marker */
@@ -316,17 +330,17 @@
 }
 
 .timeline-marker-node {
-  width: 5rem;
-  height: 5rem;
+  width: 4rem;
+  height: 4rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 4px solid #fff;
+  border: 3px solid #fff;
   color: #6c757d;
-  font-size: 1.5rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  font-size: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -399,6 +413,7 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  z-index: 2;
 }
 
 .timeline-content::before {

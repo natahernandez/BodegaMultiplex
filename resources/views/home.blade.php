@@ -74,7 +74,7 @@
             <span class="js-counter display-4 text-success">Q{{ number_format($stats['ganancia_neta_mes'], 0) }}</span>
           </div>
           <div class="col-auto">
-            <i class="bi-currency-dollar text-success" style="font-size: 2rem;"></i>
+            <i class="bi-graph-up text-success" style="font-size: 2rem;"></i>
           </div>
         </div>
         <small class="text-muted">Estimado 30% margen</small>

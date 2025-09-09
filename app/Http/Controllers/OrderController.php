@@ -184,7 +184,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load(['user', 'items.producto.imagenes']);
+        $order->load(['user', 'items.producto.imagenPrincipal']);
         
         return view('pages.orders.show', compact('order'));
     }

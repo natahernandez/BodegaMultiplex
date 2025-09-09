@@ -9,9 +9,14 @@
     <div class="container py-5 py-sm-7">
 
         <!-- Logo -->
-        <a class="d-flex justify-content-center mb-5" href="/">
-            <img class="zi-2" src="{{ asset('svg/logos/logo.svg') }}" alt="Image Description" style="width: 8rem;">
-        </a>
+        <div class="d-flex justify-content-center mb-5">
+            <a href="/" class="d-flex align-items-center text-decoration-none">
+                <img class="zi-2 me-3" src="{{ asset('svg/logos/logo.png') }}" alt="Bodegas Multiphlex" style="width: 4rem; height: auto;">
+                <div>
+                    <span class="text-primary fw-bold fs-3">Bodegas</span><span class="text-warning fw-bold fs-3">Multiphlex</span>
+                </div>
+            </a>
+        </div>
 
         <div class="mx-auto" style="max-width: 30rem;">
 

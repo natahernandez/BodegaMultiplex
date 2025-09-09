@@ -85,7 +85,7 @@
               <span class="js-counter display-4 text-info">Q{{ number_format($stats['ventas_mes'], 0) }}</span>
             </div>
             <div class="col-auto">
-              <i class="bi-currency-dollar text-info" style="font-size: 2rem;"></i>
+              <i class="bi-graph-up text-info" style="font-size: 2rem;"></i>
             </div>
           </div>
         </div>
@@ -133,7 +133,6 @@
             <label class="form-label">Estado</label>
             <select name="estado" class="form-select">
               <option value="">Todos los estados</option>
-              <option value="pre_orden" {{ request('estado') == 'pre_orden' ? 'selected' : '' }}>🔄 Procesando Pago</option>
               <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
               <option value="confirmado" {{ request('estado') == 'confirmado' ? 'selected' : '' }}>Confirmado</option>
               <option value="en_preparacion" {{ request('estado') == 'en_preparacion' ? 'selected' : '' }}>En Preparación</option>
@@ -142,7 +141,6 @@
               <option value="entregado" {{ request('estado') == 'entregado' ? 'selected' : '' }}>Entregado</option>
               <option value="completado" {{ request('estado') == 'completado' ? 'selected' : '' }}>Completado</option>
               <option value="cancelado" {{ request('estado') == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
-              <option value="expirado" {{ request('estado') == 'expirado' ? 'selected' : '' }}>💀 Expirado</option>
             </select>
           </div>
 
@@ -172,17 +170,6 @@
             <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary">Limpiar</a>
           </div>
           
-          <div class="col-12 mt-3">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="mostrar_pre_ordenes" value="1" 
-                     id="mostrar_pre_ordenes" {{ request('mostrar_pre_ordenes') ? 'checked' : '' }}
-                     onchange="this.form.submit()">
-              <label class="form-check-label" for="mostrar_pre_ordenes">
-                🔄 Mostrar pre-órdenes y órdenes expiradas
-                <small class="text-muted">(incluye órdenes en proceso de pago y expiradas)</small>
-              </label>
-            </div>
-          </div>
         </form>
       </div>
     </div>

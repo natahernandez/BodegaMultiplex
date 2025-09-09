@@ -638,13 +638,23 @@ body {
               @foreach($order->items->take(4) as $item)
                 <div class="col-lg-6 col-md-12">
                   <div class="product-mini">
-                    @if($item->producto && $item->producto->imagen_principal_url)
-                      <img src="{{ $item->producto->imagen_principal_url }}" 
+                    @php
+                      $imagenUrl = null;
+                      if ($item->producto) {
+                        // Solo obtener la imagen principal
+                        $imagenUrl = $item->producto->imagen_principal_url;
+                      }
+                    @endphp
+                    
+                    @if($imagenUrl)
+                      <img src="{{ $imagenUrl }}" 
                            alt="{{ $item->nombre_producto }}" 
                            class="product-image">
                     @else
-                      <div class="product-placeholder">
-                        <i class="bi-image text-muted"></i>
+                      <!-- Sin imagen: mostrar iniciales con gradiente -->
+                      <div class="product-placeholder fw-bold text-white" 
+                           style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 1rem;">
+                        {{ strtoupper(substr($item->nombre_producto, 0, 2)) }}
                       </div>
                     @endif
                     <div class="flex-grow-1">

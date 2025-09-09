@@ -44,7 +44,10 @@ class UserOrderController extends Controller
             });
         }
 
-        $orders = $query->orderBy('fecha_pedido', 'desc')->paginate(10)->appends($request->query());
+        $orders = $query->with(['items.producto.imagenPrincipal'])
+                       ->orderBy('fecha_pedido', 'desc')
+                       ->paginate(10)
+                       ->appends($request->query());
 
         // Estadísticas del usuario (excluyendo pre-órdenes y expiradas)
         $baseQuery = function() use ($user) {
@@ -75,7 +78,7 @@ class UserOrderController extends Controller
             abort(403, 'No tienes permisos para ver esta orden.');
         }
 
-        $order->load(['items.producto']);
+        $order->load(['items.producto.imagenPrincipal']);
 
         // Timeline de seguimiento
         $timeline = $this->getOrderTimeline($order);

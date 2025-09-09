@@ -305,36 +305,102 @@
                 const payWin = window.open(url, 'pagadito_window', `toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=${w},height=${h},top=${top},left=${left}`);
 
                 let attempts = 0;
-                const MAX_ATTEMPTS = 60; // ~3 minutos
+                const MAX_ATTEMPTS = 60; // 60 intentos cada 3 segundos = 3 minutos máximo
+                let timeLeft = 180; // 3 minutos en segundos
+                
+                // Actualizar texto del botón con countdown
+                const updateCountdown = () => {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Esperando pago... ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    timeLeft--;
+                };
+                
+                updateCountdown();
+                const countdownInterval = setInterval(updateCountdown, 1000);
+                
                 intervalId = setInterval(async ()=>{
                     try{
                         const res = await fetch(`{{ route('pagadito.status') }}?ern=${encodeURIComponent(ern)}`, {headers:{'X-Requested-With':'XMLHttpRequest'}});
                         const data = await res.json();
                         if (data.paid){
                             clearInterval(intervalId);
+                            clearInterval(countdownInterval);
                             try{ if (payWin && !payWin.closed) payWin.close(); }catch(e){}
-                            Swal.fire({icon:'success', title:'Pago confirmado', text:'Tu compra se ha completado exitosamente.', timer:1800, showConfirmButton:false});
-                            setTimeout(()=>{ window.location.href = `{{ route('shop.order.success', ':ern') }}`.replace(':ern', ern); }, 1200);
+                            // Cerrar modal si existe
+                            try{ if (modalEl) { const modal = bootstrap.Modal.getInstance(modalEl); if (modal) modal.hide(); } }catch(e){}
+                            btn.innerHTML = '<i class="bi-check-circle me-2"></i>¡Pago Confirmado!';
+                            Swal.fire({icon:'success', title:'¡Pago Confirmado!', text:'Tu compra se ha completado exitosamente.', timer:2000, showConfirmButton:false});
+                            setTimeout(()=>{ window.location.href = `{{ route('shop.order.success', ':ern') }}`.replace(':ern', ern); }, 1500);
                             return;
                         }
                         if (['expirado','cancelado'].includes((data.estado||'').toLowerCase())){
                             clearInterval(intervalId);
+                            clearInterval(countdownInterval);
                             try{ if (payWin && !payWin.closed) payWin.close(); }catch(e){}
-                            Swal.fire({icon:'error', title:'Pago no completado', text:'El pago fue cancelado o expiró. Puedes intentarlo nuevamente.'});
-                            btn.disabled = false; btn.innerHTML = '<i class="bi-check-circle me-2"></i><span id="btn-text">Procesar Orden</span>';
+                            // Cerrar modal si existe
+                            try{ if (modalEl) { const modal = bootstrap.Modal.getInstance(modalEl); if (modal) modal.hide(); } }catch(e){}
+                            Swal.fire({
+                                icon:'error', 
+                                title:'Pago no completado', 
+                                text:'El pago fue cancelado o expiró. Puedes intentarlo nuevamente.',
+                                confirmButtonText: 'Intentar de nuevo'
+                            });
+                            btn.disabled = false; 
+                            btn.innerHTML = '<i class="bi-check-circle me-2"></i><span id="btn-text">Procesar Orden</span>';
                             return;
                         }
                         attempts++;
-                        if (attempts >= MAX_ATTEMPTS){
+                        if (attempts >= MAX_ATTEMPTS || timeLeft <= 0){
                             clearInterval(intervalId);
-                            Swal.fire({icon:'warning', title:'Demora en confirmar', text:'Aún no se confirma el pago. Si ya pagaste, espera un momento o verifica tus órdenes.'});
-                            btn.disabled = false; btn.innerHTML = '<i class="bi-check-circle me-2"></i><span id="btn-text">Procesar Orden</span>';
+                            clearInterval(countdownInterval);
+                            try{ if (payWin && !payWin.closed) payWin.close(); }catch(e){}
+                            // Cerrar modal si existe
+                            try{ if (modalEl) { const modal = bootstrap.Modal.getInstance(modalEl); if (modal) modal.hide(); } }catch(e){}
+                            Swal.fire({
+                                icon:'warning', 
+                                title:'Tiempo agotado', 
+                                text:'Se agotó el tiempo de espera. Si ya realizaste el pago, verifica tus pedidos. Si no, puedes intentar nuevamente.',
+                                confirmButtonText: 'Entendido'
+                            });
+                            btn.disabled = false; 
+                            btn.innerHTML = '<i class="bi-check-circle me-2"></i><span id="btn-text">Procesar Orden</span>';
                         }
                     }catch(e){
                         // Silencioso; continuar intentando
                     }
                 }, 3000);
-                modalEl.addEventListener('hidden.bs.modal', ()=>{ if (intervalId) clearInterval(intervalId); modalEl.remove(); });
+                
+                // Detectar si el usuario cierra la ventana de pago
+                const checkWindowClosed = setInterval(() => {
+                    if (payWin && payWin.closed) {
+                        clearInterval(checkWindowClosed);
+                        clearInterval(intervalId);
+                        clearInterval(countdownInterval);
+                        
+                        // Restaurar botón después de un breve delay
+                        setTimeout(() => {
+                            if (btn.disabled) { // Solo si aún está deshabilitado
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="bi-check-circle me-2"></i><span id="btn-text">Procesar Orden</span>';
+                                
+                                Swal.fire({
+                                    icon:'info', 
+                                    title:'Pago interrumpido', 
+                                    text:'Cerraste la ventana de pago. Puedes intentar nuevamente cuando gustes.',
+                                    confirmButtonText: 'Entendido'
+                                });
+                            }
+                        }, 1000);
+                    }
+                }, 1000);
+                
+                modalEl.addEventListener('hidden.bs.modal', ()=>{ 
+                    if (intervalId) clearInterval(intervalId); 
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    if (checkWindowClosed) clearInterval(checkWindowClosed);
+                    modalEl.remove(); 
+                });
             }
 
             form.addEventListener('submit', async function(e){

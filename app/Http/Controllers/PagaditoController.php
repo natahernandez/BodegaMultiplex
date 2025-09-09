@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Order;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+use App\Models\Producto;
+use App\Models\OrderItem;
 
 // Cargar manualmente la librería de Pagadito
 require_once app_path('Libraries/Pagadito.php');
@@ -18,6 +22,85 @@ class PagaditoController extends Controller
             $pg->mode_sandbox_on(); // Sandbox
         }
         return $pg;
+    }
+
+    public function iniciarCheckout()
+    {
+        // Obtener datos del checkout desde sesión
+        $checkoutData = Session::get('checkout_data');
+        
+        if (!$checkoutData) {
+            return redirect()->route('shop.checkout')->with('error', 'Sesión de checkout expirada. Por favor, intenta de nuevo.');
+        }
+        
+        // Verificar que no haya pasado mucho tiempo (3 minutos)
+        $fechaCheckout = \Carbon\Carbon::parse($checkoutData['fecha_checkout']);
+        if ($fechaCheckout->diffInMinutes(now()) > 3) {
+            Session::forget('checkout_data');
+            return redirect()->route('shop.checkout')->with('error', 'La sesión de checkout ha expirado. Por favor, intenta de nuevo.');
+        }
+
+        // 1) Conectar
+        $pg = $this->client();
+        if (!$pg->connect()) {
+            Log::error('Pagadito connect() failed en checkout', [
+                'code' => $pg->get_rs_code(),
+                'message' => $pg->get_rs_message(),
+                'ern' => $checkoutData['numero_orden']
+            ]);
+            return redirect()->back()->withErrors(['pagadito' => 'No se pudo conectar con Pagadito. Intenta de nuevo.']);
+        }
+        
+        // Forzar moneda USD
+        $pg->change_currency_usd();
+
+        // 2) Obtener tasa de cambio GTQ->USD
+        $gtqToUsdRate = (float) $pg->get_exchange_rate_gtq();
+        if ($gtqToUsdRate <= 0) {
+            $gtqToUsdRate = (float) env('GTQ_USD_RATE', 7.8);
+        }
+
+        // 3) Calcular total en USD
+        $totalUsd = round(((float) $checkoutData['total']) / $gtqToUsdRate, 2);
+        
+        if ($totalUsd <= 0) {
+            return redirect()->route('shop.checkout')->with('error', 'No se pudo iniciar el pago.');
+        }
+        
+        $pg->add_detail(1, 'Orden ' . $checkoutData['numero_orden'] . ' - Bodegas Multiplex', $totalUsd);
+
+        // 4) ERN
+        $ern = $checkoutData['numero_orden'];
+
+        // 5) Ejecutar transacción
+        $paymentUrl = $pg->exec_trans_url($ern);
+        if (!$paymentUrl) {
+            Log::error('Pagadito exec_trans() failed en checkout', [
+                'code' => $pg->get_rs_code(),
+                'message' => $pg->get_rs_message(),
+                'ern' => $ern
+            ]);
+            return redirect()->route('shop.checkout')->with('error', 'No se pudo iniciar el pago.');
+        }
+
+        // Guardar token_trans para polling
+        try {
+            $query = parse_url($paymentUrl, PHP_URL_QUERY);
+            parse_str($query, $params);
+            if (!empty($params['token'])) {
+                Session::put('pagadito_token_' . $ern, $params['token']);
+            }
+        } catch (\Throwable $t) {
+            \Log::warning('No se pudo guardar token_trans de Pagadito en checkout', ['err' => $t->getMessage()]);
+        }
+
+        // Responder con URL para abrir en modal/iframe
+        if (request()->wantsJson()) {
+            return response()->json(['url' => $paymentUrl, 'ern' => $ern]);
+        }
+        
+        // Fallback: redirigir directamente
+        return redirect()->away($paymentUrl);
     }
 
     public function iniciar(Order $order)
@@ -162,34 +245,104 @@ class PagaditoController extends Controller
                 'fecha' => $fecha
             ]);
 
-            // Busca tu orden por ERN
+            // Buscar orden existente o datos de checkout en sesión
             $order = Order::where('numero_orden', $ern)->first();
-
-            if (!$order) {
-                Log::error('Orden no encontrada', ['ern' => $ern]);
-                return redirect()->route('shop.checkout')->with('error', 'Orden no encontrada.');
-            }
+            $checkoutData = Session::get('checkout_data');
 
             switch ($estado) {
                 case 'COMPLETED':
-                    // Confirmar pago de pre-orden
-                    $paymentData = [
-                        'tipo' => 'pagadito',
-                        'referencia' => $referencia,
-                        'fecha_procesamiento' => $fecha,
-                        'token' => $token,
-                        'estado_pagadito' => $estado
-                    ];
-                    
-                    $order->confirmPayment($paymentData);
-                    // Limpiar carrito del usuario tras pago exitoso
-                    try { session()->forget('carrito'); } catch (\Throwable $t) {}
-                    
-                    Log::info('Pago completado exitosamente', [
-                        'order_id' => $order->id,
-                        'numero_orden' => $order->numero_orden,
-                        'referencia' => $referencia
-                    ]);
+                    if (!$order && $checkoutData && $checkoutData['numero_orden'] === $ern) {
+                        // CREAR ORDEN SOLO CUANDO EL PAGO ESTÉ CONFIRMADO
+                        try {
+                            DB::beginTransaction();
+                            
+                            // Crear la orden
+                            $order = Order::create([
+                                'user_id' => $checkoutData['user_id'],
+                                'numero_orden' => $checkoutData['numero_orden'],
+                                'nombre_cliente' => $checkoutData['nombre_cliente'],
+                                'email_cliente' => $checkoutData['email_cliente'],
+                                'telefono_cliente' => $checkoutData['telefono_cliente'],
+                                'dpi' => $checkoutData['dpi'],
+                                'nit' => $checkoutData['nit'],
+                                'direccion_entrega' => $checkoutData['direccion_entrega'],
+                                'ciudad' => $checkoutData['ciudad'],
+                                'departamento' => $checkoutData['departamento'],
+                                'tipo_pago' => 'linea',
+                                'metodo_pago' => 'tarjeta',
+                                'estado' => 'confirmado',
+                                'estado_pago' => 'pagado',
+                                'subtotal' => $checkoutData['subtotal'],
+                                'envio' => $checkoutData['envio'],
+                                'total' => $checkoutData['total'],
+                                'notas_cliente' => $checkoutData['notas_cliente'],
+                                'fecha_pedido' => now(),
+                                'info_pago' => json_encode([
+                                    'tipo' => 'pagadito',
+                                    'referencia' => $referencia,
+                                    'fecha_procesamiento' => $fecha,
+                                    'token' => $token,
+                                    'estado_pagadito' => $estado
+                                ]),
+                            ]);
+
+                            // Crear los items de la orden
+                            foreach ($checkoutData['carrito'] as $item) {
+                                $producto = Producto::findOrFail($item['id']);
+                                
+                                OrderItem::create([
+                                    'order_id' => $order->id,
+                                    'producto_id' => $producto->id,
+                                    'nombre_producto' => $producto->nombre,
+                                    'codigo_producto' => $producto->codigo_interno,
+                                    'descripcion_producto' => $producto->descripcion,
+                                    'categoria_producto' => $producto->categoria,
+                                    'precio_unitario' => $item['precio'],
+                                    'cantidad' => $item['cantidad'],
+                                    'subtotal' => $item['subtotal'],
+                                ]);
+
+                                // Actualizar stock inmediatamente
+                                $producto->decrement('stock_actual', (int) $item['cantidad']);
+                            }
+
+                            DB::commit();
+                            
+                            // Limpiar sesiones
+                            Session::forget(['carrito', 'checkout_data']);
+                            
+                            Log::info('Orden creada exitosamente tras pago confirmado', [
+                                'order_id' => $order->id,
+                                'numero_orden' => $order->numero_orden,
+                                'referencia' => $referencia
+                            ]);
+                            
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            Log::error('Error creando orden tras pago confirmado', [
+                                'error' => $e->getMessage(),
+                                'ern' => $ern,
+                                'referencia' => $referencia
+                            ]);
+                            return redirect()->route('shop.checkout')->with('error', 'Error procesando la orden. Contacta soporte.');
+                        }
+                        
+                    } elseif ($order) {
+                        // Orden existente (flujo anterior) - confirmar pago
+                        $paymentData = [
+                            'tipo' => 'pagadito',
+                            'referencia' => $referencia,
+                            'fecha_procesamiento' => $fecha,
+                            'token' => $token,
+                            'estado_pagadito' => $estado
+                        ];
+                        
+                        $order->confirmPayment($paymentData);
+                        Session::forget('carrito');
+                    } else {
+                        Log::error('No se encontró orden ni datos de checkout', ['ern' => $ern]);
+                        return redirect()->route('shop.checkout')->with('error', 'Orden no encontrada.');
+                    }
                     
                     return redirect()->route('shop.order.success', $order->numero_orden)
                         ->with('success', 'Pago procesado exitosamente. Referencia: ' . $referencia);
@@ -265,7 +418,132 @@ class PagaditoController extends Controller
         if (!$ern) {
             return response()->json(['error' => 'ERN requerido'], 400);
         }
+        
         $order = Order::where('numero_orden', $ern)->first();
+        $checkoutData = Session::get('checkout_data');
+        
+        // Si no hay orden pero sí datos de checkout, verificar si ya se completó el pago
+        if (!$order && $checkoutData && $checkoutData['numero_orden'] === $ern) {
+            // Verificar si ya existe una orden con este ERN (puede haberse creado por el retorno de Pagadito)
+            $order = Order::where('numero_orden', $ern)->first();
+            
+            if ($order && $order->estado_pago === 'pagado') {
+                return response()->json([
+                    'estado' => $order->estado,
+                    'estado_pago' => $order->estado_pago,
+                    'paid' => true,
+                    'checkout_pending' => false
+                ]);
+            }
+            
+            // Si aún no hay orden, verificar directamente con Pagadito usando el token guardado
+            try {
+                $pg = $this->client();
+                if ($pg->connect()) {
+                    // Buscar si hay algún token_trans guardado en la sesión o en logs
+                    $tokenTrans = Session::get('pagadito_token_' . $ern);
+                    
+                    if ($tokenTrans && $pg->get_status($tokenTrans)) {
+                        $estado = $pg->get_rs_status();
+                        $referencia = $pg->get_rs_reference();
+                        $fecha = $pg->get_rs_date_trans();
+                        
+                        if ($estado === 'COMPLETED') {
+                            // El pago está completo, crear la orden inmediatamente
+                            try {
+                                DB::beginTransaction();
+                                
+                                $order = Order::create([
+                                    'user_id' => $checkoutData['user_id'],
+                                    'numero_orden' => $checkoutData['numero_orden'],
+                                    'nombre_cliente' => $checkoutData['nombre_cliente'],
+                                    'email_cliente' => $checkoutData['email_cliente'],
+                                    'telefono_cliente' => $checkoutData['telefono_cliente'],
+                                    'dpi' => $checkoutData['dpi'],
+                                    'nit' => $checkoutData['nit'],
+                                    'direccion_entrega' => $checkoutData['direccion_entrega'],
+                                    'ciudad' => $checkoutData['ciudad'],
+                                    'departamento' => $checkoutData['departamento'],
+                                    'tipo_pago' => 'linea',
+                                    'metodo_pago' => 'tarjeta',
+                                    'estado' => 'confirmado',
+                                    'estado_pago' => 'pagado',
+                                    'subtotal' => $checkoutData['subtotal'],
+                                    'envio' => $checkoutData['envio'],
+                                    'total' => $checkoutData['total'],
+                                    'notas_cliente' => $checkoutData['notas_cliente'],
+                                    'fecha_pedido' => now(),
+                                    'info_pago' => json_encode([
+                                        'tipo' => 'pagadito',
+                                        'referencia' => $referencia,
+                                        'fecha_procesamiento' => $fecha,
+                                        'token' => $tokenTrans,
+                                        'estado_pagadito' => $estado
+                                    ]),
+                                ]);
+
+                                // Crear los items de la orden
+                                foreach ($checkoutData['carrito'] as $item) {
+                                    $producto = Producto::findOrFail($item['id']);
+                                    
+                                    OrderItem::create([
+                                        'order_id' => $order->id,
+                                        'producto_id' => $producto->id,
+                                        'nombre_producto' => $producto->nombre,
+                                        'codigo_producto' => $producto->codigo_interno,
+                                        'descripcion_producto' => $producto->descripcion,
+                                        'categoria_producto' => $producto->categoria,
+                                        'precio_unitario' => $item['precio'],
+                                        'cantidad' => $item['cantidad'],
+                                        'subtotal' => $item['subtotal'],
+                                    ]);
+
+                                    // Actualizar stock inmediatamente
+                                    $producto->decrement('stock_actual', (int) $item['cantidad']);
+                                }
+
+                                DB::commit();
+                                
+                                // Limpiar sesiones
+                                Session::forget(['carrito', 'checkout_data', 'pagadito_token_' . $ern]);
+                                
+                                return response()->json([
+                                    'estado' => $order->estado,
+                                    'estado_pago' => $order->estado_pago,
+                                    'paid' => true,
+                                    'checkout_pending' => false
+                                ]);
+                                
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                \Log::error('Error creando orden en status polling', [
+                                    'error' => $e->getMessage(),
+                                    'ern' => $ern,
+                                    'referencia' => $referencia
+                                ]);
+                            }
+                        } elseif (in_array($estado, ['REVOKED','FAILED','CANCELED','EXPIRED'])) {
+                            return response()->json([
+                                'estado' => 'expirado',
+                                'estado_pago' => 'cancelado',
+                                'paid' => false,
+                                'checkout_pending' => false
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Throwable $t) {
+                \Log::warning('Error verificando estado de checkout pendiente', ['ern' => $ern, 'error' => $t->getMessage()]);
+            }
+            
+            return response()->json([
+                'estado' => 'pendiente',
+                'estado_pago' => 'pendiente', 
+                'paid' => false,
+                'checkout_pending' => true
+            ]);
+        }
+        
         if (!$order) {
             return response()->json(['error' => 'Orden no encontrada'], 404);
         }

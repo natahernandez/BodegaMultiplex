@@ -20,7 +20,10 @@
 
     <header class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a class="navbar-brand text-primary" href="/">Bodegas <span class="text-warning">Multiphlex</span></a>
+            <a class="navbar-brand text-primary d-flex align-items-center" href="/">
+                <img src="{{ asset('svg/logos/logo.png') }}" alt="Bodegas Multiphlex" style="height: 40px; width: auto; margin-right: 10px;">
+                Bodegas <span class="text-warning">Multiphlex</span>
+            </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

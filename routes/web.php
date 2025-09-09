@@ -68,7 +68,10 @@ Route::middleware('auth')->name('shop.')->group(function () {
 
 // Rutas de Pagadito (pago en línea)
 Route::prefix('pagos/pagadito')->middleware('auth')->group(function () {
-    // Inicia el pago: redirige al checkout seguro de Pagadito
+    // Inicia el pago desde checkout (sin orden previa)
+    Route::get('/iniciar-checkout', [PagaditoController::class, 'iniciarCheckout'])->name('pagadito.iniciar.checkout');
+    
+    // Inicia el pago: redirige al checkout seguro de Pagadito (método original para compatibilidad)
     Route::get('/iniciar/{order}', [PagaditoController::class, 'iniciar'])->name('pagadito.iniciar');
 
     // URL de retorno configurada en Pagadito

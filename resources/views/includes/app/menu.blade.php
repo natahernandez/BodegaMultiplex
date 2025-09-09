@@ -1,9 +1,7 @@
 <!-- Logo -->
 <a class="navbar-brand" href="{{ route('home') }}" aria-label="Front">
-  <img class="navbar-brand-logo" src="{{ asset('svg/logos/logo.svg') }}" alt="Logo" data-hs-theme-appearance="default" style="height: 40px;">
-  <img class="navbar-brand-logo" src="{{ asset('svg/logos-light/logo.svg') }}" alt="Logo" data-hs-theme-appearance="dark" style="height: 40px;">
-  <img class="navbar-brand-logo-mini" src="{{ asset('svg/logos/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="default" style="height: 30px;">
-  <img class="navbar-brand-logo-mini" src="{{ asset('svg/logos-light/logo-short.svg') }}" alt="Logo" data-hs-theme-appearance="dark" style="height: 30px;">
+  <img class="navbar-brand-logo" src="{{ asset('svg/logos/logo.png') }}" alt="Bodegas Multiphlex" style="height: 60px; width: auto; object-fit: contain;">
+  <img class="navbar-brand-logo-mini" src="{{ asset('svg/logos/logo.png') }}" alt="Bodegas Multiphlex" style="height: 50px; width: auto; object-fit: contain;">
 </a>
 <!-- End Logo -->
 

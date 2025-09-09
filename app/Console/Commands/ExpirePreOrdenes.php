@@ -20,7 +20,7 @@ class ExpirePreOrdenes extends Command
      *
      * @var string
      */
-    protected $description = 'Expirar pre-órdenes que no fueron pagadas en el tiempo límite';
+    protected $description = 'Expirar pre-órdenes que no fueron pagadas en 3 minutos';
 
     /**
      * Execute the console command.
@@ -70,7 +70,7 @@ class ExpirePreOrdenes extends Command
         $this->line("   - Pre-órdenes expiradas: {$expiradosCount}");
         
         if ($expiradosCount > 0) {
-            $this->warn("💡 Tip: Las pre-órdenes expiradas no afectan el stock y pueden ser ignoradas por los administradores.");
+            $this->warn("💡 Tip: Las pre-órdenes expiradas (3 minutos) no afectan el stock y pueden ser ignoradas por los administradores.");
         }
         
         return 0;
