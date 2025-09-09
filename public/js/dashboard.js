@@ -44,25 +44,75 @@ function initSidebarToggle() {
     const sidebar = document.querySelector('.js-navbar-vertical-aside');
     const body = document.body;
     
+    // Crear overlay para móviles si no existe
+    let overlay = document.querySelector('.navbar-vertical-aside-mobile-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'navbar-vertical-aside-mobile-overlay';
+        document.body.appendChild(overlay);
+    }
+    
     if (toggleButton && sidebar) {
+        // Función para cerrar el sidebar en móviles
+        function closeSidebar() {
+            if (window.innerWidth < 1200) {
+                body.classList.add('navbar-vertical-aside-closed-mode');
+                overlay.classList.remove('show');
+                localStorage.setItem('sidebar-mobile-closed', 'true');
+            }
+        }
+        
+        // Función para abrir el sidebar en móviles
+        function openSidebar() {
+            if (window.innerWidth < 1200) {
+                body.classList.remove('navbar-vertical-aside-closed-mode');
+                overlay.classList.add('show');
+                localStorage.setItem('sidebar-mobile-closed', 'false');
+            }
+        }
+        
+        // Toggle del sidebar
         toggleButton.addEventListener('click', function(e) {
             e.preventDefault();
-            body.classList.toggle('navbar-vertical-aside-mini');
+            e.stopPropagation();
             
-            // Trigger resize event para que otros componentes se ajusten
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-            }, 300);
-            
-            // Guardar estado en localStorage
-            const isMinified = body.classList.contains('navbar-vertical-aside-mini');
-            localStorage.setItem('sidebar-mini', isMinified);
+            // Solo permitir toggle en dispositivos móviles (< 1200px)
+            if (window.innerWidth < 1200) {
+                if (body.classList.contains('navbar-vertical-aside-closed-mode')) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+                
+                // Trigger resize event para que otros componentes se ajusten
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            }
         });
         
-        // Restaurar estado del sidebar
-        const savedState = localStorage.getItem('sidebar-mini');
-        if (savedState === 'true') {
-            body.classList.add('navbar-vertical-aside-mini');
+        // Cerrar sidebar al hacer clic en el overlay
+        overlay.addEventListener('click', function() {
+            closeSidebar();
+        });
+        
+        // Cerrar sidebar con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && window.innerWidth < 1200) {
+                closeSidebar();
+            }
+        });
+        
+        // Restaurar estado del sidebar solo en móviles
+        if (window.innerWidth < 1200) {
+            const savedState = localStorage.getItem('sidebar-mobile-closed');
+            if (savedState === 'true') {
+                body.classList.add('navbar-vertical-aside-closed-mode');
+                overlay.classList.remove('show');
+            } else {
+                body.classList.remove('navbar-vertical-aside-closed-mode');
+                overlay.classList.add('show');
+            }
         }
         
         // Asegurar que el body tenga la clase correcta
@@ -72,11 +122,28 @@ function initSidebarToggle() {
         
         // Ajustar en resize de ventana
         window.addEventListener('resize', function() {
-            // En pantallas pequeñas, forzar el sidebar a estar oculto
             if (window.innerWidth < 1200) {
+                // En móviles, el sidebar puede estar oculto
                 body.classList.remove('navbar-vertical-aside-show-xl');
+                // Asegurar que el overlay esté presente
+                if (!document.querySelector('.navbar-vertical-aside-mobile-overlay')) {
+                    const newOverlay = document.createElement('div');
+                    newOverlay.className = 'navbar-vertical-aside-mobile-overlay';
+                    document.body.appendChild(newOverlay);
+                }
             } else {
+                // En desktop, siempre mostrar el sidebar
                 body.classList.add('navbar-vertical-aside-show-xl');
+                body.classList.remove('navbar-vertical-aside-closed-mode');
+                body.classList.remove('navbar-vertical-aside-mini-mode');
+                if (overlay) overlay.classList.remove('show');
+                // Forzar que el sidebar esté visible en desktop
+                const sidebar = document.querySelector('.js-navbar-vertical-aside');
+                if (sidebar) {
+                    sidebar.style.transform = 'translateX(0)';
+                    sidebar.style.visibility = 'visible';
+                    sidebar.style.opacity = '1';
+                }
             }
         });
         

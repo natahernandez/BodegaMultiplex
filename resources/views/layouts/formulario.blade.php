@@ -12,14 +12,14 @@
   <link rel="stylesheet" href="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
   <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
   <link rel="preload" href="{{ asset('css/theme.css') }}" data-hs-appearance="default" as="style">
-  <link rel="preload" href="{{ asset('css/theme-dark.css') }}" data-hs-appearance="dark" as="style">
+  
 
 </head>
 
 <body>
 
   <main id="content" role="main" class="main">
-    <div class="position-fixed top-0 end-0 start-0 bg-img-start" style="height: 32rem; background-image: url(@@autopath/assets/svg/components/card-6.svg);">
+    <div class="position-fixed top-0 end-0 start-0 bg-img-start" style="height: 32rem; background-image: url('{{ asset('front-dashboard-v2.1.1/dist/assets/svg/components/card-6.svg') }}');">
 
     @yield('content')
 
@@ -29,11 +29,10 @@
   </main>
 
   <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery/dist/jquery.min.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/jquery-migrate/dist/jquery-migrate.min.js') }}"></script>
   <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/vendor/hs-toggle-password/dist/js/hs-toggle-password.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/hs.core.js') }}"></script>
-  <script src="{{ asset('front-dashboard-v2.1.1/dist/assets/js/hs.bs-validation.js') }}"></script>
+  <script src="{{ asset('js/hs.core.js') }}"></script>
+  <script src="{{ asset('js/hs.bs-validation.js') }}"></script>
 
 </body>
 </html>

@@ -5,12 +5,7 @@
 </a>
 <!-- End Logo -->
 
-<!-- Navbar Vertical Toggle -->
-<button type="button" class="js-navbar-vertical-aside-toggle-invoker navbar-aside-toggler">
-  <i class="bi-arrow-bar-left navbar-toggler-short-align"></i>
-  <i class="bi-arrow-bar-right navbar-toggler-full-align"></i>
-</button>
-<!-- End Navbar Vertical Toggle -->
+<!-- Navbar Vertical Toggle - REMOVIDO COMPLETAMENTE -->
 
 <!-- Content -->
 <div class="navbar-vertical-content">

@@ -1,0 +1,224 @@
+/* Custom Sidebar Fixes */
+
+/* Force sidebar visibility on desktop */
+@media (min-width: 1200px) {
+  body {
+    padding-left: 0 !important;
+  }
+  
+  .navbar-vertical-aside {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    width: 16.25rem !important;
+    z-index: 1000 !important;
+  }
+  
+  .main {
+    margin-left: 16.25rem !important;
+    padding-left: 0 !important;
+  }
+}
+
+/* Hide toggler on desktop (>= 1200px) */
+@media (min-width: 1200px) {
+  .js-navbar-vertical-aside-toggle-invoker {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  
+  /* Ensure sidebar is always visible on desktop */
+  .navbar-vertical-aside {
+    display: block !important;
+    visibility: visible !important;
+    transform: translateX(0) !important;
+    position: fixed !important;
+    width: 16.25rem !important;
+  }
+  
+  .main {
+    padding-left: 16.25rem !important;
+  }
+}
+
+/* Show toggler on mobile and tablet (< 1200px) */
+@media (max-width: 1199.98px) {
+  .js-navbar-vertical-aside-toggle-invoker {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 1199.98px) {
+  .navbar-vertical-aside {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    width: 280px !important;
+    z-index: 1050 !important;
+    transform: translateX(0) !important;
+    transition: transform 0.3s ease-in-out !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+    background-color: white !important;
+  }
+  
+  .navbar-vertical-aside-closed-mode .navbar-vertical-aside {
+    transform: translateX(-100%) !important;
+    margin-left: 0 !important;
+    /* Completely hide the sidebar when closed */
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+  
+  .navbar-vertical-aside-closed-mode .main {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+  
+  .main {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+  
+  /* Ensure no background artifacts remain */
+  .navbar-vertical-aside-closed-mode .navbar-vertical-aside * {
+    visibility: hidden !important;
+  }
+}
+
+/* Desktop responsive fixes - Always show sidebar */
+@media (min-width: 1200px) {
+  /* Disable mini mode on desktop */
+  .navbar-vertical-aside-mini-mode .navbar-vertical-aside {
+    width: 16.25rem !important;
+  }
+  
+  .navbar-vertical-aside-mini-mode .main {
+    padding-left: 16.25rem !important;
+  }
+  
+  /* Force sidebar to always be visible on desktop */
+  body.navbar-vertical-aside-closed-mode .navbar-vertical-aside {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Overlay for mobile */
+.navbar-vertical-aside-mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.navbar-vertical-aside-mobile-overlay.show {
+  display: block;
+  opacity: 1;
+}
+
+/* Show overlay when sidebar is open on mobile */
+@media (max-width: 1199.98px) {
+  .navbar-vertical-aside:not(.navbar-vertical-aside-closed-mode) + .navbar-vertical-aside-mobile-overlay {
+    display: block;
+    opacity: 1;
+  }
+}
+
+/* Toggle button states - Mobile only */
+@media (max-width: 1199.98px) {
+  .navbar-toggler-default {
+    display: inline-block;
+  }
+
+  .navbar-toggler-toggled {
+    display: none;
+  }
+
+  .navbar-vertical-aside-closed-mode .navbar-toggler-default {
+    display: none;
+  }
+
+  .navbar-vertical-aside-closed-mode .navbar-toggler-toggled {
+    display: inline-block;
+  }
+}
+
+/* Hide all toggler icons on desktop */
+@media (min-width: 1200px) {
+  .navbar-toggler-default,
+  .navbar-toggler-toggled {
+    display: none !important;
+  }
+  
+  /* Completely hide the toggle button container on desktop */
+  .navbar-nav-wrap-content-start .js-navbar-vertical-aside-toggle-invoker {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+  }
+}
+
+/* Mobile hamburger button styling */
+@media (max-width: 1199.98px) {
+  .js-navbar-vertical-aside-toggle-invoker {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    font-size: 1.25rem;
+    color: #5e6e82;
+    transition: color 0.15s ease-in-out;
+    cursor: pointer;
+    position: relative;
+    z-index: 1051;
+  }
+  
+  .js-navbar-vertical-aside-toggle-invoker:hover {
+    color: #377dff;
+  }
+  
+  .js-navbar-vertical-aside-toggle-invoker:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(55, 125, 255, 0.25);
+  }
+  
+  /* Ensure only one icon is visible at a time */
+  .js-navbar-vertical-aside-toggle-invoker i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  /* Mobile sidebar improvements */
+  .navbar-vertical-aside {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .navbar-vertical-aside .navbar-vertical-content {
+    padding: 1rem 0;
+  }
+}

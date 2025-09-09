@@ -3,17 +3,19 @@
 <head>
   @include('includes.app.head')
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  
+  <!-- Menu Fix CSS - Máxima Prioridad en HEAD -->
+  <link rel="stylesheet" href="{{ asset('css/menu-fix.css') }}">
 </head>
 
-<body class="has-navbar-vertical-aside navbar-vertical-aside-show-xl footer-offset">
+<body class="has-navbar-vertical-aside footer-offset">
   <script>
-    // FORCE LAYOUT CLASSES IMMEDIATELY
+    // SOLO AGREGAR CLASES BÁSICAS - EL CSS MANEJA TODO
     document.body.classList.add('has-navbar-vertical-aside');
-    if (window.innerWidth >= 1200) {
-      document.body.classList.add('navbar-vertical-aside-show-xl');
-    }
   </script>
-  <script src="{{ asset('vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside-mini-cache.js') }}"></script>
+  
+  <!-- Menu Fix JS - Solución Directa -->
+  <script src="{{ asset('js/menu-fix.js') }}"></script>
 
   @include('includes.app.header')
 

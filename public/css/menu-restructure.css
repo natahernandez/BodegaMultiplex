@@ -1,0 +1,269 @@
+/* ========================================
+   MENU RESTRUCTURE - COMPLETE REWRITE
+   ======================================== */
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+/* Desktop Menu (>= 1200px) - ALWAYS VISIBLE, NO TOGGLE BUTTON */
+@media (min-width: 1200px) {
+  .navbar-vertical-aside {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 16.25rem !important;
+    height: 100vh !important;
+    background-color: #fff !important;
+    border-right: 1px solid #e7eaf3 !important;
+    z-index: 1000 !important;
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+    overflow-y: auto !important;
+    transition: none !important;
+  }
+  
+  /* Force sidebar to always be visible on desktop */
+  body .navbar-vertical-aside {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+  }
+  
+  .main {
+    margin-left: 16.25rem !important;
+    padding-left: 0 !important;
+  }
+  
+  /* COMPLETELY HIDE TOGGLE BUTTON ON DESKTOP */
+  .js-navbar-vertical-aside-toggle-invoker,
+  .navbar-aside-toggler,
+  .navbar-nav-wrap-content-start .js-navbar-vertical-aside-toggle-invoker,
+  .d-lg-none.js-navbar-vertical-aside-toggle-invoker {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* Force hide the entire button container on desktop */
+  .navbar-nav-wrap-content-start {
+    display: none !important;
+  }
+  
+  /* Hide all toggle icons on desktop */
+  .navbar-toggler-default,
+  .navbar-toggler-toggled,
+  .navbar-toggler-short-align,
+  .navbar-toggler-full-align {
+    display: none !important;
+  }
+  
+  /* Force sidebar to always be visible */
+  body.navbar-vertical-aside-closed-mode .navbar-vertical-aside {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Disable mini mode on desktop */
+  .navbar-vertical-aside-mini-mode .navbar-vertical-aside {
+    width: 16.25rem !important;
+  }
+  
+  .navbar-vertical-aside-mini-mode .main {
+    margin-left: 16.25rem !important;
+  }
+}
+
+/* Mobile Menu (< 1200px) - TOGGLEABLE WITH HAMBURGER BUTTON */
+@media (max-width: 1199.98px) {
+  .navbar-vertical-aside {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    background-color: #fff !important;
+    border-right: 1px solid #e7eaf3 !important;
+    z-index: 1050 !important;
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transition: all 0.3s ease-in-out !important;
+    overflow-y: auto !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .main {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+  }
+  
+  /* Show toggle button on mobile */
+  .js-navbar-vertical-aside-toggle-invoker {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1051 !important;
+    background: none !important;
+    border: none !important;
+    padding: 0.5rem !important;
+    font-size: 1.25rem !important;
+    color: #5e6e82 !important;
+    cursor: pointer !important;
+    transition: color 0.15s ease-in-out !important;
+  }
+  
+  .js-navbar-vertical-aside-toggle-invoker:hover {
+    color: #377dff !important;
+  }
+  
+  .js-navbar-vertical-aside-toggle-invoker:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 0.2rem rgba(55, 125, 255, 0.25) !important;
+  }
+  
+  /* Mobile menu open state */
+  .navbar-vertical-aside-open .navbar-vertical-aside {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .navbar-vertical-aside-open .main {
+    margin-left: 0 !important;
+  }
+  
+  /* Mobile overlay */
+  .navbar-vertical-aside-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    z-index: 1040 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease-in-out !important;
+  }
+  
+  .navbar-vertical-aside-open .navbar-vertical-aside-overlay {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  /* Toggle button icons - Only show one at a time */
+  .js-navbar-vertical-aside-toggle-invoker i {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    transition: opacity 0.3s ease-in-out !important;
+  }
+  
+  .navbar-toggler-default {
+    display: inline-block !important;
+    opacity: 1 !important;
+  }
+  
+  .navbar-toggler-toggled {
+    display: inline-block !important;
+    opacity: 0 !important;
+  }
+  
+  .navbar-vertical-aside-open .navbar-toggler-default {
+    opacity: 0 !important;
+  }
+  
+  .navbar-vertical-aside-open .navbar-toggler-toggled {
+    opacity: 1 !important;
+  }
+}
+
+/* Ensure proper spacing and layout */
+.navbar-vertical-content {
+  padding: 1rem 0 !important;
+}
+
+.navbar-vertical-aside .nav-link {
+  padding: 0.75rem 1.5rem !important;
+  color: #5e6e82 !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.navbar-vertical-aside .nav-link:hover {
+  background-color: #f8f9fa !important;
+  color: #377dff !important;
+}
+
+.navbar-vertical-aside .nav-link.active {
+  background-color: #e7f3ff !important;
+  color: #377dff !important;
+  border-right: 3px solid #377dff !important;
+}
+
+.navbar-vertical-aside .nav-icon {
+  margin-right: 0.75rem !important;
+  font-size: 1.1rem !important;
+}
+
+/* Force body classes */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.has-navbar-vertical-aside {
+  padding-left: 0 !important;
+}
+
+/* Override any conflicting styles */
+@media (min-width: 1200px) {
+  .navbar-vertical-aside-closed-mode .navbar-vertical-aside {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .navbar-vertical-aside-mini-mode .navbar-vertical-aside {
+    width: 16.25rem !important;
+  }
+  
+  .navbar-vertical-aside-mini-mode .main {
+    margin-left: 16.25rem !important;
+  }
+  
+  /* Force sidebar visibility on desktop - override all other rules */
+  .navbar-vertical-aside {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 16.25rem !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
+  }
+  
+  .main {
+    margin-left: 16.25rem !important;
+    padding-left: 0 !important;
+  }
+}
