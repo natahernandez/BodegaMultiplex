@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('codigo_interno')->unique();
             $table->string('nombre');
             $table->text('descripcion')->nullable();
+            $table->foreignId('brand_id')->nullable()->constrained('brands')->onDelete('set null');
+            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->string('marca')->nullable();
             $table->string('categoria');
             $table->decimal('precio_compra', 10, 2);
@@ -31,6 +33,11 @@ return new class extends Migration
             $table->date('fecha_vencimiento')->nullable();
             $table->string('imagen')->nullable();
             $table->boolean('activo')->default(true);
+            $table->boolean('en_oferta')->default(false);
+            $table->decimal('descuento_porcentaje', 5, 2)->nullable();
+            $table->decimal('precio_oferta', 10, 2)->nullable();
+            $table->datetime('fecha_inicio_oferta')->nullable();
+            $table->datetime('fecha_fin_oferta')->nullable();
             $table->boolean('requiere_receta')->default(false);
             $table->timestamps();
         });

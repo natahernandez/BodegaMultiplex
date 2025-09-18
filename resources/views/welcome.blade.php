@@ -48,6 +48,14 @@
                                 <i class="bi-person-circle"></i> {{ auth()->user()->name }}
                             </button>
                             <ul class="dropdown-menu">
+                                @if(auth()->user()->isAdmin())
+                                    <li><a class="dropdown-item" href="{{ route('home') }}">
+                                        <i class="bi-speedometer2 me-2"></i>Ir al Dashboard
+                                    </a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                @endif
                                 <li><a class="dropdown-item" href="/mis-pedidos">Mis Pedidos</a></li>
                                 <li>
                                     <hr class="dropdown-divider">

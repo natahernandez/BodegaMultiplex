@@ -20,15 +20,19 @@ return new class extends Migration
             $table->string('nombre_cliente');
             $table->string('email_cliente');
             $table->string('telefono_cliente');
+            $table->string('dpi', 20)->nullable();
+            $table->string('nit', 20)->nullable();
             $table->text('direccion_entrega');
             $table->string('ciudad')->default('Guatemala');
             $table->string('departamento')->default('Guatemala');
             $table->string('codigo_postal')->nullable();
             
             // Información del pedido
-            $table->enum('estado', ['pendiente', 'confirmado', 'en_preparacion', 'enviado', 'entregado', 'cancelado'])->default('pendiente');
+            $table->enum('estado', ['pre_orden', 'pendiente', 'confirmado', 'en_preparacion', 'proceso', 'enviado', 'entregado', 'completado', 'cancelado', 'expirado'])->default('pendiente');
             $table->enum('estado_pago', ['pendiente', 'pagado', 'contra_entrega', 'cancelado'])->default('pendiente');
             $table->enum('metodo_pago', ['efectivo', 'tarjeta', 'transferencia', 'contra_entrega'])->default('contra_entrega');
+            $table->enum('tipo_pago', ['linea', 'contra_entrega'])->nullable();
+            $table->json('info_pago')->nullable();
             
             // Montos
             $table->decimal('subtotal', 10, 2);
@@ -47,6 +51,8 @@ return new class extends Migration
             
             // Tracking
             $table->string('codigo_seguimiento')->nullable();
+            $table->string('guia_envio')->nullable();
+            $table->string('empresa_envio')->nullable();
             
             $table->timestamps();
             

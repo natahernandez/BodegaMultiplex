@@ -295,7 +295,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'estado' => 'required|in:cancelado,proceso',
+            'estado' => 'required|in:cancelado,proceso,confirmado,en_preparacion,enviado,entregado',
         ]);
 
         try {
@@ -303,14 +303,23 @@ class OrderController extends Controller
             
             $estadoAnterior = $order->estado;
 
-            // Si se cancela una orden, restaurar stock si ya había sido descontado
+            // Si se cancela una orden, restaurar stock y marcar pago como cancelado
             if ($request->estado === 'cancelado' && $estadoAnterior !== 'cancelado') {
-                foreach ($order->items as $item) {
-                    if ($item->producto) {
-                        $item->producto->increment('stock_actual', $item->cantidad);
+                // Restaurar stock solo si la orden ya había sido procesada (completado)
+                if ($estadoAnterior === 'completado') {
+                    foreach ($order->items as $item) {
+                        if ($item->producto) {
+                            $item->producto->increment('stock_actual', $item->cantidad);
+                        }
                     }
                 }
+                
+                // Marcar estado de pago como cancelado
                 $order->estado_pago = 'cancelado';
+                
+                // Agregar nota administrativa
+                $notaExistente = $order->notas_admin ? $order->notas_admin . "\n\n" : '';
+                $order->notas_admin = $notaExistente . "Orden cancelada por el administrador el " . now()->format('d/m/Y H:i:s');
             }
 
             $order->estado = $request->estado;
@@ -318,19 +327,31 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // Mensaje personalizado según el estado
+            $mensajes = [
+                'cancelado' => 'Orden cancelada exitosamente. El stock ha sido restaurado automáticamente.',
+                'proceso' => 'Orden marcada como en proceso.',
+                'confirmado' => 'Orden confirmada exitosamente.',
+                'en_preparacion' => 'Orden marcada como en preparación.',
+                'enviado' => 'Orden marcada como enviada.',
+                'entregado' => 'Orden marcada como entregada.',
+            ];
+
+            $mensaje = $mensajes[$request->estado] ?? 'Estado actualizado exitosamente';
+
             // Si es una petición AJAX, devolver JSON
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Estado actualizado exitosamente',
-                    'nuevo_estado' => ucfirst($order->estado),
-                    'badge_class' => $order->estado === 'proceso' ? 'bg-warning' : 'bg-danger'
+                    'message' => $mensaje,
+                    'nuevo_estado' => $order->estado_texto,
+                    'badge_class' => $order->estado_badge
                 ]);
             }
 
             // Si es una petición normal, redirigir
             return redirect()->route('orders.show', $order)
-                ->with('success', 'Estado de la orden actualizado correctamente');
+                ->with('success', $mensaje);
 
         } catch (\Exception $e) {
             DB::rollBack();

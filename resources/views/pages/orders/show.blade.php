@@ -383,6 +383,12 @@
                 <span class="d-none d-sm-inline">Marcar como Completado</span>
                 <span class="d-sm-none">Completar</span>
               </button>
+              
+              <button type="button" class="btn btn-danger" onclick="cancelOrder()">
+                <i class="bi-x-circle me-2"></i>
+                <span class="d-none d-sm-inline">Cancelar Orden</span>
+                <span class="d-sm-none">Cancelar</span>
+              </button>
             </div>
             
             <input type="hidden" name="estado" id="estadoInput">
@@ -484,6 +490,65 @@ function changeStatus(estado) {
 function showCompleteModal() {
   var modal = new bootstrap.Modal(document.getElementById('completeModal'));
   modal.show();
+}
+
+function cancelOrder() {
+  // Mostrar modal de confirmación personalizado
+  const confirmModal = `
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="cancelOrderModalLabel">
+              <i class="bi-exclamation-triangle me-2"></i>
+              Confirmar Cancelación
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning">
+              <i class="bi-info-circle me-2"></i>
+              <strong>¿Estás seguro de que deseas cancelar esta orden?</strong>
+            </div>
+            <p class="mb-2">Al cancelar la orden:</p>
+            <ul class="mb-0">
+              <li>Se restaurará el stock de los productos automáticamente</li>
+              <li>El estado de pago se marcará como "cancelado"</li>
+              <li>Esta acción no se puede deshacer</li>
+              <li>El cliente será notificado del cambio de estado</li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bi-arrow-left me-2"></i>No, mantener orden
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmCancelOrder()">
+              <i class="bi-x-circle me-2"></i>Sí, cancelar orden
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Agregar el modal al DOM si no existe
+  if (!document.getElementById('cancelOrderModal')) {
+    document.body.insertAdjacentHTML('beforeend', confirmModal);
+  }
+  
+  // Mostrar el modal
+  const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+  modal.show();
+}
+
+function confirmCancelOrder() {
+  // Cerrar el modal de confirmación
+  const modal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+  modal.hide();
+  
+  // Establecer el estado como cancelado y enviar el formulario
+  document.getElementById('estadoInput').value = 'cancelado';
+  document.getElementById('statusForm').submit();
 }
 </script>
 
